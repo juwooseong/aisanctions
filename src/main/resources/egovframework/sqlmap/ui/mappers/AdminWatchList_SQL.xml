@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminWatchListMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.WatchListVO">
+		<result property="aiInptCtgrId" column="AI_INPT_CTGR_ID"/>
+		<result property="ctgrCfcd" column="CTGR_CFCD"/>
+		<result property="aiInptCtgrNm" column="AI_INPT_CTGR_NM"/>
+		<result property="aiInptCtgrTxt" column="AI_INPT_CTGR_TXT"/>
+		<result property="aiInptCtgrYn" column="AI_INPT_CTGR_YN"/>
+		<result property="aiInptCtgrRgsDtm" column="AI_INPT_CTGR_RGS_DTM"/>
+		<result property="aiInptCtgrEndDtm" column="AI_INPT_CTGR_END_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptListId" column="AI_INPT_LIST_ID"/>
+		<result property="aiInptListNm" column="AI_INPT_LIST_NM"/>
+		<result property="aiInptListDesTxt" column="AI_INPT_LIST_DES_TXT"/>
+		<result property="aiInptListYn" column="AI_INPT_LIST_YN"/>
+		<result property="aiInptListRgsDtm" column="AI_INPT_LIST_RGS_DTM"/>
+		<result property="aiInptListEndDtm" column="AI_INPT_LIST_END_DTM"/>
+		<result property="aiInptRsptTxtSrno" column="AI_INPT_RSPT_TXT_SRNO"/>
+		<result property="aiInptRsptTxtDesTxt" column="AI_INPT_RSPT_TXT_DES_TXT"/>
+		<result property="aiInptRsptTxtYn" column="AI_INPT_RSPT_TXT_YN"/>
+		<result property="aiInptRsptTxtRgsDtm" column="AI_INPT_RSPT_TXT_RGS_DTM"/>
+		<result property="aiInptRsptTxtEndDtm" column="AI_INPT_RSPT_TXT_END_DTM"/>
+		<result property="cateList" column="CRLST"/>
+	</resultMap>
+	
+	<select id="selectCtgrList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectCtgrList */
+		SELECT A.AI_INPT_CTGR_ID, A.AI_INPT_CTGR_NM, A.AI_INPT_CTGR_TXT
+		  FROM CSPD102TI A
+		 WHERE A.AI_INPT_CTGR_YN = 'Y'
+		 
+		 
+		 <choose>
+			<when test='"aiInptCtgrNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CTGR_NM
+			</when>
+			<when test='"aiInptCtgrNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CTGR_NM DESC
+			</when>
+			<otherwise>
+				ORDER BY A.AI_INPT_CTGR_NM
+			</otherwise>
+		</choose>
+		 
+	</select>
+	
+	<select id="selectCtgr" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectCtgr */
+		SELECT A.AI_INPT_CTGR_ID, A.AI_INPT_CTGR_NM, A.AI_INPT_CTGR_TXT
+		  FROM CSPD102TI A
+		WHERE A.AI_INPT_CTGR_ID = #{aiInptCtgrId}
+	</select>
+	
+	<select id="selectNewCtgrCd" resultType="string">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectNewCtgrCd */
+		SELECT 'CT'||SUBSTR('00000'||A.CTGR_CFCD,-5) AS CTGR_CFCD
+		FROM (
+			SELECT '00000'||TO_NUMBER(REPLACE(MAX(CTGR_CFCD),'CT','')) + 1 AS CTGR_CFCD
+			FROM CSPD102TI
+		) A
+	</select>
+	
+	<insert id="insertCtgr" parameterType="com.woori.ajs.model.WatchListVO">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.insertCtgr */
+		MERGE INTO CSPD102TI A
+		USING DUAL
+			ON (A.AI_INPT_CTGR_ID = #{aiInptCtgrId})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_CTGR_NM = #{aiInptCtgrNm},
+				A.AI_INPT_CTGR_TXT = #{aiInptCtgrTxt},
+				A.TRN_LOG_SRNO = #{trnLogSrno}
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_CTGR_ID, A.CTGR_CFCD, A.AI_INPT_CTGR_NM, 
+				A.AI_INPT_CTGR_TXT, A.AI_INPT_CTGR_YN, A.AI_INPT_CTGR_RGS_DTM, 
+				A.AI_INPT_CTGR_END_DTM, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (CSPD102TI_SG01.NEXTVAL, #{ctgrCfcd}, #{aiInptCtgrNm},
+				#{aiInptCtgrTxt}, 'Y', TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+				TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), #{trnLogSrno}, #{lstDbChgId}, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'))
+	</insert>
+	
+	<update id="deleteCtgr" parameterType="com.woori.ajs.model.WatchListVO">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.deleteCtgr */
+		UPDATE CSPD102TI SET
+			AI_INPT_CTGR_YN = 'N',
+			TRN_LOG_SRNO = #{trnLogSrno}
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+	</update>
+	
+	<update id="insertDateCtgFordelete" parameterType="com.woori.ajs.model.WatchListVO">
+		UPDATE CSPD102TI SET
+			AI_INPT_CTGR_END_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+	</update>
+	
+	<select id="selectGrpList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectGrpList */
+			SELECT M.AI_INPT_CTGR_ID
+				, M.AI_INPT_LIST_ID
+				, M.AI_INPT_LIST_NM
+				, T.AI_INPT_CTGR_NM
+				, M.AI_INPT_LIST_DES_TXT
+				, '['||T.AI_INPT_CTGR_NM||']  '||M.AI_INPT_LIST_NM AS CRLST
+			FROM CSPD103TI M
+				, CSPD102TI T
+			WHERE 1 = 1
+			AND T.AI_INPT_CTGR_ID = M.AI_INPT_CTGR_ID
+			
+		  <if test="aiInptCtgrId != null and aiInptCtgrId != ''">
+		 	AND M.AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		  </if>
+		 	AND M.AI_INPT_LIST_YN = 'Y' 
+		  
+		  <choose>
+			<when test='"aiInptListNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY M.AI_INPT_LIST_NM
+			</when>
+			<when test='"aiInptListNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY M.AI_INPT_LIST_NM DESC
+			</when>
+			<otherwise>
+				ORDER BY TO_NUMBER(M.AI_INPT_CTGR_ID), TO_NUMBER(M.AI_INPT_LIST_ID)
+			</otherwise>
+		  </choose>
+		  
+	</select>
+	
+	<select id="selectGrp" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectGrp */
+		SELECT AI_INPT_CTGR_ID, AI_INPT_LIST_ID, AI_INPT_LIST_NM, AI_INPT_LIST_DES_TXT
+		  FROM CSPD103TI
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		  AND AI_INPT_LIST_ID = #{aiInptListId}
+	</select>
+	
+	<select id="selectNewGrpCd" resultType="string">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectNewGrpCd */
+		SELECT NVL(MAX(TO_NUMBER(AI_INPT_LIST_ID)),0) + 1
+		FROM CSPD103TI
+	</select>
+	
+	<insert id="insertGrp" parameterType="com.woori.ajs.model.WatchListVO">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.insertGrp */
+		MERGE INTO CSPD103TI A
+		USING DUAL
+			ON (A.AI_INPT_CTGR_ID = #{aiInptCtgrId} AND A.AI_INPT_LIST_ID = #{aiInptListId})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_LIST_NM = #{aiInptListNm},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.AI_INPT_LIST_DES_TXT = #{aiInptListDesTxt},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.LST_DB_CHG_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_CTGR_ID, A.AI_INPT_LIST_ID, A.AI_INPT_LIST_NM, 
+				 A.AI_INPT_LIST_YN, A.AI_INPT_LIST_RGS_DTM, 
+				A.AI_INPT_LIST_END_DTM, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM, A.AI_INPT_LIST_DES_TXT)
+			VALUES (#{aiInptCtgrId}, CSPD103TI_SG01.NEXTVAL, #{aiInptListNm},
+				'Y', TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), NULL,
+				#{trnLogSrno}, #{lstDbChgId}, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), #{aiInptListDesTxt})
+	</insert>
+	
+	<update id="deleteGrp" parameterType="com.woori.ajs.model.WatchListVO">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.deleteGrp */
+		UPDATE CSPD103TI SET
+			AI_INPT_LIST_YN = 'N',
+			TRN_LOG_SRNO = #{trnLogSrno}
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		AND AI_INPT_LIST_ID = #{aiInptListId}
+	</update>
+	
+	<update id="insertDateGrpFordelete" parameterType="com.woori.ajs.model.WatchListVO">
+		UPDATE CSPD103TI SET
+			AI_INPT_LIST_END_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		AND AI_INPT_LIST_ID = #{aiInptListId}
+	</update>
+	
+	<select id="selectContList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectContList */
+		SELECT AI_INPT_LIST_ID, AI_INPT_RSPT_TXT_SRNO, AI_INPT_RSPT_TXT_DES_TXT, 
+			AI_INPT_RSPT_TXT_YN, AI_INPT_RSPT_TXT_RGS_DTM, AI_INPT_RSPT_TXT_END_DTM, 
+			AI_INPT_CTGR_ID, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM
+		  FROM CSPD104TI
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		  AND AI_INPT_LIST_ID = #{aiInptListId}
+		 
+	  	<if test= "!(userYn == '' or userYn == null)">                                     
+			<choose>
+				<when test= "userYn == '01'">                                                  
+					AND AI_INPT_RSPT_TXT_YN = 'Y'
+				</when>
+				<otherwise>
+					 AND AI_INPT_RSPT_TXT_YN = 'N'
+				</otherwise>
+			</choose>
+		</if>
+			
+		<choose>
+			<when test='"aiInptRsptTxtDesTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_RSPT_TXT_DES_TXT
+			</when>
+			<when test='"aiInptRsptTxtDesTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_RSPT_TXT_DES_TXT DESC
+			</when>
+			<when test='"aiInptRsptTxtRgsDtm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_RSPT_TXT_RGS_DTM
+			</when>
+			<when test='"aiInptRsptTxtRgsDtm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_RSPT_TXT_RGS_DTM DESC
+			</when>
+			<when test='"aiInptRsptTxtEndDtm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_RSPT_TXT_END_DTM
+			</when>
+			<when test='"aiInptRsptTxtEndDtm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_RSPT_TXT_END_DTM DESC
+			</when>
+			<otherwise>
+				ORDER BY AI_INPT_RSPT_TXT_DES_TXT
+			</otherwise>
+		</choose>			
+	</select>
+	
+	<select id="selectCont" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectCont */
+		SELECT AI_INPT_LIST_ID, AI_INPT_RSPT_TXT_SRNO, AI_INPT_RSPT_TXT_DES_TXT, 
+			AI_INPT_RSPT_TXT_YN, AI_INPT_RSPT_TXT_RGS_DTM, AI_INPT_RSPT_TXT_END_DTM, 
+			AI_INPT_CTGR_ID, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM
+		  FROM CSPD104TI
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		  AND AI_INPT_LIST_ID = #{aiInptListId}
+		  AND AI_INPT_RSPT_TXT_SRNO = #{aiInptRsptTxtSrno}
+	</select>
+	
+	<select id="selectNewContCd" resultType="string">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.selectNewContCd */
+		SELECT NVL(MAX(TO_NUMBER(AI_INPT_RSPT_TXT_SRNO)),0) + 1
+		FROM CSPD104TI
+	</select>
+	
+	<insert id="insertCont" parameterType="com.woori.ajs.model.WatchListVO">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.insertCont */
+		MERGE INTO CSPD104TI A
+		USING DUAL
+			ON (A.AI_INPT_LIST_ID = #{aiInptListId} AND A.AI_INPT_RSPT_TXT_SRNO = #{aiInptRsptTxtSrno})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_RSPT_TXT_DES_TXT = #{aiInptRsptTxtDesTxt},
+				A.TRN_LOG_SRNO = #{trnLogSrno}
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_LIST_ID, A.AI_INPT_RSPT_TXT_SRNO, A.AI_INPT_RSPT_TXT_DES_TXT, 
+				A.AI_INPT_RSPT_TXT_YN, A.AI_INPT_RSPT_TXT_RGS_DTM, A.AI_INPT_RSPT_TXT_END_DTM, 
+				A.AI_INPT_CTGR_ID, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{aiInptListId}, (SELECT MAX(AI_INPT_RSPT_TXT_SRNO) FROM CSPD104TI)+1, #{aiInptRsptTxtDesTxt}, 
+				'Y', TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), NULL, 
+				#{aiInptCtgrId}, #{trnLogSrno}, #{lstDbChgId}, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'))
+	</insert>
+	
+	<update id="deleteCont" parameterType="com.woori.ajs.model.WatchListVO">
+		/* WatchList 등록 (7040) */
+		/* AdminWatchListMapper.deleteCont */
+		UPDATE CSPD104TI SET
+			AI_INPT_RSPT_TXT_YN = 'N',
+			TRN_LOG_SRNO = #{trnLogSrno}
+			<!-- , LST_DB_CHG_ID = #{lstDbChgId} -->
+		    , LST_DB_CHG_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		    <!-- , TRN_LOG_SRNO = TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId} -->
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		  AND AI_INPT_LIST_ID = #{aiInptListId}
+		  AND AI_INPT_RSPT_TXT_SRNO = #{aiInptRsptTxtSrno}
+		 
+	</update>
+	
+	<update id="insertDateContFordelete" parameterType="com.woori.ajs.model.WatchListVO">
+		UPDATE CSPD104TI SET
+			AI_INPT_RSPT_TXT_END_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE AI_INPT_CTGR_ID = #{aiInptCtgrId}
+		  AND AI_INPT_LIST_ID = #{aiInptListId}
+		  AND AI_INPT_RSPT_TXT_SRNO = #{aiInptRsptTxtSrno}
+	</update>
+</mapper>

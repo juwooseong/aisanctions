@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AppLogMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.AppLogVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptAppvSrno" column="INPT_APPV_SRNO" /> <!-- ?? -->
+		<result property="aiInptQlasPrgStsTxt" column="AI_INPT_QLAS_PRG_STS_TXT" />
+		<result property="totaltextAiInptRstCd" column="AI_INPT_TOTALTEXT_RST_CD" />
+		<result property="itmInptAiInptRstCd" column="AI_INPT_ITM_RST_CD" />
+		<result property="aiInptCrpeEno" column="AI_INPT_CRPE_ENO" />
+		<result property="rsptInptApvReqDtm" column="RSPT_INPT_APV_REQ_DTM" />
+		<result property="rsptInptApvReqTxt" column="RSPT_INPT_APV_REQ_TXT" />
+		<result property="rsptInptAppvCrpeEno" column="RSPT_INPT_APPV_CRPE_ENO" />
+		<result property="rsptInptApvDtm" column="RSPT_INPT_APV_DTM" />
+		<result property="aiInptStlOpiTxt" column="AI_INPT_PRC_OPI_TXT" />
+		<result property="appvPrgStcd" column="AI_INPT_APPV_STCD" />
+		<result property="trnLogSrno" column="TRN_LOG_SRNO" />
+		<result property="lstDbChgId" column="LST_DB_CHG_ID" />
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM" />
+		<result property="aiInptAppvHstId" column="AI_INPT_APPV_SRNO" />
+		<result property="aiInptTpySaveYn" column="AI_INPT_TPY_SAVE_YN" />
+		<result property="inptAtmcBizDscd" column="AI_INPT_BIZ_DSCD" />
+		<result property="aiInptQlasPrgStsCd" column="AI_INPT_QLAS_PRC_STS_CD" />
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* AppLogMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT A.AI_INPT_APPV_SRNO
+		 	,A.INPT_MST_SRNO
+		 	,A.AI_INPT_BIZ_DSCD
+			,A.AI_INPT_CRPE_ENO
+		 	,A.AI_INPT_PRC_DTM
+		 	,AI_INPT_PRC_OPI_TXT
+		 	,A.AI_INPT_TPY_SAVE_YN
+		 	,A.AI_INPT_APPV_STCD
+		 	,A.AI_INPT_TOTALTEXT_RST_CD
+		 	,A.AI_INPT_ITM_RST_CD
+		 	,A.AI_INPT_QLAS_PRC_STS_CD
+		 	,A.TRN_LOG_SRNO
+		 	,A.LST_DB_CHG_ID
+		 	,A.LST_DB_CHG_DTM
+		FROM CSPD005TH A
+		<include refid="selectListCond" />
+		  ORDER BY A.INPT_MST_SRNO DESC
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* AppLogMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		  FROM CSPD005TH A
+		<include refid="selectListCond" />
+	</select>
+	
+	<sql id="selectListCond">
+	<!-- WHERE A.AI_APPV_ENO = #{userId} -->
+		WHERE A.INPT_MST_SRNO = #{inptMstSrno}
+		<if test="appvPrgStcd != null and appvPrgStcd !=''">
+		AND A.AI_INPT_APPV_STCD = #{appvPrgStcd}
+		</if>
+	</sql>
+	
+	<update id="updateSantionApprvHis" parameterType="com.woori.ajs.model.AppLogVO">
+		/* AppLogMapper.updateSantionApprvHis */
+		/* 결재승인시 결재이력 업데이트 */
+
+		MERGE INTO CSPD005TH A
+		  USING DUAL ON (
+		  	A.AI_INPT_APPV_SRNO = #{aiInptAppvHstId} AND A.INPT_MST_SRNO = #{inptMstSrno}
+		  )
+		WHEN MATCHED THEN
+		  UPDATE SET
+		    A.AI_INPT_CRPE_ENO = #{aiInptCrpeEno}
+		    , A.AI_INPT_PRC_OPI_TXT= #{aiInptStlOpiTxt} 
+		    , A.AI_INPT_APPV_STCD = #{appvPrgStcd} 
+		    , A.AI_INPT_TPY_SAVE_YN = #{aiInptTpySaveYn}
+		    , A.AI_INPT_PRC_DTM = (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL) 
+		WHEN NOT MATCHED THEN
+		  INSERT (
+		  	A.AI_INPT_APPV_SRNO, A.INPT_MST_SRNO, A.AI_INPT_BIZ_DSCD
+		  	, A.AI_INPT_CRPE_ENO, AI_INPT_PRC_OPI_TXT, A.AI_INPT_TPY_SAVE_YN
+		  	, A.AI_INPT_APPV_STCD
+		  	, A.AI_INPT_TOTALTEXT_RST_CD, A.AI_INPT_ITM_RST_CD, A.AI_INPT_QLAS_PRC_STS_CD
+		  	, A.AI_INPT_PRC_DTM, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM
+		  )
+		  VALUES (
+		    CSPD005TH_SG01.NEXTVAL, #{inptMstSrno}, #{inptAtmcBizDscd}
+		    , #{aiInptCrpeEno}, #{aiInptStlOpiTxt}, #{aiInptTpySaveYn}
+		    , #{appvPrgStcd}
+		    , #{totaltextAiInptRstCd}, #{itmInptAiInptRstCd}, #{aiInptQlasPrgStsCd} 
+		    , (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL), #{lstDbChgId}, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		  )
+	</update>
+</mapper>

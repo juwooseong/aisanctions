@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CommonCodeMapper">
+
+	<resultMap id="commonRstMap" type="com.woori.ajs.model.CommonCodeVO">
+		<result property="aiInptGrpCd" column="AI_INPT_GRP_CD"/>
+		<result property="aiInptCmnCd" column="AI_INPT_CMN_CD"/>
+		<result property="aiInptCmnCdNm" column="AI_INPT_CMN_CD_NM"/>
+		<result property="imexhissAbbr" column="IMEX_HIS_ABBR" />
+		<result property="aiInptCmnCdEngNm" column="AI_INPT_CMN_CD_ENG_NM"/>
+		<result property="aiInptCmnUseYn" column="AI_INPT_CMN_USG_YN"/>
+	</resultMap>
+
+	<select id="selectAllCommonCodeList" parameterType="com.woori.ajs.model.SearchVO" resultMap="commonRstMap">
+		SELECT AI_INPT_GRP_CD
+		       , AI_INPT_CMN_CD
+		       , AI_INPT_CMN_CD_NM
+		       , AI_INPT_RMRK_TXT AS IMEX_HIS_ABBR
+		       , AI_INPT_CMN_CD_ENG_NM
+		       , AI_INPT_CMN_USG_YN
+		  FROM CSPD112TI
+		WHERE AI_INPT_GRP_CD = #{aiInptGrpCd}
+		  AND AI_INPT_CMN_USG_YN = 'Y'
+		ORDER BY AI_INPT_SORT_SEQ
+		 , AI_INPT_CMN_CD ASC
+	</select>
+
+</mapper>

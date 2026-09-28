@@ -1,0 +1,319 @@
+body {
+	padding: 0;
+	background: #f8f8f8;
+}
+
+body.leftOpen {
+	transition: 0.2s;
+	padding: 0 0 0 190px;
+}
+
+.logo-img {
+    height: 40px;
+    width: 190px;
+	cursor: pointer;
+}
+
+.close-img {
+	height: 15px;
+	width: 15px;
+}
+
+.leftWrap {
+	transition: 0.2s;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 190px;
+	height: 100%;
+	background: #fff;
+	z-index: 10;
+	box-shadow: 0px 0px 10px 0px #000;
+}
+
+.leftWrap .lnbWrap {
+	padding: 5px 5px;
+}
+
+.leftWrap .lnbWrap h2 {
+	display: block;
+	height: 40px;
+	line-height: 45px;
+	font-size: 16px;
+	color: #05718b;
+	font-weight: bold;
+	border-bottom: 2px solid #414453;
+	padding-left: 10px;
+}
+
+.leftWrap .lnbWrap ul {
+	padding: 0 5px;
+}
+
+.leftWrap .lnbWrap ul li {
+	padding: 5px 0 0px;
+}
+
+.leftWrap .lnbWrap ul li>a {
+	font-size: 14px;
+	color: #222;
+	line-height: 30px;
+	text-decoration: none;
+}
+
+.leftWrap .lnbWrap ul li>a.active {
+	color: #05718b;
+	font-weight: bold;
+	padding-right: 12px;
+    display: block;
+    background: #c6dce1;
+}
+
+.leftWrap .lnbWrap ul li>p {
+	
+}
+
+.leftWrap .lnbWrap ul li>p>a {
+	display: block;
+	line-height: 30px;
+	text-decoration: none;
+	position: relative;
+	padding-left: 12px;
+}
+
+.leftWrap .lnbWrap ul li>p>a span {
+	font-size: 12px;
+	color: #666;
+	font-weight: bold;
+}
+/* .leftWrap .lnbWrap ul li>p>a.active span	{ color:#05718b; font-weight:bold; padding-right:12px; background:url(../img/lnbArr.png) 100% 50% no-repeat; } */
+
+.leftWrap .lnbWrap ul li>a:hover {
+    text-decoration: underline;
+    background: #f0feff;
+    display: block;
+}
+.leftWrap .lnbWrap ul li>p>a.active{
+	background: #c6dce1;
+}
+.leftWrap .lnbWrap ul li>p>a.active span {
+	color: #05718b;
+	font-weight: bold;
+}
+.leftWrap .lnbWrap ul li>p>a span:hover {
+	color: #05718b;
+	font-weight: bold;
+}
+
+.leftWrap .lnbWrap ul li>p>a:hover {
+	text-decoration: underline;
+	background: #f0feff;
+}
+
+.leftWrap .lnbWrap ul li>p>a:before {
+	content: '';
+	width: 6px;
+	height: 2px;
+	background: #808080;
+	position: absolute;
+	top: 50%;
+	left: 0;
+	margin-top: 1px;
+}
+
+.tack {
+	padding: 4px;
+	width: 12px;
+	height: 17px;
+	position: absolute;
+	top: 72px;
+	right: 27px;
+	display: block;
+}
+
+.tack.fixed {
+	background: #ccc;
+	border-radius: 3px;
+}
+
+.wrap {
+	width: 100%;
+	min-width: 1020px;
+/* 	padding-bottom: 40px; */
+}
+
+.wrap .gnbWrap {
+	height: 40px;
+	background: #05718b;
+	overflow: hidden;
+	width: 100%;
+}
+
+.wrap .gnbWrap .gnb li {
+	float: left;
+	width: 130px;
+}
+
+.wrap .gnbWrap .gnb li a {
+	font-size: 14px;
+	color: #51c0db;
+	display: block;
+	line-height: 46px;
+	text-decoration: none;
+	text-align: center;
+	font-weight: bold;
+}
+
+.wrap .gnbWrap .gnb li a:hover {
+	background: #004050;
+}
+
+.wrap .gnbWrap .gnb li a.active {
+	color: #05718b;
+	background: #caf4fe;
+	font-weight: bold;
+}
+
+.wrap .gnbWrap p {
+	float: right;
+	padding: 13px 25px 0 0;
+}
+
+.wrap .gnbWrap p a {
+	margin-left: 12px;
+}
+
+/* .wrap .contentsTabWrap		{ width:calc(100% - 36px); height:36px; background:#c6dce1; padding:10px 18px 0; overflow:hidden; } */
+.wrap .contentsTabWrap {
+	height: 36px;
+    background: #c6dce1;
+    padding: 10px 15px 0;
+    padding-left: 30px;
+    overflow: hidden;
+}
+
+.wrap .contentsTabWrap li {
+	width: 170px;
+	float: left;
+	margin: 0 2px;
+}
+
+.wrap .contentsTabWrap li a {
+	display: block;
+	height: 36px;
+	border-radius: 9px 9px 0 0;
+	background: #ccc;
+	font-size: 12px;
+	color: #666;
+	line-height: 36px;
+	text-align: left;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.wrap .contentsTabWrap li a:hover {
+	background: #e1f9ff;
+}
+
+.wrap .contentsTabWrap li a.active {
+	background: #fff;
+	color: #05718b;
+}
+
+.wrap .contentsTabWrap li a span {
+	display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: initial;
+    margin-left: 10px;
+    color: white;
+    background-color: black;
+    padding: 2px 1px 0px 1px;
+    border-radius: 16px;
+}
+
+.wrap .contentsTabWrap li a.active span {
+/* 	background: url(../img/closeTabIcon1.png) 0 0 no-repeat; */
+}
+
+.container {
+	padding: 10px 15px;
+}
+
+.container h2 {
+	width: 100%;
+	height: 40px;
+	border-bottom: 2px solid #b0b1ba;
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+
+.container h2 strong {
+	font-size: 16px;
+	color: #05718b;
+	line-height: 44px;
+	float: left;
+}
+
+.container h2 .location {
+	float: right;
+}
+
+.container h2 .location span {
+	font-size: 12px;
+	color: #666;
+	float: left;
+	padding-right: 30px;
+	line-height: 50px;
+	/*font-weight: bold;*/
+	background: url(../img/locationArr.png) right 11px center no-repeat;
+}
+
+.container h2 .location span:last-child {
+	color: #000;
+	padding: 0;
+	background: none;
+}
+
+/* 상세팝업 */
+.layout_container {
+	padding: 0;
+}
+
+.layout_container h2 {
+	float: left;
+	height: 32px;
+	overflow: hidden;
+	margin-right: 40px;
+}
+
+.layout_container h2 strong {
+	font-size: 20px;
+	color: #05718b;
+	line-height: 32px;
+	float: left;
+}
+
+.layout_container h2 .location {
+	float: right;
+}
+
+.layout_container h2 .location span {
+	font-size: 12px;
+	color: #666;
+	float: left;
+	padding-right: 30px;
+	line-height: 44px;
+	font-weight: bold;
+	background: url(../img/locationArr.png) right 11px center no-repeat;
+}
+
+.layout_container h2 .location span:last-child {
+	color: #222;
+	padding: 0;
+	background: none;
+}
+
+.chartCon{
+	height: 267px;
+}

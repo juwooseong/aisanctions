@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.RevertStatAllMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.RevertStatAllVO">
+		<result property="inptRcpDt" column="DT" /> 
+		<result property="actlFxRefno" column="FX" /> 
+		<result property="inptAtmcBizDsNm" column="INPT_ATMC_BIZ_NM" />
+		<result property="fcCuNm" column="CUCD" /> 
+		<result property="aiInptBuyAm" column="AM" /> 
+		<result property="aiInptAtpeEno" column="OPR" />
+		<result property="aiInptCusNm" column="CUS" /> 
+		<result property="aiInptBzbrNm" column="BZBR_NM" />
+		<result property="aiInptCusNo" column="CSNO" />
+		<result property="aiInspAtvtStsNm" column="STAT_NM" />
+		<result property="inptMstSrno" column="INPT_MST_SRNO" /> 
+		<result property="aiInspAtvtStsCd" column="AI_INSP_ATVT_STS_CD" /> 
+		<result property="bizDscd" column="BIZ_DSCD" /> 
+		<result property="inptAtmcReqDscd" column="INPT_ATMC_REQ_DSCD" />
+	</resultMap>
+
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT 	    MAIN.*,
+			CU.AI_INPT_CMN_CD_ENG_NM AS CUCD,
+			BIZ.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM,
+	   		BIZ.AI_INPT_CMN_CD AS REQ_DSCD,
+	   		BIZ.AI_INPT_CMN_CD_NM,	   		
+	  		NM.AI_INPT_CMN_CD_NM AS STAT_NM  
+		FROM(
+			SELECT 
+		    NULL AS INPT_MST_SRNO,
+			A.FX_ACNO AS FX, 	
+	   		A.XPO_CVRG_MTBR_MK_DT AS DT, 
+	   		A.XPBY_COL_CTR_CUCD AS CUCD1, 
+	   		A.TRN_OPR_NO AS OPR, 
+	   		A.CUS_KORL_NM AS CUS, 
+	   		A.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD,
+	   		A.INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD,
+	   		'10' AS AI_INSP_ATVT_STS_CD,
+	   		A.KRBR_NM AS BZBR_NM,
+	  		A.XPBY_COL_AM AS AM,
+	  		A.CSNO AS CSNO,
+	  		A.XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+  		FROM CSPD201TM A 
+		WHERE NOT EXISTS (
+			SELECT ACTL_FX_REFNO, FX_REFNO_SRNO
+			FROM   CSPD001TM
+			WHERE  ACTL_FX_REFNO = A.FX_ACNO
+			AND    FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ
+		)
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND A.XPO_CVRG_MTBR_MK_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND A.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND A.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+	
+		UNION ALL
+
+		SELECT  
+			NULL AS INPT_MST_SRNO,
+	   		A.FX_ACNO AS FX, 
+	   		A.TDOC_RCP_DT AS DT, 
+	   		A.TDOC_RCP_CUCD AS CUCD1, 	   		
+	   		A.TRN_OPR_NO AS OPR, 
+	   		A.CUS_KORL_NM AS CUS, 
+	   		A.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD, 
+	   		A.INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD,
+	   		'10' AS AI_INSP_ATVT_STS_CD, 
+	   		A.KRBR_NM AS BZBR_NM,
+	  		A.TDOC_RCP_AM AS AM,
+	  		A.CSNO AS CSNO,
+	  		A.TDOC_RCP_SRNO AS FX_REFNO_SRNO
+  		FROM CSPD202TM A
+		WHERE  NOT EXISTS (
+			SELECT ACTL_FX_REFNO, FX_REFNO_SRNO
+			FROM   CSPD001TM
+			WHERE  ACTL_FX_REFNO = A.FX_ACNO
+			AND    FX_REFNO_SRNO = A.TDOC_RCP_SRNO
+	  	)
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND A.TDOC_RCP_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND A.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND A.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>	  	
+	  	
+		 UNION ALL			
+		 SELECT 
+			  M.INPT_MST_SRNO
+			, E.FX_ACNO AS FX
+			, E.XPO_CVRG_MTBR_MK_DT AS DT
+			, E.XPBY_COL_CTR_CUCD AS CUCD1 
+			, E.TRN_OPR_NO AS OPR 
+			, E.CUS_KORL_NM AS CUS
+			, E.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			, E.INPT_ATMC_REQ_DSCD as INPT_ATMC_REQ_DSCD
+			, '60' AS AI_INSP_ATVT_STS_CD 
+			, E.KRBR_NM AS BZBR_NM
+			, E.XPBY_COL_AM AS AM
+			, E.CSNO AS CSNO
+			, E.XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+		FROM CSPD001TM M
+			,CSPD201TM E
+		WHERE M.ACTL_FX_REFNO = E.FX_ACNO
+		AND M.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ
+		AND M.PAPS_RE_SCAN_NED_YN = 'Y' AND M.PAPS_RE_SCAN_CMPL_YN IS NULL
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND E.XPO_CVRG_MTBR_MK_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND E.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND E.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND E.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>	
+		
+		 UNION ALL			
+		 SELECT 
+			  M.INPT_MST_SRNO
+			, E.FX_ACNO AS FX
+			, E.TDOC_RCP_DT AS DT
+			, E.TDOC_RCP_CUCD AS CUCD1 
+			, E.TRN_OPR_NO AS OPR 
+			, E.CUS_KORL_NM AS CUS
+			, E.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			, E.INPT_ATMC_REQ_DSCD as INPT_ATMC_REQ_DSCD
+			, '60' AS AI_INSP_ATVT_STS_CD 
+			, E.KRBR_NM AS BZBR_NM
+			, E.TDOC_RCP_AM AS AM
+			, E.CSNO AS CSNO
+			, E.TDOC_RCP_SRNO AS FX_REFNO_SRNO
+		FROM CSPD001TM M
+			,CSPD202TM E
+		WHERE M.ACTL_FX_REFNO = E.FX_ACNO
+		AND M.FX_REFNO_SRNO = E.TDOC_RCP_SRNO
+		AND M.PAPS_RE_SCAN_NED_YN = 'Y' AND M.PAPS_RE_SCAN_CMPL_YN IS NULL
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND E.TDOC_RCP_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND E.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND E.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND E.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>				
+		
+		)MAIN 		
+		, CSPD112TI NM
+		, CSPD112TI CU
+		, CSPD112TI BIZ 			
+		WHERE NM.AI_INPT_GRP_CD = '300' AND NM.AI_INPT_CMN_CD = MAIN.AI_INSP_ATVT_STS_CD 
+		AND CU.AI_INPT_GRP_CD = '270' AND CU.AI_INPT_CMN_CD = MAIN.CUCD1
+		AND BIZ.AI_INPT_GRP_CD = '150' AND BIZ.AI_INPT_CMN_CD = MAIN.BIZ_DSCD	   
+		
+		<if test="!(aiInspAtvtStsCd == '' or aiInspAtvtStsCd == null)">/*검색조건 : 신규 혹은 재스캔 생성구분*/
+		  AND MAIN.AI_INSP_ATVT_STS_CD = #{aiInspAtvtStsCd}
+		</if>
+	   
+	   
+	   <choose>
+	 	<when test="'inptRcpDt'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY DT 
+		</when>
+		<when test="'inptRcpDt'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY DT DESC
+		</when>
+		
+		<when test="'inptAtmcBizDsNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY BIZ_DSCD
+		</when>
+		<when test="'inptAtmcBizDsNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY BIZ_DSCD DESC
+		</when>		
+		
+		<when test="'aiInspAtvtStsNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY STAT_NM
+		</when>
+		<when test="'aiInspAtvtStsNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY STAT_NM DESC
+		</when>	
+		
+		<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY FX
+		</when>
+		<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY FX DESC
+		</when>
+		
+		<when test="'fcCuNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY CUCD
+		</when>
+		<when test="'fcCuNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY CUCD DESC
+		</when>
+		
+		<when test="'aiInptBuyAm'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY AM
+		</when>
+		<when test="'aiInptBuyAm'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY AM DESC
+		</when>
+		
+		<when test="'aiInptCusNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY CUS
+		</when>
+		<when test="'aiInptCusNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY CUS DESC
+		</when>
+					
+		<when test="'aiInptAtpeEno'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY OPR
+		</when>
+		<when test="'aiInptAtpeEno'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY OPR DESC
+		</when>
+		
+		<when test="'aiInptBzbrNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY BZBR_NM
+		</when>
+		<when test="'aiInptBzbrNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY BZBR_NM DESC
+		</when>
+		
+		<when test="'inptAtmcReqDscd'.equals(sortItem) and 'asc'.equals(sortDir)">
+		ORDER BY INPT_ATMC_REQ_DSCD
+		</when>
+		<when test="'inptAtmcReqDscd'.equals(sortItem) and 'desc'.equals(sortDir)">
+		ORDER BY INPT_ATMC_REQ_DSCD DESC
+		</when>
+		
+		<otherwise>
+		<!-- ORDER BY FX DESC -->
+		ORDER BY DT DESC
+		</otherwise>
+	</choose> 
+	<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* RevertTodoMapper.selectListTotCnt */
+		SELECT COUNT(*)
+		FROM(
+			SELECT 
+		    NULL AS INPT_MST_SRNO,
+			A.FX_ACNO AS FX, 	
+	   		A.XPO_CVRG_MTBR_MK_DT AS DT, 
+	   		A.XPBY_COL_CTR_CUCD AS CUCD1, 
+	   		A.TRN_OPR_NO AS OPR, 
+	   		A.CUS_KORL_NM AS CUS, 
+	   		A.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD,
+	   		A.INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD,
+	   		'10' AS AI_INSP_ATVT_STS_CD,
+	   		A.KRBR_NM AS BZBR_NM,
+	  		A.XPBY_COL_AM AS AM,
+	  		A.CSNO AS CSNO,
+	  		A.XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+  		FROM CSPD201TM A 
+		WHERE NOT EXISTS (
+			SELECT ACTL_FX_REFNO, FX_REFNO_SRNO
+			FROM   CSPD001TM
+			WHERE  ACTL_FX_REFNO = A.FX_ACNO
+			AND    FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ
+		)
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND A.XPO_CVRG_MTBR_MK_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND A.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND A.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+	
+		UNION ALL
+
+		SELECT  
+			NULL AS INPT_MST_SRNO,
+	   		A.FX_ACNO AS FX, 
+	   		A.TDOC_RCP_DT AS DT, 
+	   		A.TDOC_RCP_CUCD AS CUCD1, 	   		
+	   		A.TRN_OPR_NO AS OPR, 
+	   		A.CUS_KORL_NM AS CUS, 
+	   		A.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD, 
+	   		A.INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD,
+	   		'10' AS AI_INSP_ATVT_STS_CD, 
+	   		A.KRBR_NM AS BZBR_NM,
+	  		A.TDOC_RCP_AM AS AM,
+	  		A.CSNO AS CSNO,
+	  		A.TDOC_RCP_SRNO AS FX_REFNO_SRNO
+  		FROM CSPD202TM A
+		WHERE  NOT EXISTS (
+			SELECT ACTL_FX_REFNO, FX_REFNO_SRNO
+			FROM   CSPD001TM
+			WHERE  ACTL_FX_REFNO = A.FX_ACNO
+			AND    FX_REFNO_SRNO = A.TDOC_RCP_SRNO
+	  	)
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND A.TDOC_RCP_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND A.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND A.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>	  	
+	  	
+		 UNION ALL			
+		 SELECT 
+			  M.INPT_MST_SRNO
+			, E.FX_ACNO AS FX
+			, E.XPO_CVRG_MTBR_MK_DT AS DT
+			, E.XPBY_COL_CTR_CUCD AS CUCD1 
+			, E.TRN_OPR_NO AS OPR 
+			, E.CUS_KORL_NM AS CUS
+			, E.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			, E.INPT_ATMC_REQ_DSCD as INPT_ATMC_REQ_DSCD
+			, '60' AS AI_INSP_ATVT_STS_CD 
+			, E.KRBR_NM AS BZBR_NM
+			, E.XPBY_COL_AM AS AM
+			, E.CSNO AS CSNO
+			, E.XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+		FROM CSPD001TM M
+			,CSPD201TM E
+		WHERE M.ACTL_FX_REFNO = E.FX_ACNO
+		AND M.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ
+		AND M.PAPS_RE_SCAN_NED_YN = 'Y' AND M.PAPS_RE_SCAN_CMPL_YN IS NULL
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND E.XPO_CVRG_MTBR_MK_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND E.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND E.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND E.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>	
+		
+		 UNION ALL			
+		 SELECT 
+			  M.INPT_MST_SRNO
+			, E.FX_ACNO AS FX
+			, E.TDOC_RCP_DT AS DT
+			, E.TDOC_RCP_CUCD AS CUCD1 
+			, E.TRN_OPR_NO AS OPR 
+			, E.CUS_KORL_NM AS CUS
+			, E.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			, E.INPT_ATMC_REQ_DSCD as INPT_ATMC_REQ_DSCD
+			, '60' AS AI_INSP_ATVT_STS_CD 
+			, E.KRBR_NM AS BZBR_NM
+			, E.TDOC_RCP_AM AS AM
+			, E.CSNO AS CSNO
+			, E.TDOC_RCP_SRNO AS FX_REFNO_SRNO
+		FROM CSPD001TM M
+			,CSPD202TM E
+		WHERE M.ACTL_FX_REFNO = E.FX_ACNO
+		AND M.FX_REFNO_SRNO = E.TDOC_RCP_SRNO
+		AND M.PAPS_RE_SCAN_NED_YN = 'Y' AND M.PAPS_RE_SCAN_CMPL_YN IS NULL
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">/*검색조건 : 업무생성일*/
+		  AND E.TDOC_RCP_DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">/*검색조건 : 고객번호*/
+		  AND E.CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">/*검색조건 : 수출입업무구분*/
+		  AND E.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">/*검색조건 : Ref.No*/
+		  AND E.FX_ACNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>				
+		
+		)MAIN 		
+		, CSPD112TI NM
+		, CSPD112TI CU
+		, CSPD112TI BIZ 			
+		WHERE NM.AI_INPT_GRP_CD = '300' AND NM.AI_INPT_CMN_CD = MAIN.AI_INSP_ATVT_STS_CD 
+		AND CU.AI_INPT_GRP_CD = '270' AND CU.AI_INPT_CMN_CD = MAIN.CUCD1
+		AND BIZ.AI_INPT_GRP_CD = '150' AND BIZ.AI_INPT_CMN_CD = MAIN.BIZ_DSCD	   
+		
+		<if test="!(aiInspAtvtStsCd == '' or aiInspAtvtStsCd == null)">/*검색조건 : 신규 혹은 재스캔 생성구분*/
+		  AND MAIN.AI_INSP_ATVT_STS_CD = #{aiInspAtvtStsCd}
+		</if>
+	</select>
+	
+	<sql id="selectListWhere">
+
+		<if test= "!(inptRcpDt == '' or inptRcpDt == null)">
+		  AND DT = REPLACE(#{inptRcpDt}, '-', '')
+		</if>
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">
+		  AND CSNO = #{aiInptCusNo}
+		</if>
+		<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+		  AND BIZ_DSCD = #{inptAtmcBizDscd}
+		</if>
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">
+		  AND FX LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+		<if test="!(aiInspAtvtStsCd == '' or aiInspAtvtStsCd == null)">
+		  AND AI_INSP_ATVT_STS_CD = #{aiInspAtvtStsCd}
+		</if>
+	</sql>
+	
+	<sql id="selectBody1">
+		SELECT BIZ.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM
+			, M.INPT_MST_SRNO
+			, IE.FX AS FX
+			, TO_CHAR(TO_DATE(IE.DT,'YYYYMMDD'),'YYYY-MM-DD') AS DT 
+			, CU.AI_INPT_CMN_CD_ENG_NM AS CUCD 
+			, IE.OPR AS OPR 
+			, IE.CUS AS CUS
+			, IE.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			, '10' AS AI_INSP_ATVT_STS_CD
+			, BIZ.AI_INPT_CMN_CD AS REQ_DSCD
+			, BIZ.AI_INPT_CMN_CD_NM 
+			, IE.BZBR_NM AS BZBR_NM
+			, IE.AM AS AM
+			, IE.CSNO AS CSNO
+			, M.FX_REFNO_SRNO
+		FROM CSPD001TM M
+			, (SELECT INPT_ATMC_BIZ_DSCD
+					, FX_ACNO AS FX 	
+			   		, XPO_CVRG_MTBR_MK_DT AS DT 
+			   		, XPBY_COL_CTR_CUCD AS CUCD 
+			   		, TRN_OPR_NO AS OPR 
+			   		, CUS_KORL_NM AS CUS 
+			   		, INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			   		, KRBR_NM AS BZBR_NM
+			  		, XPBY_COL_AM AS AM
+			  		, CSNO AS CSNO
+			  		, XPO_CVRG_MK_SQ AS MK_SQ                                                                       
+				FROM CSPD201TM                                                                       
+					
+				UNION ALL                                                                          
+					
+				SELECT INPT_ATMC_BIZ_DSCD
+			   		 , FX_ACNO AS FX 
+			   		 , TDOC_RCP_DT AS DT 
+			   		 , TDOC_RCP_CUCD AS CUCD
+			   		 , TRN_OPR_NO AS OPR 
+			   		 , CUS_KORL_NM AS CUS 
+			   		 , INPT_ATMC_BIZ_DSCD AS BIZ_DSC
+			   		 , KRBR_NM AS BZBR_NM
+			  		 , TDOC_RCP_AM AS AM
+			  		 , CSNO AS CSNO    
+			  		 , TDOC_RCP_SRNO AS MK_SQ                                                                
+				FROM CSPD202TM                                                                     
+				)IE
+			, CSPD112TI CU
+			, CSPD112TI BIZ 				
+		WHERE M.ACTL_FX_REFNO = IE.FX(+) 
+		AND M.FX_REFNO_SRNO = IE.MK_SQ (+)
+		AND CU.AI_INPT_GRP_CD = '270' AND CU.AI_INPT_CMN_CD = IE.CUCD
+		AND BIZ.AI_INPT_GRP_CD = '150' AND BIZ.AI_INPT_CMN_CD = IE.INPT_ATMC_BIZ_DSCD
+		AND M.AI_INPT_ACVT_CD = '10'
+	</sql>
+	 
+	<sql id="selectBody_1">
+		SELECT BIZ.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM,
+		    NULL AS INPT_MST_SRNO,
+			A.FX_ACNO AS FX, 	
+	   		A.XPO_CVRG_MTBR_MK_DT AS DT, 
+	   		A.XPBY_COL_CTR_CUCD AS CUCD, 
+	   		A.TRN_OPR_NO AS OPR, 
+	   		A.CUS_KORL_NM AS CUS, 
+	   		A.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD,
+	   		A.INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD,
+	   		'10' AS AI_INSP_ATVT_STS_CD,
+	   		BIZ.AI_INPT_CMN_CD AS REQ_DSCD,
+	   		BIZ.AI_INPT_CMN_CD_NM,
+	   		A.KRBR_NM AS BZBR_NM,
+	  		A.XPBY_COL_AM AS AM,
+	  		A.CSNO AS CSNO,
+	  		A.XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+  		FROM CSPD201TM A -- 008 심사이력 테이블에서 가져올수 없는 이유는 연결할수있는 조건 컬럼값이 없음 (예를들으 Reference Number) --
+  			, CSPD112TI CU 
+  			, CSPD112TI BIZ 
+  		WHERE CU.AI_INPT_GRP_CD = '270' AND CU.AI_INPT_CMN_CD (+)= A.XPBY_COL_CTR_CUCD
+  		AND BIZ.AI_INPT_GRP_CD = '150' AND BIZ.AI_INPT_CMN_CD (+)= A.INPT_ATMC_BIZ_DSCD
+		AND NOT EXISTS (
+			SELECT B.FX
+	 			FROM (
+    				SELECT ACTL_FX_REFNO AS FX
+    					   ,FX_REFNO_SRNO
+    				FROM CSPD001TM
+	  			) B
+			WHERE B.FX = A.FX_ACNO AND B.FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ
+		)
+	
+		UNION ALL
+
+		SELECT BIZ.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM,
+			NULL AS INPT_MST_SRNO,
+	   		A.FX_ACNO AS FX, 
+	   		A.TDOC_RCP_DT AS DT, 
+	   		CU.AI_INPT_CMN_CD_ENG_NM AS CUCD, 
+	   		A.TRN_OPR_NO AS OPR, 
+	   		A.CUS_KORL_NM AS CUS, 
+	   		A.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD, 
+	   		A.INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD,
+	   		'10' AS AI_INSP_ATVT_STS_CD, 
+	   		BIZ.AI_INPT_CMN_CD AS REQ_DSCD,
+	   		BIZ.AI_INPT_CMN_CD_NM, 
+	   		A.KRBR_NM AS BZBR_NM,
+	  		A.TDOC_RCP_AM AS AM,
+	  		A.CSNO AS CSNO,
+	  		A.TDOC_RCP_SRNO AS FX_REFNO_SRNO
+  		FROM CSPD202TM A
+  			, CSPD112TI CU 
+  			, CSPD112TI BIZ 
+  		--, CSPD001TM M
+  		
+  		WHERE CU.AI_INPT_GRP_CD = '270' AND CU.AI_INPT_CMN_CD (+)= A.TDOC_RCP_CUCD
+  		AND BIZ.AI_INPT_GRP_CD = '150' AND BIZ.AI_INPT_CMN_CD (+)= A.INPT_ATMC_BIZ_DSCD
+  		--AND M.ACTL_FX_REFNO (+)= A.FX_ACNO
+		--AND M.FX_REFNO_SRNO (+)= A.XPO_CVRG_MK_SQ	
+		AND NOT EXISTS (
+			SELECT B.FX
+	 		 	FROM (
+    			SELECT ACTL_FX_REFNO AS FX FROM CSPD001TM
+	  			) B 
+	  		WHERE B.FX = A.FX_ACNO
+	  	)
+	</sql>
+	
+	<sql id="selectBody_2">
+		SELECT BIZ.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM
+			, M.INPT_MST_SRNO
+			, IE.FX AS FX
+			, IE.DT AS DT
+			<!-- , TO_CHAR(TO_DATE(IE.DT,'YYYYMMDD'),'YYYY-MM-DD') AS DT -->
+			, CU.AI_INPT_CMN_CD_ENG_NM AS CUCD 
+			, IE.OPR AS OPR 
+			, IE.CUS AS CUS
+			, IE.INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			, IE.INPT_ATMC_REQ_DSCD as INPT_ATMC_REQ_DSCD
+			, '60' AS AI_INSP_ATVT_STS_CD 
+			, BIZ.AI_INPT_CMN_CD AS REQ_DSCD
+			, BIZ.AI_INPT_CMN_CD_NM 
+			, IE.BZBR_NM AS BZBR_NM
+			, IE.AM AS AM
+			, IE.CSNO AS CSNO
+			, TO_NUMBER(M.FX_REFNO_SRNO) AS FX_REFNO_SRNO
+		FROM CSPD001TM M
+			, (SELECT INPT_ATMC_BIZ_DSCD
+					, FX_ACNO AS FX 	
+			   		, XPO_CVRG_MTBR_MK_DT AS DT 
+			   		, XPBY_COL_CTR_CUCD AS CUCD 
+			   		, TRN_OPR_NO AS OPR 
+			   		, CUS_KORL_NM AS CUS 
+			   		, INPT_ATMC_BIZ_DSCD AS BIZ_DSCD
+			   		, INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD
+			   		, KRBR_NM AS BZBR_NM
+			  		, XPBY_COL_AM AS AM
+			  		, CSNO AS CSNO
+			  		, XPO_CVRG_MK_SQ AS MK_SQ                                                                       
+				FROM CSPD201TM                                                                       
+					
+				UNION ALL                                                                          
+					
+				SELECT INPT_ATMC_BIZ_DSCD
+			   		 , FX_ACNO AS FX 
+			   		 , TDOC_RCP_DT AS DT 
+			   		 , TDOC_RCP_CUCD AS CUCD
+			   		 , TRN_OPR_NO AS OPR 
+			   		 , CUS_KORL_NM AS CUS 
+			   		 , INPT_ATMC_BIZ_DSCD AS BIZ_DSC
+			   		 , INPT_ATMC_REQ_DSCD AS INPT_ATMC_REQ_DSCD
+			   		 , KRBR_NM AS BZBR_NM
+			  		 , TDOC_RCP_AM AS AM
+			  		 , CSNO AS CSNO    
+			  		 , TDOC_RCP_SRNO AS MK_SQ                                                                
+				FROM CSPD202TM                                                                     
+				)IE
+			, CSPD112TI CU
+			, CSPD112TI BIZ 				
+		WHERE M.ACTL_FX_REFNO = IE.FX(+) 
+		AND M.FX_REFNO_SRNO = IE.MK_SQ (+)
+		AND CU.AI_INPT_GRP_CD = '270' AND CU.AI_INPT_CMN_CD = IE.CUCD
+		AND BIZ.AI_INPT_GRP_CD = '150' AND BIZ.AI_INPT_CMN_CD = IE.INPT_ATMC_BIZ_DSCD
+		AND M.PAPS_RE_SCAN_NED_YN = 'Y' AND M.PAPS_RE_SCAN_CMPL_YN IS NULL
+	</sql>
+</mapper> 

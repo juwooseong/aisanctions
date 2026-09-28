@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CaMapper">
+	<resultMap id="caMap" type="com.woori.ajs.model.CaVO">
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />
+		<result property="fxRefnoSrno" column="FX_REFNO_SRNO" />
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptTaskId" column="INPT_TASK_ID" />
+		<result property="inptSanctionNo" column="INPT_SANCTION_NO" />
+		<result property="inptBlGrpNo" column="INPT_BL_GRP_NO" />
+		<result property="imexHisCd" column="IMEX_HIS_CD" />
+		<result property="imexHisSrno" column="IMEX_HIS_SRNO" />
+		<result property="itmInptNacrdYn" column="ITM_INPT_NACRD_YN" />
+		<result property="itmInptRvsnYn" column="ITM_INPT_RVSN_YN" />
+		<result property="inptSanctionDatTxt" column="INPT_SANCTION_DAT_TXT" />
+		<result property="bfrsAicrExtcTxt" column="BFRS_AICR_EXTC_TXT" />
+		<result property="afrsAicrExtcTxt" column="AFRS_AICR_EXTC_TXT" />
+		<result property="bfrsTaExtcTxt" column="BFRS_TA_EXTC_TXT" />
+		<result property="afrsTaExtcTxt" column="AFRS_TA_EXTC_TXT" />
+		<result property="itmInptHndgInpDatTxt" column="ITM_INPT_HNDG_INP_DAT_TXT" />
+		<result property="safewatchItmYn" column="SAFEWATCH_ITM_YN" />
+		<result property="aiInptAltYn" column="AI_INPT_ALT_YN" />
+		<result property="itmInptXaxisStaCrdnCn" column="ITM_INPT_XAXIS_STA_CRDN_CN" />
+		<result property="itmInptXaxisEndCrdnCn" column="ITM_INPT_XAXIS_END_CRDN_CN" />
+		<result property="itmInptYaxisStaCrdnCn" column="ITM_INPT_YAXIS_STA_CRDN_CN" />
+		<result property="itmInptYaxisEndCrdnCn" column="ITM_INPT_YAXIS_END_CRDN_CN" />
+		<result property="aiInptSanctionRuleTxt" column="AI_INPT_SANCTION_RULE_TXT" />
+		<result property="aiInptWordAcrdRt" column="AI_INPT_WORD_ACRD_RT" />
+		<result property="aiInptExtcSntnTxt" column="AI_INPT_EXTC_SNTN_TXT" />
+		<result property="trnLogSrno" column="TRN_LOG_SRNO" />
+		<result property="lstDbChgId" column="LST_DB_CHG_ID" />
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM" />
+		<result property="aiInptCmnCdEngNm" column="AI_INPT_CMN_CD_ENG_NM" />
+		
+	</resultMap>
+	
+	<select id="selectSancRst" parameterType="com.woori.ajs.model.SearchVO" resultMap="caMap">
+	
+		SELECT A.ACTL_FX_REFNO,  			-- ref번호(확인용)
+		       A.FX_REFNO_SRNO,  			-- ref번호(확인용)
+		       A.INPT_MST_SRNO, 			-- 마스터번호(확인용)
+		       B.INPT_TASK_ID, 				-- 이미지아이디
+		       A.AI_INPT_CMN_CD AS INPT_SANCTION_NO, 			-- 심사번호
+		       A.INPT_BL_GRP_NO, 			-- 그룹번호
+		       NVL(B.IMEX_HIS_CD, A.INPT_BL_GRP_NO) AS IMEX_HIS_CD, 				-- 항목코드
+		       B.IMEX_HIS_SRNO, 		    -- 항목코드
+			   (
+		        SELECT CASE WHEN COUNT(DAT) > 1 THEN 'Y' ELSE 'N' END 
+		          FROM ( 
+		                 SELECT SD.INPT_SANCTION_DAT_TXT DAT,
+		                        COUNT(SD.INPT_SANCTION_NO) SANC_CNT
+		                   FROM CSPD001TM SA,
+		                        CSPD002TG SB,
+		                        CSPD004TF SD
+		                  WHERE SA.INPT_MST_SRNO    = SB.INPT_MST_SRNO
+		                    AND SA.INPT_MST_SRNO    = SD.INPT_MST_SRNO
+		                    AND SB.INPT_TASK_ID     = SD.INPT_TASK_ID
+		                    AND SB.INPT_MST_SRNO    = #{inptMstSrno}
+		                    AND SD.INPT_SANCTION_NO = B.INPT_SANCTION_NO
+		                    AND SB.INPT_BL_GRP_NO = B.INPT_BL_GRP_NO
+		                 GROUP BY SD.INPT_SANCTION_DAT_TXT
+		              )
+		       ) AS ITM_INPT_NACRD_YN,     -- 불일치여부
+		       B.ITM_INPT_RVSN_YN,
+		       (
+		        DECODE(A.AI_INPT_CMN_CD, '999', DECODE(A.AI_INPT_APPV_STCD, '160', '1', '140', '3', '2'), 
+		                                  '50', NVL2(B.INPT_SANCTION_DAT_TXT, NVL(SUBSTR(B.ITM_INPT_HNDG_INP_DAT_TXT, 0, 20), SUBSTR(B.INPT_SANCTION_DAT_TXT, 0, 20)) , A.INPT_BL_GRP_NO)
+		                                      , NVL(B.ITM_INPT_HNDG_INP_DAT_TXT, B.INPT_SANCTION_DAT_TXT))
+		       ) AS INPT_SANCTION_DAT_TXT,  -- 심사데이터
+			   B.BFRS_AICR_EXTC_TXT,
+		       B.BFRS_TA_EXTC_TXT,
+			   B.AFRS_AICR_EXTC_TXT,
+			   B.AFRS_TA_EXTC_TXT,
+		       B.ITM_INPT_HNDG_INP_DAT_TXT, -- 수기입력
+		       B.SAFEWATCH_ITM_YN,
+		       B.ITM_INPT_XAXIS_STA_CRDN_CN,
+			   B.ITM_INPT_XAXIS_END_CRDN_CN,
+			   B.ITM_INPT_YAXIS_STA_CRDN_CN,
+			   B.ITM_INPT_YAXIS_END_CRDN_CN,
+		       B.AI_INPT_ALT_YN, 			-- 경고여부
+		       B.AI_INPT_SANCTION_RULE_TXT,	-- 심사규칙
+			   B.AI_INPT_WORD_ACRD_RT,
+		       B.AI_INPT_EXTC_SNTN_TXT, 	-- TA전처리후
+			   B.TRN_LOG_SRNO,
+			   B.LST_DB_CHG_ID,
+			   B.LST_DB_CHG_DTM,
+		       A.AI_INPT_CMN_CD_ENG_NM 	-- 심사명
+		       
+		  FROM ( -- 업무구분별 항목 테이블
+				SELECT C.INPT_BL_GRP_NO,
+				       C.INPT_MST_SRNO,
+				       A.ACTL_FX_REFNO,
+				       A.FX_REFNO_SRNO,
+				       B.AI_INPT_CMN_CD,
+				       B.AI_INPT_CMN_CD_ENG_NM,
+				       B.AI_INPT_SORT_SEQ,
+				       A.AI_INPT_APPV_STCD
+				  FROM CSPD001TM A,
+				       CSPD112TI B,
+				       (
+						SELECT DISTINCT INPT_MST_SRNO, 
+						                INPT_BL_GRP_NO
+						  FROM CSPD002TG
+				       ) C
+				 WHERE A.INPT_MST_SRNO = C.INPT_MST_SRNO
+				   AND A.INPT_MST_SRNO = #{inptMstSrno}
+				   AND B.AI_INPT_GRP_CD = DECODE(A.INPT_ATMC_BIZ_DSCD, '1', '265', '2', '255', '')
+		       ) A,
+		       (
+				SELECT TO_CHAR(B.INPT_MST_SRNO) INPT_MST_SRNO,
+				       A.ACTL_FX_REFNO, 
+				       B.INPT_BL_GRP_NO,
+				       B.IMEX_HIS_CD,
+				       B.IMEX_HIS_SRNO,
+				       B.AI_INPT_PAPS_QLT_SCRE,
+				       B.INPT_TASK_ID,
+				       C.ITM_INPT_RVSN_YN,
+				       C.INPT_SANCTION_NO,
+				       C.INPT_SANCTION_DAT_TXT,
+				       C.AI_INPT_SANCTION_RULE_TXT,
+				       C.BFRS_AICR_EXTC_TXT,
+				       C.BFRS_TA_EXTC_TXT,
+					   C.AFRS_AICR_EXTC_TXT,
+					   C.AFRS_TA_EXTC_TXT,
+				       C.AI_INPT_EXTC_SNTN_TXT,
+				       C.ITM_INPT_HNDG_INP_DAT_TXT,
+				       C.AI_INPT_ALT_YN,
+				       C.SAFEWATCH_ITM_YN,
+				       C.ITM_INPT_XAXIS_STA_CRDN_CN,
+					   C.ITM_INPT_XAXIS_END_CRDN_CN,
+					   C.ITM_INPT_YAXIS_STA_CRDN_CN,
+					   C.ITM_INPT_YAXIS_END_CRDN_CN,
+					   C.TRN_LOG_SRNO,
+					   C.LST_DB_CHG_ID,
+					   C.LST_DB_CHG_DTM,
+					   C.AI_INPT_WORD_ACRD_RT
+				  FROM CSPD001TM A, -- 마스터 테이블
+				       CSPD002TG B, -- 이미지 테이블
+				       CSPD004TF C -- 심사상세 테이블
+				 WHERE A.INPT_MST_SRNO    = B.INPT_MST_SRNO
+				   AND A.INPT_MST_SRNO    = C.INPT_MST_SRNO
+				   AND B.INPT_TASK_ID     = C.INPT_TASK_ID
+				   AND B.INPT_MST_SRNO    = #{inptMstSrno}
+				   AND C.SAFEWATCH_ITM_YN = 'Y'
+				ORDER BY B.INPT_BL_GRP_NO,
+				         B.AI_INPT_PAPS_QLT_SCRE DESC
+		       ) B
+		 WHERE A.AI_INPT_CMN_CD = TO_CHAR(B.INPT_SANCTION_NO(+))
+		   AND A.INPT_BL_GRP_NO = B.INPT_BL_GRP_NO(+)
+		 ORDER BY A.INPT_BL_GRP_NO,
+		          INPT_SANCTION_NO	
+
+	</select>
+	
+	<select id="selectSancAnswer" parameterType="com.woori.ajs.model.SearchVO" resultMap="caMap">
+	
+		SELECT A.ACTL_FX_REFNO,  			-- ref번호(확인용)
+		       A.FX_REFNO_SRNO,  			-- ref번호(확인용)
+		       A.INPT_MST_SRNO, 			-- 마스터번호(확인용)
+		       B.INPT_TASK_ID, 				-- 이미지아이디
+		       A.AI_INPT_CMN_CD AS INPT_SANCTION_NO, 			-- 심사번호
+		       A.INPT_BL_GRP_NO, 			-- 그룹번호
+		       NVL(B.IMEX_HIS_CD, A.INPT_BL_GRP_NO) AS IMEX_HIS_CD, 				-- 항목코드
+		       B.IMEX_HIS_SRNO, 		    -- 항목코드
+				   (
+		        SELECT CASE WHEN COUNT(DAT) > 1 THEN 'Y' ELSE 'N' END 
+		          FROM ( 
+		                 SELECT SD.INPT_SANCTION_DAT_TXT DAT,
+		                        COUNT(SD.INPT_SANCTION_NO) SANC_CNT
+		                   FROM CSPD001TM SA,
+		                        CSPD002TG SB,
+		                        CSPD004TF SD
+		                  WHERE SA.INPT_MST_SRNO    = SB.INPT_MST_SRNO
+		                    AND SA.INPT_MST_SRNO    = SD.INPT_MST_SRNO
+		                    AND SB.INPT_TASK_ID     = SD.INPT_TASK_ID
+		                    AND SB.INPT_MST_SRNO    = #{inptMstSrno}
+		                    AND SD.INPT_SANCTION_NO = B.INPT_SANCTION_NO
+		                    AND SB.INPT_BL_GRP_NO = B.INPT_BL_GRP_NO
+		                 GROUP BY SD.INPT_SANCTION_DAT_TXT
+		              )
+		        ) AS ITM_INPT_NACRD_YN,     -- 불일치여부
+		       B.ITM_INPT_RVSN_YN,
+		       (
+		        DECODE(A.AI_INPT_CMN_CD, '999', DECODE(A.AI_INPT_APPV_STCD, '160', '1', '140', '3', '2'), 
+		                                  '50', NVL2(B.INPT_SANCTION_DAT_TXT, NVL(SUBSTR(B.ITM_INPT_HNDG_INP_DAT_TXT, 0, 20), SUBSTR(B.INPT_SANCTION_DAT_TXT, 0, 20)) , A.INPT_BL_GRP_NO)
+		                                      , NVL(B.ITM_INPT_HNDG_INP_DAT_TXT, B.INPT_SANCTION_DAT_TXT))
+		       ) AS INPT_SANCTION_DAT_TXT,  -- 심사데이터
+			   B.BFRS_AICR_EXTC_TXT,
+		       B.BFRS_TA_EXTC_TXT,
+			   B.AFRS_AICR_EXTC_TXT,
+			   B.AFRS_TA_EXTC_TXT,
+		       B.ITM_INPT_HNDG_INP_DAT_TXT, -- 수기입력
+		       B.SAFEWATCH_ITM_YN,
+		       B.ITM_INPT_XAXIS_STA_CRDN_CN,
+			   B.ITM_INPT_XAXIS_END_CRDN_CN,
+			   B.ITM_INPT_YAXIS_STA_CRDN_CN,
+			   B.ITM_INPT_YAXIS_END_CRDN_CN,
+		       B.AI_INPT_ALT_YN, 			-- 경고여부
+		       B.AI_INPT_SANCTION_RULE_TXT,	-- 심사규칙
+			   B.AI_INPT_WORD_ACRD_RT,
+		       B.AI_INPT_EXTC_SNTN_TXT, 	-- TA전처리후
+			   B.TRN_LOG_SRNO,
+			   B.LST_DB_CHG_ID,
+			   B.LST_DB_CHG_DTM,
+		       A.AI_INPT_CMN_CD_ENG_NM 	-- 심사명
+		       
+		  FROM ( -- 업무구분별 항목 테이블
+				SELECT C.INPT_BL_GRP_NO,
+				       C.INPT_MST_SRNO,
+				       A.ACTL_FX_REFNO,
+				       A.FX_REFNO_SRNO,
+				       B.AI_INPT_CMN_CD,
+				       B.AI_INPT_CMN_CD_ENG_NM,
+				       B.AI_INPT_SORT_SEQ,
+				       A.AI_INPT_APPV_STCD
+				  FROM CSPD001TM A,
+				       CSPD112TI B,
+				       (
+						SELECT DISTINCT INPT_MST_SRNO, 
+						                INPT_BL_GRP_NO
+						  FROM CSPD002TG
+				       ) C
+				 WHERE A.INPT_MST_SRNO = C.INPT_MST_SRNO
+				   AND A.INPT_MST_SRNO = #{inptMstSrno}
+				   AND B.AI_INPT_GRP_CD = DECODE(A.INPT_ATMC_BIZ_DSCD, '1', '240', '2', '230', '')
+		       ) A,
+		       (
+				SELECT TO_CHAR(B.INPT_MST_SRNO) INPT_MST_SRNO,
+				       A.ACTL_FX_REFNO, 
+				       B.INPT_BL_GRP_NO,
+				       B.IMEX_HIS_CD,
+				       B.IMEX_HIS_SRNO,
+				       B.AI_INPT_PAPS_QLT_SCRE,
+				       B.INPT_TASK_ID,
+				       C.ITM_INPT_RVSN_YN,
+				       FN_ITM_ORDER(C.INPT_SANCTION_NO, B.IMEX_HIS_CD) RNK,
+				       C.INPT_SANCTION_NO,
+				       C.INPT_SANCTION_DAT_TXT,
+				       C.AI_INPT_SANCTION_RULE_TXT,
+				       C.BFRS_AICR_EXTC_TXT,
+				       C.BFRS_TA_EXTC_TXT,
+					   C.AFRS_AICR_EXTC_TXT,
+					   C.AFRS_TA_EXTC_TXT,
+				       C.AI_INPT_EXTC_SNTN_TXT,
+				       C.ITM_INPT_HNDG_INP_DAT_TXT,
+				       C.AI_INPT_ALT_YN,
+				       C.SAFEWATCH_ITM_YN,
+				       C.ITM_INPT_XAXIS_STA_CRDN_CN,
+					   C.ITM_INPT_XAXIS_END_CRDN_CN,
+					   C.ITM_INPT_YAXIS_STA_CRDN_CN,
+					   C.ITM_INPT_YAXIS_END_CRDN_CN,
+					   C.TRN_LOG_SRNO,
+					   C.LST_DB_CHG_ID,
+					   C.LST_DB_CHG_DTM,
+					   C.AI_INPT_WORD_ACRD_RT
+				  FROM CSPD001TM A, -- 마스터 테이블
+				       CSPD002TG B, -- 이미지 테이블
+				       CSPD004TF C -- 심사상세 테이블
+				 WHERE A.INPT_MST_SRNO    = B.INPT_MST_SRNO
+				   AND A.INPT_MST_SRNO    = C.INPT_MST_SRNO
+				   AND B.INPT_TASK_ID     = C.INPT_TASK_ID
+				   AND B.INPT_MST_SRNO    = #{inptMstSrno}
+				   AND C.SAFEWATCH_ITM_YN = 'Y'
+				ORDER BY B.INPT_BL_GRP_NO,
+				         B.AI_INPT_PAPS_QLT_SCRE DESC
+		       ) B
+		 WHERE A.AI_INPT_CMN_CD = TO_CHAR(B.INPT_SANCTION_NO(+))
+		   AND A.INPT_BL_GRP_NO = B.INPT_BL_GRP_NO(+)
+		 ORDER BY A.INPT_BL_GRP_NO,
+		          A.AI_INPT_SORT_SEQ	
+
+	</select>
+	
+</mapper>

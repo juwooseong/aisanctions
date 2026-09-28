@@ -1,0 +1,40 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Cache-Controll" content="no-store">
+<meta http-equiv="Pragma" content="no-cashe">
+<!-- <meta http-equiv="Expires" content="-1"/> -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<meta name="description" content="심사자동화 시스템">
+<meta name="author" content="Łukasz Holeczek">
+<meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
+<title>심사자동화</title>
+<link href="/resources/css/style.css" rel="stylesheet">
+<script src="/resources/vendors/jquery/js/jquery.min.js"></script>
+</head>
+<body class="app flex-row align-items-center  pace-done" onload="init();" style="overflow-y: scroll;">
+	<div class="app-body">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-6">
+					<div class="clearfix">
+						<h1 class="float-left display-3 mr-4">404</h1>
+						<h4 class="pt-3">Oops! You're lost.</h4>
+						<p class="text-muted">The page you are looking for was not found.</p>
+					</div>
+					<div class="input-prepend input-group">
+						<button id="loginBtn" class="btn btn-info" type="button">메인으로 이동</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			$(document).on('click', '#loginBtn', function(e) {
+				// 메인으로 이동
+				location.href = "/index";
+			});
+		</script>
+	</div>
+</body>
+</html>

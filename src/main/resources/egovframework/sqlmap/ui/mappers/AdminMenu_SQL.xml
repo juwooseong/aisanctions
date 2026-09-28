@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminMenuMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminMenuVO">
+		<result property="aiInptMenuId" column="AI_INPT_MENU_ID"/>
+		<result property="aiInptMenuNo" column="AI_INPT_MENU_NO"/>
+		<result property="aiInptMenuNm" column="AI_INPT_MENU_NM"/>
+		<result property="aiInptHgrnMenuId" column="AI_INPT_HGRN_MENU_ID"/>
+		<result property="aiInptMenuUrlNm" column="AI_INPT_MENU_URL_NM"/>
+		<result property="aiInptAdminYn" column="AI_INPT_MGPE_YN"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptMenuDepth" column="AI_INPT_MENU_DEPTH"/>
+		<result property="aiInptMenuChildCnt" column="AI_INPT_MENU_CHILD_CNT"/>
+		<result property="aiInptAutId" column="AI_INPT_AUT_ID"/>
+		<result property="aiInptAutCd" column="AI_INPT_AUT_CD"/>
+		<result property="aiInptAutUsgYn" column="AI_INPT_AUT_USG_YN"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="highNm" column="HIGH_NM"/>
+		<result property="screenName" column="SCREEN_NAME"/>
+	</resultMap>
+
+	<resultMap id="listScreenMap" type="com.woori.ajs.model.AdminScreenVO">
+		<result property="aiInptMenuId" column="AI_INPT_MENU_ID"/>
+		<result property="aiInptMenuNo" column="AI_INPT_MENU_NO"/>
+		<result property="aiInptMenuNm" column="AI_INPT_MENU_NM"/>
+		<result property="aiInptHgrnMenuId" column="AI_INPT_HGRN_MENU_ID"/>
+		<result property="aiInptMenuUrlNm" column="AI_INPT_MENU_URL_NM"/>
+		<result property="aiInptAdminYn" column="AI_INPT_MGPE_YN"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptMenuDepth" column="AI_INPT_MENU_DEPTH"/>
+		<result property="aiInptMenuChildCnt" column="AI_INPT_MENU_CHILD_CNT"/>
+		<result property="aiInptAutId" column="AI_INPT_AUT_ID"/>
+		<result property="aiInptAutCd" column="AI_INPT_AUT_CD"/>
+		<result property="aiInptAutUsgYn" column="AI_INPT_AUT_USG_YN"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="aiInptAutNm" column="AI_INPT_AUT_NM"/>
+	</resultMap>
+
+	<sql id="menuListView">
+		WITH VW_MENU AS (
+			SELECT	A.*
+					, CASE WHEN A.AI_INPT_MENU_DEPTH &gt;= 3 AND A.AI_INPT_MENU_CHILD_CNT &gt; 0 THEN '- ' 
+						ELSE '' END AS MENU_NM_PREFIX
+			FROM (
+				SELECT	A.AI_INPT_MENU_ID
+						,A.AI_INPT_MENU_NO
+						,A.AI_INPT_MENU_NM
+						,A.AI_INPT_HGRN_MENU_ID
+						,A.AI_INPT_MENU_URL_NM
+						,A.AI_INPT_MGPE_YN
+						,A.LST_DB_CHG_DTM
+						,LEVEL AS AI_INPT_MENU_DEPTH
+						,(
+							SELECT COUNT(*)
+							FROM CSPD108TI
+							WHERE AI_INPT_HGRN_MENU_ID = A.AI_INPT_MENU_ID
+						) AS AI_INPT_MENU_CHILD_CNT
+				FROM CSPD108TI A
+				START WITH A.AI_INPT_HGRN_MENU_ID IS NULL
+				CONNECT BY PRIOR A.AI_INPT_MENU_ID = A.AI_INPT_HGRN_MENU_ID
+				ORDER SIBLINGS BY A.AI_INPT_HGRN_MENU_ID ASC, A.AI_INPT_MENU_ID ASC
+			) A
+			WHERE A.AI_INPT_HGRN_MENU_ID IS NOT NULL
+		) 
+	</sql>
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 권한별 메뉴 관리 (7030) */
+		/* AdminMenuMapper.selectList */
+		/* 메뉴목록 */
+		<include refid="menuListView" />
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT A.AI_INPT_MENU_ID
+			,A.AI_INPT_MENU_NO
+			,A.MENU_NM_PREFIX||A.AI_INPT_MENU_NM AS AI_INPT_MENU_NM
+			,A.AI_INPT_HGRN_MENU_ID
+			,A.AI_INPT_MENU_URL_NM
+			,A.AI_INPT_MGPE_YN
+			,A.LST_DB_CHG_DTM
+			,A.AI_INPT_MENU_DEPTH
+			,AI_INPT_MENU_CHILD_CNT
+		FROM VW_MENU A
+		WHERE 1 = 1
+		<include refid="selectListCond" />
+		
+		<choose>
+			<!-- 메뉴ID -->
+			<when test='"aiInptMenuId".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_ID
+			</when>
+			<when test='"aiInptMenuId".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_ID DESC
+			</when>
+			<!-- 메뉴명 -->
+			<when test='"aiInptMenuNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_NM
+			</when>
+			<when test='"aiInptMenuNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_NM DESC
+			</when>
+			<otherwise>
+				ORDER BY A.AI_INPT_MENU_ID ASC	
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListForRegMenu" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT DISTINCT A.AI_INPT_MENU_ID
+			, A.AI_INPT_MENU_NM
+			, A.AI_INPT_MENU_URL_NM
+			, A.AI_INPT_HGRN_MENU_ID
+			, B.AI_INPT_MENU_NM AS HIGH_NM
+			, A.AI_INPT_MENU_NO
+			, (
+				SELECT AI_INPT_CMN_CD_NM 
+			    FROM CSPD112TI 
+			    WHERE AI_INPT_GRP_CD = 165 
+			    AND AI_INPT_CMN_CD = A.AI_INPT_MENU_NO
+			 ) AS SCREEN_NAME  	                          
+			, A.AI_INPT_MGPE_YN
+		FROM CSPD108TI A
+			, CSPD108TI B
+		WHERE A.AI_INPT_HGRN_MENU_ID = B.AI_INPT_MENU_ID(+)
+		AND A.AI_INPT_HGRN_MENU_ID 
+		IN (
+			SELECT AI_INPT_MENU_ID 
+			FROM CSPD108TI 
+			WHERE AI_INPT_HGRN_MENU_ID = #{aiInptHgrnMenuId}
+			
+			UNION 
+			
+			SELECT #{aiInptHgrnMenuId} AS AI_INPT_MENU_ID 
+			FROM DUAL
+		)
+		ORDER BY AI_INPT_HGRN_MENU_ID, AI_INPT_MENU_NO
+	</select>
+	
+	<select id="selectListTopMenu" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT AI_INPT_MENU_ID
+			, AI_INPT_MENU_NM 
+		FROM(
+			SELECT AI_INPT_MENU_ID
+				, AI_INPT_MENU_NM 
+				, LEVEL AS AI_INPT_MENU_DEPTH
+			FROM CSPD108TI
+			WHERE AI_INPT_MENU_ID IN (
+				SELECT DISTINCT AI_INPT_HGRN_MENU_ID 
+				FROM CSPD108TI
+				WHERE AI_INPT_HGRN_MENU_ID IS NOT NULL
+			)
+			START WITH AI_INPT_HGRN_MENU_ID IS NULL
+			CONNECT BY PRIOR AI_INPT_MENU_ID = AI_INPT_HGRN_MENU_ID
+			ORDER SIBLINGS BY AI_INPT_HGRN_MENU_ID ASC, AI_INPT_MENU_ID ASC
+		) WHERE AI_INPT_MENU_DEPTH = 2
+	</select>
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 권한별 메뉴 관리 (7030) */
+		/* AdminMenuMapper.selectListTotCnt */
+		/* 메뉴목록 */
+		<include refid="menuListView" />
+		SELECT COUNT(*) totcnt
+		FROM VW_MENU A
+		WHERE 1 = 1
+		<include refid="selectListCond" />
+	</select>
+	
+	<sql id="selectListCond">
+		AND A.AI_INPT_MENU_CHILD_CNT &gt; 0
+		<if test="schAuth != null and schAuth != ''">
+			<if test="schAuth != '02' and schAuth != '05'">
+		/* S2 결재자 회원이 아니면, 관리자 메뉴 안보임 */
+				AND A.AI_INPT_MGPE_YN = 'N'
+			</if>
+		</if>
+	</sql>
+	
+	<select id="selectScreenList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listScreenMap">
+		/* 권한별 메뉴 관리 (7030) */
+		/* AdminMenuMapper.selectScreenList */
+		/* 화면목록 */
+		<include refid="menuListView" />
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+
+		SELECT A.AI_INPT_MENU_ID
+			,A.AI_INPT_MENU_NO
+			,A.AI_INPT_MENU_NM
+			,A.AI_INPT_HGRN_MENU_ID
+			,A.AI_INPT_MENU_URL_NM
+			,A.AI_INPT_MGPE_YN
+			,A.LST_DB_CHG_DTM
+			,A.AI_INPT_MENU_DEPTH
+			,A.AI_INPT_MENU_CHILD_CNT
+			,NVL((SELECT AI_INPT_AUT_USG_YN
+				FROM CSPD109TI
+				WHERE AI_INPT_MENU_ID = A.AI_INPT_MENU_ID
+				AND AI_INPT_AUT_CD = #{schAuth}
+				AND ROWNUM = 1
+			),'N') AS AI_INPT_AUT_USG_YN
+		FROM VW_MENU A
+		WHERE 1 = 1
+		<include refid="selectScreenListCond" />
+		
+		
+		<choose>
+			<!-- 화면ID -->
+			<when test='"aiInptMenuId".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_ID
+			</when>
+			<when test='"aiInptMenuId".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_ID DESC
+			</when>
+			<!-- 화면명 -->
+			<when test='"aiInptMenuNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_NM
+			</when>
+			<when test='"aiInptMenuNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_MENU_NM DESC
+			</when>
+			<!-- 사용 -->
+			<when test='"aiInptAutUsgYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_AUT_USG_YN
+			</when>
+			<when test='"aiInptAutUsgYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_AUT_USG_YN DESC
+			</when>
+			<otherwise>
+				ORDER BY A.AI_INPT_MENU_ID ASC
+			</otherwise>
+		</choose>
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<sql id="selectScreenListCond">
+		AND A.AI_INPT_MENU_CHILD_CNT = 0
+		
+		<if test="schAuth == '01' or schAuth == '03' or schAuth == '04'">
+			AND A.AI_INPT_MGPE_YN = 'N'
+		</if>
+		<!-- <if test="schAuth == '02' or schAuth == '05'">
+			AND A.AI_INPT_MGPE_YN = 'Y'
+		</if> -->
+		
+		<if test="menuId != null and menuId != ''">
+		AND A.AI_INPT_HGRN_MENU_ID = #{menuId}
+		</if>
+	</sql>
+	
+	<update id="screenUseUpdate" parameterType="com.woori.ajs.model.AdminScreenVO">
+		/* 권한별 메뉴 관리 (7030) */
+		/* AdminMenuMapper.screenUseUpdate */
+		MERGE INTO CSPD109TI A
+		USING DUAL
+			ON (A.AI_INPT_MENU_ID = #{aiInptMenuId} AND A.AI_INPT_AUT_CD = #{aiInptAutCd})
+		WHEN MATCHED THEN
+		UPDATE SET A.AI_INPT_AUT_USG_YN = #{aiInptAutUsgYn},
+		           A.TRN_LOG_SRNO = #{trnLogSrno}
+	</update>
+	
+	<select id="selectOneHg" parameterType="com.woori.ajs.model.SearchVO" resultType="string">
+		SELECT AI_INPT_MENU_NM FROM CSPD108TI WHERE AI_INPT_MENU_ID = #{hgMenuId}
+	</select>
+	
+	<select id="selectOneScreenName" parameterType="com.woori.ajs.model.SearchVO" resultType="string">
+		SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_CMN_CD = #{screenId} AND AI_INPT_GRP_CD = '165'
+	</select>
+	
+	<insert id="regMenu" parameterType="com.woori.ajs.model.AdminMenuVO">
+		INSERT INTO CSPD108TI(
+			AI_INPT_MENU_ID
+			, AI_INPT_MENU_NM
+			, AI_INPT_MENU_URL_NM
+			, AI_INPT_HGRN_MENU_ID
+			, AI_INPT_MENU_NO
+			, AI_INPT_MGPE_YN
+			, TRN_LOG_SRNO
+			, LST_DB_CHG_ID
+			, LST_DB_CHG_DTM
+		) VALUES(
+			#{aiInptMenuId}
+			, #{aiInptMenuNm}
+			, #{aiInptMenuUrlNm}
+			, #{aiInptHgrnMenuId}
+			, #{aiInptMenuNo}
+			, #{aiInptAdminYn}
+			, #{trnLogSrno}
+			, #{lstDbChgId}
+			, <include refid="com.woori.ajs.common.curdate"/>
+			)
+	</insert>
+	
+	<update id="modiMenu" parameterType="com.woori.ajs.model.AdminMenuVO">
+		UPDATE CSPD108TI SET AI_INPT_MENU_NM = #{aiInptMenuNm}
+						, AI_INPT_MENU_URL_NM = #{aiInptMenuUrlNm}
+						, AI_INPT_HGRN_MENU_ID = #{aiInptHgrnMenuId}
+						, AI_INPT_MENU_NO = #{aiInptMenuNo}
+						, AI_INPT_MGPE_YN = #{aiInptAdminYn}
+						, TRN_LOG_SRNO = #{trnLogSrno}
+						, LST_DB_CHG_ID = #{lstDbChgId}
+						, LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHERE AI_INPT_MENU_ID = #{aiInptMenuId} 
+	</update>
+	
+	
+	<select id="checkScreenNo" parameterType="com.woori.ajs.model.AdminMenuVO" resultType="string">
+		 SELECT AI_INPT_MENU_NO 
+   		 FROM CSPD108TI 
+		 WHERE AI_INPT_HGRN_MENU_ID
+			 IN(
+				SELECT AI_INPT_MENU_ID 
+				FROM CSPD108TI 
+				WHERE AI_INPT_HGRN_MENU_ID = #{aiInptHgrnMenuId}
+				UNION 
+				SELECT #{aiInptHgrnMenuId} AS AI_INPT_MENU_ID 
+				FROM DUAL
+			  )
+		 AND AI_INPT_MENU_NO = #{aiInptMenuNo}
+	</select>
+	
+	<select id="checkScreenNoForUpdate" parameterType="com.woori.ajs.model.AdminMenuVO" resultType="string">
+		 SELECT AI_INPT_MENU_NO 
+   		 FROM CSPD108TI 
+		 WHERE AI_INPT_HGRN_MENU_ID
+			 IN(
+				SELECT AI_INPT_MENU_ID 
+				FROM CSPD108TI 
+				WHERE AI_INPT_HGRN_MENU_ID = #{aiInptHgrnMenuId}
+				UNION 
+				SELECT #{aiInptHgrnMenuId} AS AI_INPT_MENU_ID 
+				FROM DUAL
+			  )
+		 AND AI_INPT_MENU_NO = #{aiInptMenuNo}
+		 AND AI_INPT_MENU_ID != #{aiInptMenuId}
+	</select>
+	
+	<select id="checkMenuId" parameterType="com.woori.ajs.model.AdminMenuVO" resultType="string">
+		SELECT * FROM CSPD108TI WHERE AI_INPT_MENU_ID = #{aiInptMenuId}
+	</select>
+	
+	<insert id="insertAutAll" parameterType="com.woori.ajs.model.AdminMenuVO">
+		INSERT ALL 
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+1 FROM CSPD109TI)
+			, '01'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+2 FROM CSPD109TI)
+			, '02'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+3 FROM CSPD109TI)
+			, '03'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+4 FROM CSPD109TI)
+			, '04'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+5 FROM CSPD109TI)
+			, '05'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		SELECT * FROM DUAL
+	</insert>
+	
+	<insert id="insertAutAdmin" parameterType="com.woori.ajs.model.AdminMenuVO">
+		INSERT ALL 
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+1 FROM CSPD109TI)
+			, '02'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		INTO CSPD109TI VALUES(
+			(SELECT MAX(AI_INPT_AUT_ID)+2 FROM CSPD109TI)
+			, '05'
+			, 'N'
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, '' 
+			, #{aiInptMenuId}
+			, 'INIT'
+			, 'INIT'
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+		SELECT * FROM DUAL
+	</insert>
+	
+	<delete id="deleteMenu" parameterType="com.woori.ajs.model.SearchVO">
+		DELETE FROM CSPD108TI WHERE AI_INPT_MENU_ID = #{aiInptMenuId}
+	</delete>
+	<delete id="deleteMenuAuth" parameterType="com.woori.ajs.model.SearchVO">
+		DELETE FROM CSPD109TI WHERE AI_INPT_MENU_ID = #{aiInptMenuId}
+	</delete>
+<!-- 	<select id="checkMenuId" parameterType="com.woori.ajs.model.AdminMenuVO" resultType="string">
+	
+		SELECT CASE WHEN AI_INPT_MENU_ID = #{aiInptMenuId} THEN 'MENU_ID'
+			   WHEN (SELECT AI_INPT_MENU_NO 
+			   		 FROM CSPD108TI 
+					 WHERE AI_INPT_HGRN_MENU_ID
+						 IN(
+							SELECT AI_INPT_MENU_ID 
+							FROM CSPD108TI 
+							WHERE AI_INPT_HGRN_MENU_ID = #{aiInptHgrnMenuId}
+							UNION 
+							SELECT #{aiInptHgrnMenuId} AS AI_INPT_MENU_ID 
+							FROM DUAL
+						  )
+					 AND AI_INPT_MENU_NO = #{aiInptMenuNo}
+					 ) IS NOT NULL THEN 'SCREEN_NO'
+			   END AS "CHECK"
+		FROM CSPD108TI 
+		WHERE AI_INPT_MENU_ID = #{aiInptMenuId}
+		OR AI_INPT_MENU_NO = #{aiInptMenuNo}
+	</select> -->
+</mapper>

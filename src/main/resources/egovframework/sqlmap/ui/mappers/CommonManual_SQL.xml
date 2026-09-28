@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CommonManualMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.CommonManualVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO"/>
+		<result property="aiInptAtflSrno" column="AI_INPT_ATFL_SRNO"/>
+		<result property="aiInptAtelNm" column="AI_INPT_ATFL_NM"/>
+		<result property="aiInptAtelPathTxt" column="AI_INPT_ATFL_PATH_TXT"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="aiInptBizDscd" column="AI_INPT_BIZ_DSCD"/>
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* CommonManualMapper.selectList */
+		SELECT * FROM CSPD006TL
+		WHERE INPT_MST_SRNO = '0'
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* CommonManualMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD006TL
+		WHERE INPT_MST_SRNO = '0'
+	</select>
+	
+	<select id="selectFileInfo" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT * FROM CSPD006TL WHERE INPT_MST_SRNO=#{inptMstSrno} AND AI_INPT_ATFL_SRNO=#{aiInptAtflSrno}                 <!-- common agent를 통한 파일 다운로드를 위한 파일 정보 -->
+	</select>
+	
+	<insert id="insertFileUpload" parameterType="com.woori.ajs.model.CommonManualVO">
+		/* 매뉴얼 파일 업로드 insert를 위한 쿼리 */	
+		INSERT INTO CSPD006TL(                                      <!-- 파일 업로드(006) 테이블에 data insert -->
+				INPT_MST_SRNO                                       <!-- 심사 마스터 번호 -->
+				, AI_INPT_ATFL_SRNO                                 <!-- 첨부파일 일련번호 -->
+				, AI_INPT_ATFL_NM                                   <!-- 첨부파일 명-->
+				, AI_INPT_ATFL_PATH_TXT                             <!-- 첨부파일 경로 -->
+				, TRN_LOG_SRNO                                      <!-- 거래로그 일련번호 -->
+				, LST_DB_CHG_ID                                     <!-- 최종 db 변경 id -->
+				, LST_DB_CHG_DTM                                    <!-- 최종 db 변경 일시-->
+				, AI_INPT_BIZ_DSCD
+			) VALUES(
+				#{inptMstSrno}                                      
+				, (SELECT NVL(MAX(AI_INPT_ATFL_SRNO), 0)            <!-- 첨부파일 일련번호가 가장 큰 값 -->
+				   FROM CSPD006TL                                   <!-- 파일 업로드 테이블 006 -->            
+				   WHERE INPT_MST_SRNO=#{inptMstSrno}               <!-- 심사 마스터번호 조건절 -->
+				   ) + 1                                            <!-- '가장 최근 첨부파일의 일련번호 + 1' 값을 insert -->
+				, #{aiInptAtelNm}                                  
+				, #{aiInptAtelPathTxt}                              
+				, #{trnLogSrno}							            <!-- 공통 쿼리로부터 뽑아온 거래로그 일련번호 -->
+				, #{lstDbChgId}                                    
+				, <include refid="com.woori.ajs.common.curdate"/>   <!-- 공통 쿼리로부터 뽑아온 최종 db 변경 일시 -->
+				, #{aiInptBizDscd}
+			)
+	</insert>
+	
+	<delete id="delUploadedFile" parameterType="com.woori.ajs.model.SearchVO">
+		DELETE FROM CSPD006TL WHERE AI_INPT_ATFL_SRNO = #{aiInptAtflSrno} AND INPT_MST_SRNO = #{inptMstSrno}               <!-- 심사 마스터번호 & 첨부파일 일련번호 조회조건을 통한 파일 삭제-->
+	</delete>
+</mapper>

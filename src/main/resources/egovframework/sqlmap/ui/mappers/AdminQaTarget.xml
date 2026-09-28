@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminQaTargetMapper">
+
+	<resultMap id="QaTargetMap" type="com.woori.ajs.model.AdminQaTargetVO">
+		<result property="qlasSltMngId" column="QLAS_SLT_MNG_ID"/>
+		<result property="aiInptImexDscd" column="AI_INPT_IMEX_DSCD"/>
+		<result property="qlasItmTotCnt" column="QLAS_ITM_TOT_CNT"/>
+		<result property="qlasVolnChcCnt" column="QLAS_VOLN_CHC_CNT"/>
+		<result property="qlasSlbsVldYn" column="QLAS_SLBS_VLD_YN"/>
+		<result property="aiInptListId" column="AI_INPT_LIST_ID"/>
+		<result property="aiInptItmCd" column="INPT_SANCTION_NO"/>
+		<result property="qlasSltRgsDtm" column="QLAS_SLT_RGS_DTM"/>
+		<result property="qlasSltEndDtm" column="QLAS_SLT_END_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="QaTargetMap">
+		/* QA선정 관리 (7060) */
+		/* AdminQaTargetMapper.selectList */
+		/* QA 대상선정 설정정보 목록 */
+		SELECT
+			A.QLAS_SLT_MNG_ID, A.AI_INPT_IMEX_DSCD, A.QLAS_ITM_TOT_CNT, A.QLAS_VOLN_CHC_CNT, 
+			A.QLAS_SLBS_VLD_YN, A.AI_INPT_LIST_ID, A.INPT_SANCTION_NO, A.QLAS_SLT_RGS_DTM, 
+			A.QLAS_SLT_END_DTM, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM
+		FROM CSPD107TI A
+		WHERE A.QLAS_SLBS_VLD_YN = 'Y'
+	</select>
+	
+	<select id="selectQaExTarget" parameterType="com.woori.ajs.model.AdminQaTargetVO" resultMap="QaTargetMap">
+		/* QA선정 관리 (7060) */
+		/* AdminQaTargetMapper.selectQaExTarget */
+		SELECT	A.QLAS_SLT_MNG_ID, A.AI_INPT_IMEX_DSCD, A.QLAS_ITM_TOT_CNT, A.QLAS_VOLN_CHC_CNT, 
+				A.QLAS_SLBS_VLD_YN, A.AI_INPT_LIST_ID, A.INPT_SANCTION_NO, A.QLAS_SLT_RGS_DTM, 
+				A.QLAS_SLT_END_DTM, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM
+		FROM CSPD107TI A
+		WHERE A.AI_INPT_IMEX_DSCD = #{aiInptImexDscd}
+	</select>
+	
+	<insert id="insert" parameterType="com.woori.ajs.model.AdminQaTargetVO">
+		/* QA선정 관리 (7060) */
+		/* AdminQaTargetMapper.insert */
+		MERGE INTO CSPD107TI A
+		USING DUAL
+			ON (A.AI_INPT_IMEX_DSCD = #{aiInptImexDscd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.QLAS_ITM_TOT_CNT = #{qlasItmTotCnt},
+				A.QLAS_VOLN_CHC_CNT = #{qlasVolnChcCnt},
+				A.AI_INPT_LIST_ID = #{aiInptListId},
+				A.INPT_SANCTION_NO = #{aiInptItmCd},
+				A.TRN_LOG_SRNO = #{trnLogSrno}
+		WHEN NOT MATCHED THEN
+			INSERT (A.QLAS_SLT_MNG_ID, A.AI_INPT_IMEX_DSCD, A.QLAS_ITM_TOT_CNT, A.QLAS_VOLN_CHC_CNT, 
+				A.QLAS_SLBS_VLD_YN, A.AI_INPT_LIST_ID, A.INPT_SANCTION_NO, A.QLAS_SLT_RGS_DTM, 
+				A.QLAS_SLT_END_DTM, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (CSPD107TI_SG01.NEXTVAL, #{aiInptImexDscd}, #{qlasItmTotCnt}, #{qlasVolnChcCnt}, 
+				'Y', #{aiInptListId}, #{aiInptItmCd}, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), 
+				NULL, #{trnLogSrno}, #{lstDbChgId}, TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'))
+	</insert>
+
+</mapper>

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.DashboardMapper">
+
+	<resultMap id="taskListMap" type="com.woori.ajs.model.DashboardVO">
+		<result property="aiInptCmnCd" column="AI_INPT_CMN_CD" />
+		<result property="aiInptCmnCdNm" column="AI_INPT_CMN_CD_NM" />
+		<result property="totalCnt" column="TOTAL_CNT" />
+	</resultMap>
+
+	<resultMap id="ioListMap" type="com.woori.ajs.model.DashboardVO">
+		<result property="nacd" column="NACD" />
+		<result property="korNlNm" column="KOR_NL_NM" />
+		<result property="engNlNm" column="ENG_NL_NM" />
+		<result property="export_cnt" column="EXPORT_CNT" />
+		<result property="import_cnt" column="IMPORT_CNT" />
+	</resultMap>
+	
+
+	<select id="taskList" parameterType="com.woori.ajs.model.SearchVO" resultMap="taskListMap">
+		/* 
+			대시보드 내업무Todo, 진행업무별 현재상태 조회
+			CSPD001TM - 심사 마스터 테이블
+			CSPD112TI - 심사 코드 테이블
+			AI_INPT_ACVT_CD - 심사 활동코드
+			AI_INPT_CMN_CD_NM - 심사 공통코드명
+			AI_INPT_GRP_CD - 심사 그룹코드(290 - 액티비티)
+			AI_INSPE_ENO - 심사 직원번호
+			AI_INPT_SNPE_ENO - 심사 결재자 직원번호
+			QLAS_SNPE_ENO - 품질보증 결재자 직원번호
+			INPT_RCP_DT - 심사 접수일자
+		*/
+		SELECT A.ACVT_CD,
+			   A.AI_INPT_CMN_CD_NM,
+			   SUM(NVL(B.TOTAL_CNT, 0)) AS TOTAL_CNT
+		  FROM (
+		  		/* 액티비티 코드, 액티비티 코드명 */
+				SELECT AI_INPT_CMN_CD AS ACVT_CD,
+					   AI_INPT_CMN_CD_NM
+				  FROM CSPD112TI
+				 WHERE AI_INPT_GRP_CD = '290'
+
+				<if test='schAuth != null and schAuth.equals("01")'>
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND AI_INPT_CMN_CD IN ('80', '90')
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND AI_INPT_CMN_CD IN ('100', '130', '140', '160')
+					</if>
+				</if>
+				
+				<if test='schAuth != null and schAuth.equals("02")'>
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND AI_INPT_CMN_CD IN ('100', '120')
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND AI_INPT_CMN_CD IN ('90', '110', '140', '160')
+					</if>
+				</if>
+				
+				<if test='schAuth != null and schAuth.equals("03")'>
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND AI_INPT_CMN_CD IN ('110')
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND AI_INPT_CMN_CD IN('120', '160')
+					</if>
+				</if>
+
+				 ORDER BY AI_INPT_CMN_CD
+		  	   )A,
+		  	   (
+		  	    /* 사용자 권한 항목별 업무 수  */
+				<if test='schAuth != null and schAuth.equals("01")'>
+					 SELECT COUNT(INPT_MST_SRNO) AS TOTAL_CNT,
+						    AI_INPT_ACVT_CD AS ACVT_CD
+					   FROM CSPD001TM
+				      WHERE AI_INSPE_ENO = #{userId}
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND INPT_RCP_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDD')
+						AND AI_INPT_ACVT_CD IN ('80', '90')
+						AND PAPS_RE_SCAN_NED_YN IS NULL
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND TO_CHAR(SYSDATE, 'YYYYMMDD') = INPT_RCP_DT
+						AND AI_INPT_ACVT_CD IN ('130', '140', '100', '160')
+					</if>
+					  GROUP BY AI_INPT_ACVT_CD
+				</if>
+				
+				<if test='schAuth != null and schAuth.equals("02")'>
+					 SELECT COUNT(INPT_MST_SRNO) AS TOTAL_CNT,
+						    AI_INPT_ACVT_CD AS ACVT_CD
+					   FROM CSPD001TM
+				      WHERE AI_INPT_SNPE_ENO = #{userId}
+						AND QLAS_PRG_YN IS NULL
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND INPT_RCP_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDD')
+						AND AI_INPT_ACVT_CD IN ('100')
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND TO_CHAR(SYSDATE, 'YYYYMMDD') = INPT_RCP_DT
+						AND AI_INPT_ACVT_CD IN ('90', '140', '160')
+					</if>
+					  GROUP BY AI_INPT_ACVT_CD
+					  
+					  UNION
+					  
+					 SELECT COUNT(INPT_MST_SRNO) AS TOTAL_CNT,
+						    AI_INPT_QLAS_ACVT_CD AS ACVT_CD
+					   FROM CSPD001TM
+				      WHERE QLAS_SNPE_ENO = #{userId}
+						AND QLAS_PRG_YN = 'Y'
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND INPT_RCP_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDD')
+						AND AI_INPT_QLAS_ACVT_CD IN ('120')
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND TO_CHAR(SYSDATE, 'YYYYMMDD') = INPT_RCP_DT
+						AND AI_INPT_QLAS_ACVT_CD IN ('110', '140', '160')
+					</if>
+					  GROUP BY AI_INPT_QLAS_ACVT_CD
+				</if>
+				
+				<if test='schAuth != null and schAuth.equals("03")'>
+					 SELECT COUNT(INPT_MST_SRNO) AS TOTAL_CNT,
+						    AI_INPT_QLAS_ACVT_CD AS ACVT_CD
+					   FROM CSPD001TM
+				      WHERE QLAS_CRPE_ENO = #{userId}
+					<if test='schGbn != null and schGbn.equals("todo")'>
+						AND QLAS_ALOC_DT &lt;= TO_CHAR(SYSDATE, 'YYYYMMDD')
+						AND AI_INPT_QLAS_ACVT_CD IN ('110')
+					</if>
+				   
+					<if test='schGbn != null and schGbn.equals("status")'>
+						AND TO_CHAR(SYSDATE, 'YYYYMMDD') = QLAS_ALOC_DT
+						AND AI_INPT_QLAS_ACVT_CD IN('120', '160')
+					</if>
+					  GROUP BY AI_INPT_QLAS_ACVT_CD
+				</if>
+		  	   )B
+		 WHERE A.ACVT_CD = B.ACVT_CD(+)
+		 GROUP BY A.ACVT_CD,
+                  A.AI_INPT_CMN_CD_NM
+	</select>
+	
+	<select id="inptList" parameterType="com.woori.ajs.model.SearchVO" resultMap="taskListMap">
+		/* 
+			대시보드 내업무Todo, 진행업무별 현재상태 조회
+			CSPD001TM - 심사 마스터 테이블
+			AI_INPT_ACVT_CD - 심사 활동코드
+			AI_INPT_QLAS_ACVT_CD - QA 공통코드명
+		*/
+		SELECT * 
+		  FROM
+		/* 당일심사목록  */
+		(
+		SELECT RESULT AS TOTAL_CNT,
+		       '당일심사목록' AS AI_INPT_CMN_CD_NM,
+		       '1' AS RNK
+		  FROM (					
+			    SELECT A.A_COUNT + B.B_COUNT AS RESULT
+				  FROM (
+				        SELECT COUNT(*) AS A_COUNT 
+				          FROM CSPD201TM A
+				         WHERE 1=1
+				           AND A.XPO_CVRG_MTBR_MK_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+				           AND ((( A.FX_ACNO, A.XPO_CVRG_MK_SQ ) IN ( SELECT ACTL_FX_REFNO, FX_REFNO_SRNO 
+							  										    FROM CSPD001TM 
+							  										   WHERE ACTL_FX_REFNO = A.FX_ACNO 
+							  											 AND FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ ) 
+							  											 AND A.INPT_ATMC_REQ_DSCD = '3') 
+																		 OR (A.INPT_ATMC_REQ_DSCD != '3'))
+				        ) A,
+					   (
+				        SELECT COUNT(*) AS B_COUNT 
+				          FROM CSPD202TM A
+				         WHERE 1=1
+				           AND A.TDOC_RCP_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+				           AND ((( A.FX_ACNO, A.TDOC_RCP_SRNO ) IN ( SELECT ACTL_FX_REFNO, FX_REFNO_SRNO 
+				  											           FROM CSPD001TM 
+				  											          WHERE ACTL_FX_REFNO = A.FX_ACNO 
+				  											            AND FX_REFNO_SRNO = A.TDOC_RCP_SRNO ) 
+				  											            AND A.INPT_ATMC_REQ_DSCD = '3') 
+																         OR (A.INPT_ATMC_REQ_DSCD != '3'))
+				        ) B
+		       )
+		)
+		UNION
+		/* 당일심사진행  */
+		(                
+		 SELECT TOTAL AS TOTAL_CNT,
+		        '당일심사진행' AS AI_INPT_CMN_CD_NM,
+		        '2' AS RNK
+		   FROM ( SELECT COUNT(*) AS TOTAL
+		            FROM CSPD001TM
+		            WHERE INPT_RCP_DT = TO_CHAR(SYSDATE,'YYYYMMDD')    
+		              AND AI_INPT_ACVT_CD IN('130','140','160')
+				)
+		)
+		UNION
+		/* 당일QA목록  */
+		(	           
+		 SELECT CNT01 AS TOTAL_CNT,
+		        '당일QA목록' AS AI_INPT_CMN_CD_NM,
+		        '3' AS RNK
+		   FROM ( SELECT COUNT(*) AS CNT01
+		            FROM CSPD001TM
+		           WHERE QLAS_PRG_YN = 'Y'
+		             AND QLAS_ALOC_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') 
+		             )
+		)
+		UNION
+		/* 당일QA진행  */
+		(
+		  SELECT CNT01 AS TOTAL_CNT,
+		        '당일QA진행' AS AI_INPT_CMN_CD_NM,
+		        '3' AS RNK
+		   FROM ( 
+		   
+		   SELECT COUNT(*) AS CNT01
+		            FROM CSPD001TM
+		           WHERE QLAS_PRG_YN = 'Y'
+		             AND AI_INPT_QLAS_ACVT_CD IN ('140', '160')
+		             AND QLAS_ALOC_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') 
+		   )
+		)
+		ORDER BY RNK
+	</select>
+	
+	<select id="impExpList" parameterType="com.woori.ajs.model.SearchVO" resultMap="ioListMap">
+		/* 국가별 수출입 현황 */
+		WITH VW_TASK1 AS (
+			/* 통계대상 심사업무 목록 */
+			SELECT	A.INPT_MST_SRNO,
+					A.INPT_SANCTION_NO AS SANCTION_NO,				/* 심사제재항목코드 */
+					B.AI_INPT_CMN_CD_ENG_NM AS SANCTION_NAME,		/* 심사제재항목이름 */
+					A.INPT_SANCTION_DAT_TXT,						/* 추출용어 */
+					C.INPT_ATMC_BIZ_DSCD							/* 업무구분코드 (1 - 수입, 2 - 수출) */
+			FROM	CSPD004TF A,									/* 항목심사결과상세 테이블 */
+					(
+						/* 수출,수입에 대한 Sanction 항목에 대한 정보 */
+						SELECT A.AI_INPT_GRP_CD,
+							   A.AI_INPT_GRP_NM,
+							   B.AI_INPT_CMN_CD,
+							   B.AI_INPT_CMN_CD_NM,
+							   B.AI_INPT_CMN_CD_ENG_NM
+						  FROM CSPD111TI A,
+							   CSPD112TI B
+						 WHERE A.AI_INPT_GRP_CD = B.AI_INPT_GRP_CD
+						   AND B.AI_INPT_CMN_CD = '18'	/* X축 검색 선택박스 선택값 - 값있을때만 적용 */
+						   AND B.AI_INPT_CMN_CD IN (
+								SELECT AI_INPT_CMN_CD 
+						   		  FROM CSPD112TI WHERE AI_INPT_GRP_CD = '350' 
+						   		   AND AI_INPT_CMN_USG_YN = 'Y'
+						   		)		/* 국가관련 심사제재코드만 필터링 */
+					) B,
+					CSPD001TM C
+			WHERE	TO_CHAR(A.INPT_SANCTION_NO) = B.AI_INPT_CMN_CD
+			  AND	A.INPT_MST_SRNO = C.INPT_MST_SRNO
+			  AND	A.INPT_SANCTION_DAT_TXT IS NOT NULL
+			  AND	C.INPT_RCP_DT = #{inptRcpDt}
+		), VW_TASK AS (
+			/* 통계대상 심사업무 목록에서, 국가정보 추가 */
+			SELECT	A.*
+					, B.NACD
+					, B.ENG_NL_NM AS NA_ENM
+					, B.KORL_NL_NM AS NA_KNM
+					, A.INPT_SANCTION_DAT_TXT AS TXT
+			FROM VW_TASK1 A, CSPD115TI B
+			WHERE A.INPT_SANCTION_DAT_TXT = B.NACD(+)
+		)
+		SELECT A.*
+		FROM (
+			/* 항목별 심사업무 카운팅 */
+			SELECT	A.TXT, COUNT(*) AS CNT
+					, MAX(A.NACD) AS NACD	/* 국가코드 */
+					, MAX(A.NA_ENM) AS ENG_NL_NM	/* 국가명(영문) */
+					, MAX(A.NA_KNM) AS KOR_NL_NM	/* 국가명(한글) */
+					, SUM(CASE A.INPT_ATMC_BIZ_DSCD WHEN '1' THEN 1 ELSE 0 END) AS IMPORT_CNT
+					, SUM(CASE A.INPT_ATMC_BIZ_DSCD WHEN '2' THEN 1 ELSE 0 END) AS EXPORT_CNT
+			FROM	(
+				/* 항목별로 심사업무 중복제거 */
+				SELECT	A.INPT_MST_SRNO, A.TXT
+						, MAX(A.NACD) AS NACD
+						, MAX(A.NA_ENM) AS NA_ENM
+						, MAX(A.NA_KNM) AS NA_KNM
+						, MAX(A.INPT_ATMC_BIZ_DSCD) AS INPT_ATMC_BIZ_DSCD
+				FROM VW_TASK A
+				GROUP BY A.INPT_MST_SRNO, A.TXT
+			) A
+			GROUP BY A.TXT
+		) A
+		WHERE A.CNT > 0
+		ORDER BY A.CNT DESC
+	</select>
+
+</mapper>

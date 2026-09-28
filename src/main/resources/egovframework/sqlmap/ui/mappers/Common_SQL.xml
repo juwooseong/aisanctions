@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.common">
+	
+	<sql id="globalPaginationHeader">
+		<if test="recordCountPerPage != -1">
+		SELECT sc2.*
+		  FROM (
+				SELECT rownum AS rn,
+				       sc1.*
+				  FROM (
+		</if>
+	</sql>
+	
+	<sql id="globalPaginationFooter">
+		<if test="recordCountPerPage != -1">
+						) sc1
+				) sc2
+		WHERE CEIL(rn / NVL(#{recordCountPerPage},10)) = NVL(#{pageIndex}, 1)
+		</if>
+	</sql>
+	
+	<sql id="trnlog"> (SELECT TRN_LOG_SRNO FROM CSPD001TM WHERE INPT_MST_SRNO = #{inptMstSrno} AND ROWNUM = 1) </sql>
+	
+	<sql id="curdate"> TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') </sql>
+	
+	<sql id="VW_LEDGER">
+		/* 수출입 원장 */
+		SELECT FX_ACNO AS ACTL_FX_REFNO
+	           , XPBY_COL_CTR_CUCD AS XPBY_COL_CTR_CUCD
+	           , XPBY_COL_AM AS XPBY_COL_AM
+	           , CUS_ENG_NM
+	           , CUS_KORL_NM
+	           , CSNO
+	           , XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+	      FROM CSPD201TM
+	    UNION ALL
+	    SELECT FX_ACNO AS ACTL_FX_REFNO
+	           , TDOC_RCP_CUCD AS XPBY_COL_CTR_CUCD
+	           , TDOC_RCP_AM AS XPBY_COL_AM
+	           , CUS_ENG_NM
+	           , CUS_KORL_NM
+	           , CSNO
+	           , TDOC_RCP_SRNO AS FX_REFNO_SRNO
+	      FROM CSPD202TM
+	</sql>
+</mapper>

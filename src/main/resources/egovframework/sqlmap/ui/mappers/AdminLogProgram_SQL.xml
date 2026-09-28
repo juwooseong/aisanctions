@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminLogProgramMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminLogProgramVO">
+		<result property="aiInptPgmUsgHstNo" column="AI_INPT_PGM_USG_HST_NO"/>
+		<result property="aiInptCnctUserNo" column="AI_INPT_CNCT_USER_NO"/>
+		<result property="aiInptCnctUserNm" column="AI_INPT_CNCT_USER_NM"/>
+		<result property="aiInptCnctUrlNm" column="AI_INPT_CNCT_URL_NM"/>
+		<result property="aiInptCnctIpad" column="AI_INPT_CNCT_IPAD"/>
+		<result property="aiInptCnctMchrNm" column="AI_INPT_CNCT_MCHR_NM"/>
+		<result property="aiInptCnctScrnNo" column="AI_INPT_CNCT_SCRN_NO"/>
+		<result property="aiInptCnctScrnNm" column="AI_INPT_CNCT_SCRN_NM"/>
+		<result property="aiInptCnctFldCd" column="AI_INPT_CNCT_FLD_CD"/>
+		<result property="aiInptCnctFldNm" column="AI_INPT_CNCT_FLD_NM"/>
+		<result property="aiInptCnctActiCd" column="AI_INPT_CNCT_ACTI_CD"/>
+		<result property="aiInptCnctActiNm" column="AI_INPT_CNCT_ACTI_NM"/>
+		<result property="aiInptCnctParmTxt" column="AI_INPT_CNCT_PARM_TXT"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	<select id="customQueryTest" parameterType="com.woori.ajs.model.SearchVO" resultType="java.util.LinkedHashMap">
+		${queryTestParam}
+	</select>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 프로그램 사용 이력관리 (7022) */
+		/* AdminLogProgramMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+
+		SELECT	A.AI_INPT_PGM_USG_HST_NO, 
+				A.AI_INPT_CNCT_USER_NO, 
+				A.AI_INPT_CNCT_URL_NM, 
+				A.AI_INPT_CNCT_IPAD, 
+				A.AI_INPT_CNCT_MCHR_NM, 
+				A.AI_INPT_CNCT_SCRN_NO, 
+				A.AI_INPT_CNCT_FLD_CD, 
+				A.AI_INPT_CNCT_ACTI_CD, 
+				A.AI_INPT_CNCT_PARM_TXT, 
+				A.TRN_LOG_SRNO, 
+				A.LST_DB_CHG_ID,
+				TO_CHAR(TO_DATE(SUBSTR(A.AI_INPT_PGM_USG_HST_NO,1,14),'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI:SS') AS LST_DB_CHG_DTM,
+				(SELECT AI_INPT_USER_NM
+					FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_CNCT_USER_NO 
+					AND ROWNUM = 1) AS AI_INPT_CNCT_USER_NM,
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '700'
+					AND AI_INPT_CMN_CD = A.AI_INPT_CNCT_FLD_CD) AS AI_INPT_CNCT_FLD_NM,
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '701'
+					AND AI_INPT_CMN_CD = A.AI_INPT_CNCT_ACTI_CD) AS AI_INPT_CNCT_ACTI_NM,
+				(
+				SELECT AI_INPT_CMN_CD_NM
+				   FROM CSPD112TI
+				  WHERE AI_INPT_GRP_CD = '165'
+				    AND AI_INPT_CMN_CD = A.AI_INPT_CNCT_SCRN_NO
+				) AS AI_INPT_CNCT_SCRN_NM
+		FROM CSPD811TH A
+		WHERE 1=1
+		<include refid="selectListCond" />
+		
+		<choose>
+			<!-- 화면번호 -->
+			<when test='"aiInptCnctScrnNo".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_SCRN_NO
+			</when>
+			<when test='"aiInptCnctScrnNo".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_SCRN_NO DESC
+			</when>
+			<!-- 화면섹션 -->
+			<when test='"aiInptCnctFldNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_FLD_NM
+			</when>
+			<when test='"aiInptCnctFldNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_FLD_NM DESC
+			</when>
+			<!-- 행위 -->
+			<when test='"aiInptCnctActiNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_ACTI_NM
+			</when>
+			<when test='"aiInptCnctActiNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_ACTI_NM DESC
+			</when>
+			<!-- 접속자명 -->
+			<when test='"aiInptCnctUserNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_USER_NM
+			</when>
+			<when test='"aiInptCnctUserNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_USER_NM DESC
+			</when>
+			<!-- 접속시각 -->
+			<when test='"lstDbChgDtm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY LST_DB_CHG_DTM
+			</when>
+			<when test='"lstDbChgDtm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY LST_DB_CHG_DTM DESC
+			</when>
+			<!-- 아이피 -->
+			<when test='"aiInptCnctIpad".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_IPAD
+			</when>
+			<when test='"aiInptCnctIpad".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_IPAD DESC
+			</when>
+			<!-- 접속경로 -->
+			<when test='"aiInptCnctUrlNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_URL_NM
+			</when>
+			<when test='"aiInptCnctUrlNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_URL_NM DESC
+			</when>
+			<!-- 파라미터 -->
+			<when test='"aiInptCnctParmTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_PARM_TXT
+			</when>
+			<when test='"aiInptCnctParmTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_PARM_TXT DESC
+			</when>
+			<!-- 접속기기명 -->
+			<when test='"aiInptCnctMchrNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_MCHR_NM
+			</when>
+			<when test='"aiInptCnctMchrNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CNCT_MCHR_NM DESC
+			</when>
+			<otherwise>
+				ORDER BY LST_DB_CHG_DTM DESC	
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 프로그램 사용 이력관리 (7022) */
+		/* AdminLogProgramMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD811TH A
+		WHERE 1=1
+		<include refid="selectListCond" />
+	</select>
+
+	<select id="selectTrnLogSrno" parameterType="com.woori.ajs.model.SearchVO" resultType="string">
+		/* AdminLogProgramMapper.selectTrnLogSrno */
+		SELECT SUBSTR(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6'), 1, 8) || 
+		       #{userId} || 
+		       SUBSTR(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6'), 9, 20) ||
+		       LPAD(ROUND(DBMS_RANDOM.VALUE(1, 20)), 2, 0) AS TRN_LOG_SRNO
+		  FROM DUAL
+		<include refid="selectListCond" />
+	</select>
+	
+	<select id="selectCheckActionCodeUsingYN" parameterType="string" resultType="string">
+		/* 프로그램 사용 이력관리 (7022) */
+		/* AdminLogProgramMapper.selectCheckActionCodeUsingYN */
+		SELECT AI_INPT_CMN_USG_YN FROM CSPD112TI
+		 WHERE AI_INPT_GRP_CD = '701'
+		   AND AI_INPT_CMN_CD = #{value}
+	</select>
+	
+	<sql id="selectListCond">
+		<if test="schUserNo != null and schUserNo != ''">
+			AND AI_INPT_CNCT_USER_NO = #{schUserNo}
+		</if>
+		<if test="schSdate1 != null and schSdate1 != '' and schEdate1 != null and schEdate1 != ''">
+			<!-- AND SUBSTR(LST_DB_CHG_DTM,1,8) BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','') -->
+			     AND AI_INPT_PGM_USG_HST_NO BETWEEN REPLACE(#{schSdate1},'-','') || '000000000000' AND REPLACE(#{schEdate1},'-','') || '999999999999'
+		</if>
+		<if test="trnLogSrno != null and trnLogSrno != ''">
+			AND TRN_LOG_SRNO LIKE '%'||#{trnLogSrno}||'%'
+		</if>
+	</sql>
+	
+	<insert id="insert" parameterType="com.woori.ajs.model.AdminLogProgramVO">
+		/* 프로그램 사용 이력관리 (7022) */
+		/* AdminLogProgramMapper.insert */
+		INSERT INTO CSPD811TH (
+			AI_INPT_PGM_USG_HST_NO
+			, AI_INPT_CNCT_USER_NO
+			, AI_INPT_CNCT_IPAD
+			, AI_INPT_CNCT_MCHR_NM
+			, AI_INPT_CNCT_SCRN_NO
+	     	, AI_INPT_CNCT_FLD_CD 
+		    , AI_INPT_CNCT_ACTI_CD 
+			, AI_INPT_CNCT_PARM_TXT
+			, TRN_LOG_SRNO
+			, LST_DB_CHG_ID
+			, LST_DB_CHG_DTM
+		) VALUES (
+			<!-- <include refid="com.woori.ajs.common.curdate"/> -->
+			(SELECT SUBSTR(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6'), 1, 17) || LPAD(ROUND(DBMS_RANDOM.VALUE(1, 999)), 3, 0) FROM DUAL)
+			, #{aiInptCnctUserNo}
+			, #{aiInptCnctIpad}
+			, SUBSTRB(#{aiInptCnctMchrNm},1,199)
+			, #{aiInptCnctScrnNo}
+			, #{aiInptCnctFldCd} 
+			, #{aiInptCnctActiCd} 
+			, SUBSTRB(#{aiInptCnctParmTxt},1,999)
+			, #{trnLogSrno}
+			, #{lstDbChgId}
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CommonSanctionStatMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.CommonSanctionStatVO">
+		<result property="aiInptListId" column="AI_INPT_LIST_ID" />
+		<result property="aiInptListNm" column="AI_INPT_LIST_NM" />
+		<result property="aiInptRsptTxtDesTxt" column="AI_INPT_RSPT_TXT_DES_TXT" />
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptSanctionNo" column="INPT_SANCTION_NO" />
+		<result property="inptSantionDatTxt" column="INPT_SANCTION_DAT_TXT" />
+	</resultMap>
+	
+	<select id="selectWatchList" resultMap="listMap">
+		SELECT AI_INPT_LIST_ID
+               , AI_INPT_LIST_NM
+          FROM CSPD103TI
+        WHERE AI_INPT_LIST_YN = 'Y'
+	</select>
+	
+	<sql id="selectListWhereForText">
+		WHERE (A.INPT_SANCTION_DAT_TXT IS NOT NULL OR A.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL)
+        AND B.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')
+        <if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+          AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+        </if>
+        <if test="!(actlFxRefno == '' or actlFxRefno == null)">
+		  AND B.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+		 AND A.INPT_SANCTION_NO = {#inptSanctionNo}
+		 AND (A.ITM_INPT_HNDG_INP_DAT_TXT = {#aiInptListText} OR A.INPT_SANCTION_DAT_TXT= {#aiInptListText})
+		 AND A.SAFEWATCH_ITM_YN='Y'
+	</sql>
+	
+	<sql id="selectListWhereForlist">
+		WHERE (A.INPT_SANCTION_DAT_TXT IS NOT NULL OR A.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL)
+        AND B.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')
+        <if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+          AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+        </if>
+        <if test="!(actlFxRefno == '' or actlFxRefno == null)">
+		  AND B.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+		
+		<if test="!(rsptTxtDesTxt == null)">
+			AND (A.ITM_INPT_HNDG_INP_DAT_TXT IN
+			  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">
+			  		#{item}
+			  </foreach>
+			  		OR A.INPT_SANCTION_DAT_TXT IN
+			  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">
+			  		#{item}
+			  </foreach>
+		  )
+		</if>
+		AND A.INPT_SANCTION_NO = {#inptSanctionNo}
+        AND A.SAFEWATCH_ITM_YN='Y'
+	</sql>
+	
+	<sql id="selectListWhereForTextFromTwo">
+		AND A.INPT_ATMC_REQ_DSCD != '3' 																		<!-- 심사자동화요청구분코드(3:취소) -->
+		<!-- AND '15' > {#inptSanctionNo} --> 
+        <if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+        	AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+        </if>
+        <if test="!(actlFxRefno == '' or actlFxRefno == null)">
+			AND B.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+	
+	</sql>
+	
+	<sql id="selectListWhereForlistFromTwo">
+		
+        <if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+          AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+        </if>
+        <if test="!(actlFxRefno == '' or actlFxRefno == null)">
+		  AND B.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+		
+		<if test="!(rsptTxtDesTxt == null)">
+			AND (A.ITM_INPT_HNDG_INP_DAT_TXT IN
+			  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">
+			  		UPPER(#{item})
+			  </foreach>
+			  		OR A.INPT_SANCTION_DAT_TXT IN
+			  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">
+			  		UPPER(#{item})
+			  </foreach>
+		  )
+		</if>
+		AND A.INPT_SANCTION_NO = {#inptSanctionNo}
+        AND A.SAFEWATCH_ITM_YN='Y'
+	</sql>
+	
+	
+	<sql id="selectListWhere">
+		WHERE (A.INPT_SANCTION_DAT_TXT IS NOT NULL OR A.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL)
+          AND B.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')
+          <if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+          AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+          </if>
+          <if test="!(actlFxRefno == '' or actlFxRefno == null)">
+		  AND B.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		  </if>
+          <choose>
+          	<when test="inptSanctionNo1 != '' and inptSanctionNo1 != null and inptSanctionNo2 != '' and inptSanctionNo2 != null and inptSanctionNo3 != '' and inptSanctionNo3 != null and inptSanctionNo4 != '' and inptSanctionNo4 != null and inptSanctionNo5 != '' and inptSanctionNo5 != null">
+          AND A.INPT_SANCTION_NO IN (#{inptSanctionNo1}, #{inptSanctionNo2}, #{inptSanctionNo3}, #{inptSanctionNo4}, #{inptSanctionNo5})
+          	</when>
+          	<when test="inptSanctionNo1 != '' and inptSanctionNo1 != null and inptSanctionNo2 != '' and inptSanctionNo2 != null and inptSanctionNo3 != '' and inptSanctionNo3 != null and inptSanctionNo4 != '' and inptSanctionNo4 != null">
+          AND A.INPT_SANCTION_NO IN (#{inptSanctionNo1}, #{inptSanctionNo2}, #{inptSanctionNo3}, #{inptSanctionNo4})
+          	</when>
+          	<when test="inptSanctionNo1 != '' and inptSanctionNo1 != null and inptSanctionNo2 != '' and inptSanctionNo2 != null and inptSanctionNo3 != '' and inptSanctionNo3 != null">
+          AND A.INPT_SANCTION_NO IN (#{inptSanctionNo1}, #{inptSanctionNo2}, #{inptSanctionNo3})
+          	</when>
+          	<when test="inptSanctionNo1 != '' and inptSanctionNo1 != null and inptSanctionNo2 != '' and inptSanctionNo2 != null">
+          AND A.INPT_SANCTION_NO IN (#{inptSanctionNo1}, #{inptSanctionNo2})
+          	</when>
+          	<otherwise>
+          AND A.INPT_SANCTION_NO = #{inptSanctionNo1}
+          	</otherwise>
+          </choose>
+	</sql>
+	
+	<select id="selectInptMstSrnoList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT DISTINCT A.INPT_MST_SRNO
+          FROM CSPD004TF A
+          JOIN CSPD001TM B ON B.INPT_MST_SRNO = A.INPT_MST_SRNO
+        <include refid="selectListWhere"/>
+        ORDER BY A.INPT_MST_SRNO
+	</select>
+	
+	<select id="selectSanctionList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT A.INPT_MST_SRNO
+               , A.INPT_SANCTION_NO
+               , CASE WHEN A.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL THEN A.ITM_INPT_HNDG_INP_DAT_TXT ELSE A.INPT_SANCTION_DAT_TXT END AS INPT_SANCTION_DAT_TXT
+          FROM CSPD004TF A
+          JOIN CSPD001TM B ON B.INPT_MST_SRNO = A.INPT_MST_SRNO
+        <include refid="selectListWhere"/>
+        ORDER BY A.INPT_MST_SRNO, CASE WHEN A.INPT_SANCTION_NO = #{inptSanctionNo1} THEN 1
+                                       WHEN A.INPT_SANCTION_NO = #{inptSanctionNo2} THEN 2
+                                       WHEN A.INPT_SANCTION_NO = #{inptSanctionNo3} THEN 3
+                                       WHEN A.INPT_SANCTION_NO = #{inptSanctionNo4} THEN 4
+                                       WHEN A.INPT_SANCTION_NO = #{inptSanctionNo5} THEN 5
+                                       ELSE 99 END
+	</select>
+	
+	<select id="selectWatchItemList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT #{inptSanctionNo}
+		       , AI_INPT_LIST_ID
+		       , AI_INPT_RSPT_TXT_DES_TXT
+		  FROM CSPD104TI
+		WHERE AI_INPT_LIST_ID = #{aiInptListId}
+	</select>
+	
+	<select id="selectDataFromEight" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT A.INPT_MST_SRNO
+               , A.INPT_SANCTION_NO
+               , CASE WHEN A.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL THEN A.ITM_INPT_HNDG_INP_DAT_TXT ELSE A.INPT_SANCTION_DAT_TXT END AS INPT_SANCTION_DAT_TXT
+          FROM CSPD004TF A
+          JOIN CSPD001TM B ON B.INPT_MST_SRNO = A.INPT_MST_SRNO
+        <include refid="selectListWhereForText"/>
+       <!--  ORDER BY A.INPT_MST_SRNO
+        , CASE WHEN A.INPT_SANCTION_NO = #{inptSanctionNo1} THEN 1
+           WHEN A.INPT_SANCTION_NO = #{inptSanctionNo2} THEN 2
+           WHEN A.INPT_SANCTION_NO = #{inptSanctionNo3} THEN 3
+           WHEN A.INPT_SANCTION_NO = #{inptSanctionNo4} THEN 4
+           WHEN A.INPT_SANCTION_NO = #{inptSanctionNo5} THEN 5
+           ELSE 99 END -->
+	</select>
+	
+	<select id="selectDataFromEightForList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT A.INPT_MST_SRNO
+               , A.INPT_SANCTION_NO
+               , CASE WHEN A.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL THEN A.ITM_INPT_HNDG_INP_DAT_TXT ELSE A.INPT_SANCTION_DAT_TXT END AS INPT_SANCTION_DAT_TXT
+          FROM CSPD004TF A
+          JOIN CSPD001TM B ON B.INPT_MST_SRNO = A.INPT_MST_SRNO
+        <include refid="selectListWhereForlist"/>
+	</select>
+	
+	<select id="selectDataFromTwo" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT B.INPT_MST_SRNO 
+			 , UPPER(CASE WHEN {#inptSanctionNo} = '05' THEN	A.CUS_KORL_NM 									<!-- 05:고객한글명(매입의뢰인/개설의뢰인) 인 경우  -->
+				          WHEN {#inptSanctionNo} = '08' THEN	A.XPBY_COL_CTR_CUCD 							<!-- 08:통화(매입통화/접수통화) = 수출매입추심계약통화코드 -->				        
+				          WHEN {#inptSanctionNo} = '10' THEN	A.XPO_PTN_NACD 									<!-- 10:수출상대국코드=수출국가코드 -->	
+				          WHEN {#inptSanctionNo} = '11' THEN	A.HS_CD 										<!-- 11:HS코드 -->
+				          WHEN {#inptSanctionNo} = '13' THEN	A.DACC_BRCD 									<!-- 13:영업점코드 = 일계점코드 -->	
+			         END) AS INPT_SANCTION_DAT_TXT     
+			 , {#inptSanctionNo} AS INPT_SANCTION_NO   
+		FROM CSPD201TM A, CSPD001TM B
+		WHERE B.ACTL_FX_REFNO = A.FX_ACNO																		<!-- 외환계좌번호 -->
+		AND B.FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ 																	<!-- 수출커버링작성회차 -->
+		AND A.XPO_CVRG_MTBR_MK_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')  
+	    <choose>
+			<when test="inptSanctionNo == '05'">
+				AND A.CUS_KORL_NM LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>	
+			<when test="inptSanctionNo == '08'">
+				AND A.XPBY_COL_CTR_CUCD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>			
+			<when test="inptSanctionNo == '10'">
+				AND A.XPO_PTN_NACD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>
+			<when test="inptSanctionNo == '11'">
+				AND A.HS_CD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>
+			<when test="inptSanctionNo == '13'">
+				AND A.DACC_BRCD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>
+		</choose>			
+		<include refid="selectListWhereForTextFromTwo"/>								
+		
+		UNION ALL   
+		
+		SELECT B.INPT_MST_SRNO 
+			  , UPPER(CASE WHEN {#inptSanctionNo} = '05' THEN	A.CUS_KORL_NM 									<!-- 05:고객한글명(매입의뢰인/개설의뢰인) 인 경우 --> 
+					       WHEN {#inptSanctionNo} = '08' THEN	A.TDOC_RCP_CUCD 								<!-- 08:통화(매입통화/접수통화) = 운송서류접수통화코드 -->		        
+					       WHEN {#inptSanctionNo} = '10' THEN	A.XPO_NACD 										<!-- 10:수출상대국코드=수출국가코드 -->	
+					       WHEN {#inptSanctionNo} = '11' THEN	A.HS_CD 										<!-- 11:HS코드 -->
+					       WHEN {#inptSanctionNo} = '13' THEN	A.DACC_BRCD 									<!-- 13:영업점코드 = 일계점코드 -->	
+			     	  END) AS INPT_SANCTION_DAT_TXT        
+			  , {#inptSanctionNo} AS INPT_SANCTION_NO
+		FROM CSPD202TM A, CSPD001TM B
+		WHERE B.ACTL_FX_REFNO = A.FX_ACNO																		<!-- 외환계좌번호 -->
+		AND B.FX_REFNO_SRNO = A.TDOC_RCP_SRNO 																	<!-- 운송서류접수일련번호 -->
+		AND A.TDOC_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')   
+		<choose>
+			<when test="inptSanctionNo == '05'">
+				AND A.CUS_KORL_NM LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>	
+			<when test="inptSanctionNo == '08'">
+				AND A.TDOC_RCP_CUCD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>			
+			<when test="inptSanctionNo == '10'">
+				AND A.XPO_NACD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>
+			<when test="inptSanctionNo == '11'">
+				AND A.HS_CD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>
+			<when test="inptSanctionNo == '13'">
+				AND A.DACC_BRCD LIKE '%' || UPPER(#{aiInptListText}) || '%'
+			</when>
+		</choose>			
+		<include refid="selectListWhereForTextFromTwo"/>
+		
+	</select>
+	
+	<select id="selectDataFromTwoForList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT B.INPT_MST_SRNO 
+			 , UPPER(CASE WHEN {#inptSanctionNo} = '05' THEN	A.CUS_KORL_NM 									<!-- 05:고객한글명(매입의뢰인/개설의뢰인) 인 경우  -->
+				          WHEN {#inptSanctionNo} = '08' THEN	A.XPBY_COL_CTR_CUCD 							<!-- 08:통화(매입통화/접수통화) = 수출매입추심계약통화코드 -->				        
+				          WHEN {#inptSanctionNo} = '10' THEN	A.XPO_PTN_NACD 									<!-- 10:수출상대국코드=수출국가코드 -->	
+				          WHEN {#inptSanctionNo} = '11' THEN	A.HS_CD 										<!-- 11:HS코드 -->
+				          WHEN {#inptSanctionNo} = '13' THEN	A.DACC_BRCD 									<!-- 13:영업점코드 = 일계점코드 -->	
+			         END) AS INPT_SANCTION_DAT_TXT     
+			 , {#inptSanctionNo} AS INPT_SANCTION_NO   
+		FROM CSPD201TM A, CSPD001TM B
+		WHERE B.ACTL_FX_REFNO = A.FX_ACNO																		<!-- 외환계좌번호 -->
+		AND B.FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ 																	<!-- 수출커버링작성회차 -->
+		AND A.XPO_CVRG_MTBR_MK_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')  
+	    <choose>
+			<when test="inptSanctionNo == '05'">
+				AND A.CUS_KORL_NM IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>	
+			<when test="inptSanctionNo == '08'">
+				AND A.TDOC_RCP_CUCD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>			
+			<when test="inptSanctionNo == '10'">
+				AND A.XPO_NACD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>
+			<when test="inptSanctionNo == '11'">
+				AND A.HS_CD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>
+			<when test="inptSanctionNo == '13'">
+				AND A.DACC_BRCD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>
+		</choose>			
+		<include refid="selectListWhereForTextFromTwo"/>								
+		
+		UNION ALL   
+		
+		SELECT B.INPT_MST_SRNO 
+			  , UPPER(CASE WHEN {#inptSanctionNo} = '05' THEN	A.CUS_KORL_NM 									<!-- 05:고객한글명(매입의뢰인/개설의뢰인) 인 경우 --> 
+					       WHEN {#inptSanctionNo} = '08' THEN	A.TDOC_RCP_CUCD 								<!-- 08:통화(매입통화/접수통화) = 운송서류접수통화코드 -->		        
+					       WHEN {#inptSanctionNo} = '10' THEN	A.XPO_NACD 										<!-- 10:수출상대국코드=수출국가코드 -->	
+					       WHEN {#inptSanctionNo} = '11' THEN	A.HS_CD 										<!-- 11:HS코드 -->
+					       WHEN {#inptSanctionNo} = '13' THEN	A.DACC_BRCD 									<!-- 13:영업점코드 = 일계점코드 -->	
+			     	  END) AS INPT_SANCTION_DAT_TXT        
+			  , {#inptSanctionNo} AS INPT_SANCTION_NO
+		FROM CSPD202TM A, CSPD001TM B
+		WHERE B.ACTL_FX_REFNO = A.FX_ACNO																		<!-- 외환계좌번호 -->
+		AND B.FX_REFNO_SRNO = A.TDOC_RCP_SRNO 																	<!-- 운송서류접수일련번호 -->
+		AND A.TDOC_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')   
+
+  		<choose>
+			<when test="inptSanctionNo == '05'">
+				AND A.CUS_KORL_NM IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>	
+			<when test="inptSanctionNo == '08'">
+				AND A.TDOC_RCP_CUCD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>			
+			<when test="inptSanctionNo == '10'">
+				AND A.XPO_NACD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>
+			<when test="inptSanctionNo == '11'">
+				AND A.HS_CD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>
+			<when test="inptSanctionNo == '13'">
+				AND A.DACC_BRCD IN
+				<if test="!(rsptTxtDesTxt == null)">
+				  <foreach collection="rsptTxtDesTxt" item="item" separator="," open="(" close=")">	
+				  	 UPPER({#item})
+				  </foreach> 		
+				</if>
+			</when>
+		</choose>	
+		<include refid="selectListWhereForTextFromTwo"/>
+	</select>	
+</mapper>

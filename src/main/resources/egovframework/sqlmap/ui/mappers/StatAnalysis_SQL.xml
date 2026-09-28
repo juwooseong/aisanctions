@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.StatAnalysisMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.StatAnalysisVO">
+		<result property="nomal" column="NOMAL_COUNT"/>	                              <!-- 정상건수 갯수 --> 
+		<result property="day" column="INPT_RCP_DT"/>	                              <!-- 업무등록 일자 --> 
+		<result property="ta" column="RECLFI_COUNT"/>	                                 
+		<result property="textNonExtr" column="SUGI_COUNT"/>	             
+		<result property="aicr" column="SCORE_COUNT"/>	 
+		<result property="mas" column="MAS_COUNT"/>                              
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 성능분석 통계  리스트 (나중에 업무 생성일자로 바꿔야함. 현재는 수/출입 테이블의 업무 생성일자의 싱크가 안맞는 문제로  업무수행 날짜와 조인되어있음) */
+		WITH LIST(INPT_RCP_DT, MAS_COUNT, NOMAL_COUNT, RECLFI_COUNT, SUGI_COUNT, SCORE_COUNT) AS (	                         
+		SELECT MAS.INPT_RCP_DT AS INPT_RCP_DT	                         	                         	                           
+		    , NVL(MAS.MAS_COUNT, 0) AS MAS_COUNT
+			, NVL(NOMAL.NOMAL_COUNT, 0) AS NOMAL_COUNT 
+			, NVL(RECLFI.RECLFI_COUNT, 0) AS RECLFI_COUNT    	                         	                        
+			, NVL(SUGI.SUGI_COUNT, 0) AS SUGI_COUNT    	                         	                                   
+			, NVL(SCORE.SCORE_COUNT, 0) AS SCORE_COUNT    	                                 
+		FROM
+		
+		 (
+			SELECT COUNT(DISTINCT INPT_MST_SRNO) AS MAS_COUNT
+				,INPT_RCP_DT
+			FROM CSPD001TM 
+			WHERE AI_INPT_ACVT_CD IN('160', '140')
+			GROUP BY INPT_RCP_DT
+		 )MAS 
+		 
+		 ,(
+			SELECT COUNT(DISTINCT A.INPT_MST_SRNO) AS NOMAL_COUNT
+				, A.INPT_RCP_DT
+			FROM CSPD001TM A
+			WHERE  NOT EXISTS(
+				SELECT INPT_MST_SRNO 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = A.INPT_MST_SRNO  
+				AND (AI_INPT_ACVT_CD = '80' OR AI_INPT_ACVT_CD = '40'))
+			AND A.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY  A.INPT_RCP_DT
+		 )NOMAL                                                                   	  
+		  
+		,(
+			SELECT COUNT(A.INPT_MST_SRNO) AS RECLFI_COUNT
+				, A.INPT_RCP_DT 
+			FROM CSPD001TM A
+			WHERE EXISTS(
+				SELECT INPT_MST_SRNO 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = A.INPT_MST_SRNO  
+				AND AI_INPT_ACVT_CD = '40')
+			AND A.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY A.INPT_RCP_DT
+		)RECLFI
+			
+		,(
+			SELECT COUNT(A.INPT_MST_SRNO) AS SUGI_COUNT
+				, A.INPT_RCP_DT
+			FROM CSPD001TM A
+			WHERE EXISTS(
+				SELECT INPT_MST_SRNO 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = A.INPT_MST_SRNO  
+				AND (AI_INPT_ACVT_CD = '80' OR AI_INPT_ACVT_CD = '40'))
+			AND A.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY  A.INPT_RCP_DT
+		)SUGI 
+		
+		,(
+			SELECT COUNT(DISTINCT A.INPT_MST_SRNO) AS SCORE_COUNT
+			      , B.INPT_RCP_DT
+			FROM CSPD002TG A
+			    , CSPD001TM B 
+			    , CSPD112TI C
+			    , CSPD112TI D
+			WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO
+			AND C.AI_INPT_GRP_CD = '901'
+			AND (C.AI_INPT_CMN_CD_NM > A.AI_INPT_PAPS_QLT_SCRE OR C.AI_INPT_CMN_CD_NM = A.AI_INPT_PAPS_QLT_SCRE)
+			AND D.AI_INPT_GRP_CD = '902' AND D.AI_INPT_INTF_ITM_NM = 'IN' AND D.AI_INPT_CMN_USG_YN = 'Y'
+			AND A.IMEX_HIS_CD = D.AI_INPT_CMN_CD
+			AND B.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY B.INPT_RCP_DT
+		)SCORE
+		
+		WHERE MAS.INPT_RCP_DT = RECLFI.INPT_RCP_DT (+)  <!-- 아우터 조인 필수 !! -->                                                            
+		AND MAS.INPT_RCP_DT = NOMAL.INPT_RCP_DT (+)  
+		AND MAS.INPT_RCP_DT = SUGI.INPT_RCP_DT (+)                                                          
+		AND MAS.INPT_RCP_DT = SCORE.INPT_RCP_DT (+)                                                         
+	    AND MAS.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')  
+		-- ORDER BY MAS.INPT_RCP_DT                                                                      
+		)
+		
+		
+		SELECT NVL(INPT_RCP_DT,'합계(건)') AS INPT_RCP_DT           
+		    , SUM(MAS_COUNT) AS MAS_COUNT                                                     
+			, SUM(NOMAL_COUNT) AS NOMAL_COUNT 
+			, SUM(RECLFI_COUNT) AS RECLFI_COUNT                                                                        
+			, SUM(SUGI_COUNT)AS SUGI_COUNT                                                                             
+			, SUM(SCORE_COUNT) AS SCORE_COUNT                                                      
+		FROM LIST                                                                                                    
+		GROUP BY GROUPING SETS ((INPT_RCP_DT, MAS_COUNT, NOMAL_COUNT, RECLFI_COUNT, SUGI_COUNT, SCORE_COUNT),())            
+		
+		UNION ALL                                                                                                    
+		
+		SELECT '비율(%)' AS INPT_RCP_DT      
+		        , ROUND(SUM(MAS_COUNT) / (SUM(MAS_COUNT)) * 100, 1) AS MAS_COUNT                                                                                                                                                                             
+				, ROUND(SUM(NOMAL_COUNT) / (SUM(MAS_COUNT)) * 100, 1) AS NOMAL_COUNT                                   
+				, ROUND(SUM(RECLFI_COUNT) / (SUM(MAS_COUNT)) * 100, 1) AS RECLFI_COUNT                                   
+				, ROUND(SUM(SUGI_COUNT) / (SUM(MAS_COUNT)) * 100, 1)  AS SUGI_COUNT                                       
+				, ROUND(SUM(SCORE_COUNT)  / (SUM(MAS_COUNT)) * 100, 1) AS SCORE_COUNT                  	
+		FROM LIST                    
+		
+		ORDER BY CASE WHEN INPT_RCP_DT = '비율(%)' THEN 0 
+		WHEN INPT_RCP_DT = '합계(건)' THEN 1 ELSE 2 END DESC
+		
+		<choose>	
+			<when test="'mas'.equals(sortItem) and 'asc'.equals(sortDir)">
+				, MAS_COUNT
+			</when>
+			<when test="'mas'.equals(sortItem) and 'desc'.equals(sortDir)">
+		    	, MAS_COUNT DESC
+			</when>
+			<when test="'nomal'.equals(sortItem) and 'asc'.equals(sortDir)">
+				, NOMAL_COUNT
+			</when>
+			<when test="'nomal'.equals(sortItem) and 'desc'.equals(sortDir)">
+				, NOMAL_COUNT DESC
+			</when>
+			<when test="'ta'.equals(sortItem) and 'asc'.equals(sortDir)">
+				, RECLFI_COUNT
+			</when>
+			<when test="'ta'.equals(sortItem) and 'desc'.equals(sortDir)">
+				, RECLFI_COUNT DESC
+			</when>
+			<when test="'textNonExtr'.equals(sortItem) and 'asc'.equals(sortDir)">
+				, SUGI_COUNT
+			</when>
+			<when test="'textNonExtr'.equals(sortItem) and 'desc'.equals(sortDir)">
+				, SUGI_COUNT DESC
+			</when>
+			<when test="'aicr'.equals(sortItem) and 'asc'.equals(sortDir)">
+				, SCORE_COUNT
+			</when>
+			<when test="'aicr'.equals(sortItem) and 'desc'.equals(sortDir)">
+				, SCORE_COUNT DESC
+			</when>
+			<when test="'day'.equals(sortItem) and 'asc'.equals(sortDir)">
+				, INPT_RCP_DT
+			</when>
+			<when test="'day'.equals(sortItem) and 'desc'.equals(sortDir)">
+				, INPT_RCP_DT DESC
+			</when>
+			<otherwise>                                                                                   <!-- Default 업무수행 날짜 기준 내림차순 정렬 처리 -->
+				, INPT_RCP_DT ASC
+			</otherwise> 
+		</choose>          
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 성능분석 통계 리스트 갯수 */
+		SELECT COUNT(*) FROM
+		  (
+			SELECT COUNT(DISTINCT INPT_MST_SRNO) AS MAS_COUNT
+				,INPT_RCP_DT
+			FROM CSPD001TM 
+			WHERE AI_INPT_ACVT_CD IN('160', '140')
+			GROUP BY INPT_RCP_DT
+		 )MAS 
+		 
+		 ,(
+			SELECT COUNT(DISTINCT A.INPT_MST_SRNO) AS NOMAL_COUNT
+				, A.INPT_RCP_DT
+			FROM CSPD001TM A
+			WHERE  NOT EXISTS(
+				SELECT INPT_MST_SRNO 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = A.INPT_MST_SRNO  
+				AND (AI_INPT_ACVT_CD = '80' OR AI_INPT_ACVT_CD = '40'))
+			AND A.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY  A.INPT_RCP_DT
+		 )NOMAL                                                                   	  
+		  
+		,(
+			SELECT COUNT(A.INPT_MST_SRNO) AS RECLFI_COUNT
+				, A.INPT_RCP_DT 
+			FROM CSPD001TM A
+			WHERE EXISTS(
+				SELECT INPT_MST_SRNO 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = A.INPT_MST_SRNO  
+				AND AI_INPT_ACVT_CD = '40')
+			AND A.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY A.INPT_RCP_DT
+		)RECLFI
+			
+		,(
+			SELECT COUNT(A.INPT_MST_SRNO) AS SUGI_COUNT
+				, A.INPT_RCP_DT
+			FROM CSPD001TM A
+			WHERE EXISTS(
+				SELECT INPT_MST_SRNO 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = A.INPT_MST_SRNO  
+				AND (AI_INPT_ACVT_CD = '80' OR AI_INPT_ACVT_CD = '40'))
+			AND A.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY  A.INPT_RCP_DT
+		)SUGI 
+		
+		,(
+			SELECT COUNT(DISTINCT A.INPT_MST_SRNO) AS SCORE_COUNT
+			      , B.INPT_RCP_DT
+			FROM CSPD002TG A
+			    , CSPD001TM B 
+			    , CSPD112TI C
+			    , CSPD112TI D
+			WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO
+			AND C.AI_INPT_GRP_CD = '901'
+			AND (C.AI_INPT_CMN_CD_NM > A.AI_INPT_PAPS_QLT_SCRE OR C.AI_INPT_CMN_CD_NM = A.AI_INPT_PAPS_QLT_SCRE)
+			AND D.AI_INPT_GRP_CD = '902'
+			AND A.IMEX_HIS_CD = D.AI_INPT_CMN_CD
+			AND B.AI_INPT_ACVT_CD IN('160', '140')	
+			GROUP BY B.INPT_RCP_DT
+		)SCORE
+		
+		WHERE MAS.INPT_RCP_DT = RECLFI.INPT_RCP_DT (+)                                                          
+		AND MAS.INPT_RCP_DT = NOMAL.INPT_RCP_DT (+)  
+		AND MAS.INPT_RCP_DT = SUGI.INPT_RCP_DT (+)                                                          
+		AND MAS.INPT_RCP_DT = SCORE.INPT_RCP_DT (+)                                                         
+ 	    AND MAS.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') 
+		
+	</select>
+</mapper>

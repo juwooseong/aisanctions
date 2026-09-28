@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.RevertStatCompleteMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.RevertStatCompleteVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />                                          <!-- main from 절  -->
+		<result property="inptRcpDt" column="INPT_RCP_DT" />                                              <!-- 업무수행 일자 -->
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />                                          <!-- Reference Number  -->
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM" />                                         <!-- 사용자 이름 -->
+		<result property="inptAtvtCd" column="AI_INPT_ACVT_CD" />                                         <!-- 액티비티 코드 -->
+		<result property="fcCucd" column="FC_CUCD" />                                                     <!-- 통화 코드  -->
+		<result property="fcCuNm" column="FC_CUNM" />                                                     <!-- 통화 명칭 -->
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM" />                                         <!-- 금액 -->
+		<result property="inptBizAlctCrpeEno" column="INPT_BIZ_ALCT_CRPE_ENO" />                          <!-- 담당자 번호 -->
+		<result property="inptAtmcBizNm" column="INPT_ATMC_BIZ_NM" />                                     <!-- 업무 명칭 -->
+		<result property="aiInptCmnCd" column="AI_INPT_CMN_CD" />                                         <!-- 업무 구분 코드 -->
+		<result property="totaltextAiInptRstCd" column="TOTALTEXT_AI_INPT_RST_CD" />                      <!-- TotalText 상태 코드 -->
+		<result property="totaltextAiInptRstNm" column="TOTALTEXT_AI_INPT_RST_NM" />                      <!-- TotalText 상태 명칭 -->
+		<result property="itmInptAiInptRstCd" column="ITM_INPT_AI_INPT_RST_CD" />                         <!-- 항목심사 상태 코드 -->
+		<result property="itmInptAiInptRstNm" column="ITM_INPT_AI_INPT_RST_NM" />                         <!-- 항목심사 상태 명칭 -->
+		<result property="safewatchAiInptRstCd" column="SAFEWATCH_AI_INPT_RST_CD" />                      <!-- SafeWatch 상태 코드 -->
+		<result property="safewatchAiInptRstNm" column="SAFEWATCH_AI_INPT_RST_NM" />                      <!-- SafeWatch 상태 명칭-->
+		<result property="s1User" column="S1_USER" />                                                     <!-- 심사자 직원 이름 -->
+		<result property="s2User" column="S2_USER" />                                                     <!-- 결재자 직원 이름 -->
+		<result property="mstQltGrnAiInptRstCd" column="MST_QLT_GRN_AI_INPT_RST_CD" />                    <!-- 자체점검 결과 상태 코드 -->
+		<result property="aiInptBizNm" column="AI_INPT_BIZ_NM" />                                         <!-- 완료구분 -->
+		<result property="aiInptCusNo" column="AI_INPT_CSNO" />                                           <!-- 사용자 번호-->
+		<!-- <result property="inptBizAlctCrpeFnm" column="INPT_BIZ_ALCT_CRPE_FNM" />  -->
+		<result property="qarstNm" column="QARST_NM" />                                                   <!-- QA 결과 상태  코드 -->
+		<result property="aiInptQlasProsCd" column="AI_INPT_QLAS_PROS_CD" />
+		
+		<result property="trnOprNo" column="TRN_OPR_NO" />													<!-- 접수자 사번 -->
+		<result property="trnOprNoEr" column="TRN_OPR_NO_ER" />												<!-- 접수자 이름 -->
+		<result property="aiInptDocScanChrgEno" column="AI_INPT_DOC_SCAN_CHRG_ENO" />						<!-- 스캔자 사번 -->
+		<result property="aiInptDocScanChrgEnoEr" column="AI_INPT_DOC_SCAN_CHRG_ENO_ER" />					<!-- 스캔자 이름 -->
+		
+		<result property="s1UserQa" column="S1_USER_QA" />													<!-- QA심사자 -->
+		<result property="s2UserQa" column="S2_USER_QA" />													<!-- QA결재자 -->
+		<result property="krbrNm" column="KRBR_NM" />														<!-- 영업점명 -->
+		<result property="daccBrcd" column="DACC_BRCD" />													<!-- 영업점코드 -->
+		
+		<result property="completeBizNmXls" column="COMPLETE_BIZ_NM_XLS" />													<!-- 엑셀 -->
+	</resultMap>
+
+	<sql id="selectBody">
+		FROM (                                                                                            <!-- main from 절  -->
+			SELECT   M.INPT_MST_SRNO                                                                          <!-- 수/출입 업무 마스터 번호 --> 
+			       , M.INPT_RCP_DT                                                                          <!-- 수/출입 업무수행 일자 --> 
+			       , M.INPT_ATMC_BIZ_DSCD                                                                   <!-- 수/출입 업무구분 코드  --> 
+			       , M.AI_INPT_ACVT_CD                                                                      <!-- 수/출입 액티비티 코드 --> 
+			       , M.AI_INPT_APPV_STCD                                                                    <!-- 수/출입 결재 상태 코드 --> 
+			       , M.ACTL_FX_REFNO                                                                        <!-- 수/출입 Reference Number --> 
+				   , M.FX_REFNO_SRNO				   
+			       , M.AI_INSPE_ENO                                                                         <!-- 수/출입 심사자 번호 --> 
+			       , M.AI_INPT_SNPE_ENO                                                                     <!-- 수/출입 결재자번호 --> 
+			       , M.TOTALTEXT_AI_INPT_RST_CD                                                             <!-- totaltext 결과 상태 코드 --> 
+			       , M.ITM_INPT_AI_INPT_RST_CD                                                              <!-- 항목심사 결과 상태 코드 --> 
+			       , M.SAFEWATCH_AI_INPT_RST_CD                                                             <!-- SafeWatch 결과 상태 코드 -->
+			       , NULL AS QLT_GRN_AI_INPT_RST_CD                                                         <!-- QA 상태 코드 (수출/입 심사의 경우 해당사항 없기때문에 NULL로 선언.. 선언 안해도 됨 어차피 null이기 때문) -->
+			       , M.AI_INPT_PROS_CD AS AI_INPT_QLAS_PROS_CD											    <!-- 프로세스 코드 -->
+				   , M.AI_INPT_DOC_SCAN_CHRG_ENO
+				   , M.LST_DB_CHG_DTM
+				   , M.QLAS_CRPE_ENO
+				   , M.QLAS_SNPE_ENO
+				   , NVL(I.XPBY_COL_CTR_CUCD , E.TDOC_RCP_CUCD) AS XPBY_COL_CTR_CUCD 
+				   , NVL(I.XPBY_COL_AM, E.TDOC_RCP_AM)  AS XPBY_COL_AM
+				   , NVL(I.CUS_KORL_NM, E.CUS_KORL_NM)  AS CUS_KORL_NM
+				   , NVL(I.CSNO, E.CSNO)  				AS CSNO
+				   , NVL(I.TRN_OPR_NO, E.TRN_OPR_NO)  	AS TRN_OPR_NO
+				   , NVL(I.KRBR_NM, E.KRBR_NM)  		AS KRBR_NM
+				   , NVL(I.DACC_BRCD, E.DACC_BRCD)  	AS DACC_BRCD			
+			FROM CSPD001TM  M                                                                              <!-- 마스터 테이블 -->
+				,CSPD201TM I																		 <!-- 수입 테이블 -->
+				,CSPD202TM E																		 <!-- 수출 테이블 -->			
+			WHERE M.AI_INPT_ACVT_CD IN('140', '160')                                                        <!-- 액티비티 코드가 140, 160 (block, 승인) 상태인 경우 값들만 select-->
+			AND   M.ACTL_FX_REFNO = I.FX_ACNO(+)
+			AND   M.FX_REFNO_SRNO = I.XPO_CVRG_MK_SQ(+)
+			AND   M.ACTL_FX_REFNO = E.FX_ACNO(+)
+			AND   M.FX_REFNO_SRNO = E.TDOC_RCP_SRNO(+)
+			<!-- AND (AI_INPT_QLAS_APPV_STCD != '160' OR AI_INPT_QLAS_APPV_STCD IS NULL) -->              <!-- 해당 조건 추가하면 심사 결재 결과 및 QA 두개의 완려건이 있는 업무들인 경우, QA 자체점검 완료건만 나옴 -->
+			<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)">
+				AND M.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')     <!-- 날짜 조회 조건 -->
+			</if>
+			
+			
+			<if test= "aiInptCmnCd != '3'">                                      <!-- 업무구분 코드 조회 조건-->
+				<if test="!(inptAtvtCd == '' or inptAtvtCd == null)">                                         <!-- 액티비티 상태코드 조회조건-->
+				AND M.AI_INPT_ACVT_CD = #{inptAtvtCd}
+				</if>
+				
+				<choose>
+					<when test= "aiInptCmnCd == '0102'">                                                  <!--' 수출 + 수입'-->
+						AND M.INPT_ATMC_BIZ_DSCD IN ('1', '2')
+					</when>
+					<otherwise>
+						AND M.INPT_ATMC_BIZ_DSCD = #{aiInptCmnCd}
+					</otherwise>
+				</choose>
+			</if>
+			
+		
+			<if test="!(actlFxRefno == '' or actlFxRefno == null)">                                       <!-- Reference Number 조회조건 -->
+				AND M.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+			</if>
+	
+			<if test= "!(inptBizAlctCrpeEno == '' or inptBizAlctCrpeEno == null)">                      <!-- 사용자 번호 조회조건 (S1/S2/QA) -->                                         <!-- S1 : 심사자 -->
+					AND ( M.AI_INSPE_ENO = #{inptBizAlctCrpeEno} OR  
+						  M.AI_INPT_SNPE_ENO = #{inptBizAlctCrpeEno} OR
+						  M.QLAS_CRPE_ENO = #{inptBizAlctCrpeEno} )
+			 </if>
+
+			UNION ALL                                                                                     <!-- 심사 가상테이블 & QA 가상 테이블 UNION -->
+			
+			SELECT   M.INPT_MST_SRNO                                                                          <!-- 자체점검이 배치된 업무 마스터 번호 -->
+			       , M.INPT_RCP_DT                                                                          <!-- 자체점검이 배치된 업무수행 일자 -->
+			       , '3' AS INPT_ATMC_BIZ_DSCD                                                            <!-- 자체점검이 배치된 업무구분 코드 '3' -->
+			       , M.AI_INPT_QLAS_ACVT_CD AS AI_INPT_ACVT_CD                                              <!-- QA 액티비티 코드 -->
+			       , M.AI_INPT_QLAS_APPV_STCD AS AI_INPT_APPV_STCD                                          <!-- QA 액티비티 상태 코드 -->
+			       , M.ACTL_FX_REFNO                                                                        <!-- 자체점검이 배치된 업무 문서의 Reference Number -->
+				   , M.FX_REFNO_SRNO
+			       , M.AI_INSPE_ENO AS AI_INSPE_ENO                                                        <!-- QA 담당자 번호 -->
+			       , M.AI_INPT_SNPE_ENO AS AI_INPT_SNPE_ENO                                                    <!-- QA 결재자 번호 -->
+			       , M.TOTALTEXT_AI_INPT_RST_CD                                                             <!-- totaltext 결과 상태 코드 -->
+			       , M.ITM_INPT_AI_INPT_RST_CD                                                              <!-- 항목심사 결과 상태 코드 -->
+			       , M.SAFEWATCH_AI_INPT_RST_CD                                                             <!-- SafeWatch 결과 상태 코드  -->
+			       , M.QLT_GRN_AI_INPT_RST_CD                                                               <!-- QA 상태 코드  -->
+			       , M.AI_INPT_QLAS_PROS_CD																  <!-- 프로세스 코드 -->				   
+				   , M.AI_INPT_DOC_SCAN_CHRG_ENO
+				   , M.LST_DB_CHG_DTM
+				   , M.QLAS_CRPE_ENO
+				   , M.QLAS_SNPE_ENO
+				   , NVL(I.XPBY_COL_CTR_CUCD , E.TDOC_RCP_CUCD) AS XPBY_COL_CTR_CUCD 
+				   , NVL(I.XPBY_COL_AM, E.TDOC_RCP_AM)  AS XPBY_COL_AM
+				   , NVL(I.CUS_KORL_NM, E.CUS_KORL_NM)  AS CUS_KORL_NM
+				   , NVL(I.CSNO, E.CSNO)  				AS CSNO
+				   , NVL(I.TRN_OPR_NO, E.TRN_OPR_NO)  	AS TRN_OPR_NO
+				   , NVL(I.KRBR_NM, E.KRBR_NM)  		AS KRBR_NM
+				   , NVL(I.DACC_BRCD, E.DACC_BRCD)  	AS DACC_BRCD						   
+			FROM CSPD001TM M                                                                               <!-- 마스터 테이블 -->
+				,CSPD201TM I																		 <!-- 수입 테이블 -->
+				,CSPD202TM E																		 <!-- 수출 테이블 -->
+			WHERE M.AI_INPT_QLAS_APPV_STCD = '160'                                                           <!-- QA 결재상태코드가 160(승인) 상태인 경우만 select -->
+			AND   M.ACTL_FX_REFNO = I.FX_ACNO(+)
+			AND   M.FX_REFNO_SRNO = I.XPO_CVRG_MK_SQ(+)
+			AND   M.ACTL_FX_REFNO = E.FX_ACNO(+)
+			AND   M.FX_REFNO_SRNO = E.TDOC_RCP_SRNO(+)			
+			AND M.QLAS_PRG_YN = 'Y'                                                                         <!-- QA 담당자 배치 여부가 'Y' 인 경우만 select -->
+			AND M.QLAS_CRPE_ENO IS NOT NULL                                                                 <!-- QA 담당자 값이 null이 아닌경우 -->
+			<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)">
+				AND M.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') <!-- 날짜 조회 조건 -->
+			</if>
+			
+
+			<if test= "!(aiInptCmnCd == '' or aiInptCmnCd == null)">                                     
+				AND '3' = #{aiInptCmnCd}
+			</if>
+			 
+			<if test='inptAtvtCd == "10"'>     
+			AND M.QLT_GRN_AI_INPT_RST_CD = #{inptAtvtCd}
+			</if>
+			<if test='inptAtvtCd == "20"'>     
+			AND M.QLT_GRN_AI_INPT_RST_CD = #{inptAtvtCd}
+			</if>                         
+			
+			
+			<!-- QA 액티비티 코드 조회 조건 -->
+			<!-- 
+			<if test="!(inptAtvtCd == '' or inptAtvtCd == null)">                                         
+				AND M.AI_INPT_QLAS_APPV_STCD= #{inptAtvtCd}
+			</if>
+			 -->
+			
+			<if test="!(actlFxRefno == '' or actlFxRefno == null)">                                       <!-- Reference Number 조회 조건 -->
+				AND M.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+			</if>
+			
+
+			<if test= "!(inptBizAlctCrpeEno == '' or inptBizAlctCrpeEno == null)">                      <!-- 사용자 사번 조회 조건 -->
+				AND ( M.QLAS_CRPE_ENO = #{inptBizAlctCrpeEno} OR  
+						  M.QLAS_SNPE_ENO = #{inptBizAlctCrpeEno} )
+
+			</if>
+
+		) A
+		, CSPD112TI C                                             <!-- 수출/입 테이블 (201, 202)과의 조인 -->
+		, CSPD112TI D                                             <!-- 수출/입 테이블 (201, 202)과의 조인 -->
+		, CSPD112TI E                                             <!-- 수출/입 테이블 (201, 202)과의 조인 -->
+		, CSPD112TI F                                             <!-- 수출/입 테이블 (201, 202)과의 조인 -->
+		, CSPD112TI G                                             <!-- 수출/입 테이블 (201, 202)과의 조인 -->
+		, CSPD112TI H                                             <!-- 수출/입 테이블 (201, 202)과의 조인 -->
+		, CSPD101TI I                                             <!-- 심사자 및 QA 담당자 명을 가져오기 위한 사용자 테이블 (101)과의 조인 -->
+		, CSPD101TI J                                             <!-- 결재자 명을 가져오기 위한 사용자 테이블 (101)과의 조인 -->
+		WHERE 
+		    C.AI_INPT_GRP_CD(+) = '150' AND C.AI_INPT_CMN_CD(+) = A.INPT_ATMC_BIZ_DSCD                          <!-- 공통테이블 (112)의  업무구분 코드 공통코드 : '150'-->
+		AND D.AI_INPT_GRP_CD(+) = '290' AND D.AI_INPT_CMN_CD(+) = A.AI_INPT_ACVT_CD                           <!-- 공통테이블 (112)의  액티비티 코드 공통코드 : '290' -->
+		AND E.AI_INPT_GRP_CD(+) = '170' AND E.AI_INPT_CMN_CD(+) = A.TOTALTEXT_AI_INPT_RST_CD                    <!-- 공통테이블 (112)의  TotalText 상태 코드 공통코드 : '170' -->
+		AND F.AI_INPT_GRP_CD(+) = '170' AND F.AI_INPT_CMN_CD(+) = A.ITM_INPT_AI_INPT_RST_CD                     <!-- 공통테이블 (112)의  항목심사 상태 코드 공통코드 : '170' -->
+		AND G.AI_INPT_GRP_CD(+) = '170' AND G.AI_INPT_CMN_CD(+) = A.SAFEWATCH_AI_INPT_RST_CD                    <!-- 공통테이블 (112)의  SafeWatch 상태 코드 공통코드 : '170'  -->
+		AND H.AI_INPT_GRP_CD(+) = '190' AND H.AI_INPT_CMN_CD(+) = A.QLT_GRN_AI_INPT_RST_CD                <!-- 공통테이블 (112)의  자체점검 결과 상태 코드 : '190' (OUTER JOIN으로 해야함) -->
+		AND I.AI_INPT_USER_ID(+) = A.AI_INSPE_ENO                                                            <!-- 심사자 및 qa 담당자 명을 뽑아내기 위한 사용자 테이블과 from 절 (마스터 테이블)과의 조인-->
+		AND J.AI_INPT_USER_ID(+) = A.AI_INPT_SNPE_ENO                                                        <!-- 결재자 명을 뽑아내기 위한 사용자 테이블과 from 절 (마스터 테이블)과의 조인-->
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">   <!-- 사용자 번호 조회 조건-->
+		    AND A.CSNO = #{aiInptCusNo} 
+		</if>			   
+	</sql>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 수출수입심사현황 - 완료건 (4030) */
+		/* RevertStatCompleteMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT A.INPT_MST_SRNO                                                              <!-- 마스터 테이블(001)로부터 가져온 마스터 번호 -->
+		       , A.AI_INPT_ACVT_CD  
+		       , A.INPT_RCP_DT AS INPT_RCP_DT                                               <!-- 마스터 테이블(001)로부터 가져온 액태비티 코드 -->
+		       <!-- , TO_CHAR(TO_DATE(A.INPT_RCP_DT, 'YYYYMMDD'),'YYYY-MM-DD') AS INPT_RCP_DT --><!-- 마스터 테이블(001)로부터 가져온 업무수행 날짜 -->
+		       , A.INPT_ATMC_BIZ_DSCD AS AI_INPT_CMN_CD                                     <!-- 마스터 테이블(001)로부터 가져온 업무구분 코드 -->
+		       , A.TOTALTEXT_AI_INPT_RST_CD AS TOTALTEXT_AI_INPT_RST_CD                     <!-- 마스터 테이블(001)로부터 가져온 TotalText 결과코드 -->
+		       , A.ITM_INPT_AI_INPT_RST_CD AS ITM_INPT_AI_INPT_RST_CD                       <!-- 마스터 테이블(001)로부터 가져온 항목심사 결과코드 -->
+		       , A.SAFEWATCH_AI_INPT_RST_CD AS SAFEWATCH_AI_INPT_RST_CD                     <!-- 마스터 테이블(001)로부터 가져온 SafeWatch 결과코드 -->
+		       --, A.AI_INPT_QLAS_PROS_CD AS AI_INPT_QLAS_PROS_CD								
+		       , (SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '280' AND AI_INPT_CMN_CD = A.AI_INPT_QLAS_PROS_CD) AS AI_INPT_QLAS_PROS_CD <!-- 마스터 테이블(001)로부터 가져온 프로세스 코드 -->
+		       , C.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM                                    <!-- 마스터 테이블(001)로부터 가져온 업무구분 명칭-->
+		       , A.AI_INPT_APPV_STCD                                                        <!-- 마스터 테이블(001)로부터 결재상태 코드-->
+		       , D.AI_INPT_CMN_CD_NM AS AI_INPT_BIZ_NM                                      <!-- 마스터 테이블(001)로부터 결재상태 코드 : 완료구분 (승인, block)-->
+		       , A.ACTL_FX_REFNO                                                            <!-- 마스터 테이블(001)로부터 가져온 Reference Number -->			   
+		       , NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.QLAS_CRPE_ENO), ' ') AS S1_USER_QA													<!-- 마스터 테이블(001)로부터 가져온 QA담당자 -->
+		       , NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.QLAS_SNPE_ENO), ' ') AS S2_USER_QA					   
+			   <!-- 마스터 테이블(001)로부터 가져온 QA결재자 -->
+		       , A.KRBR_NM																	<!-- 원장 테이블(201 202)로부터 가져온 영업점명 -->
+		       , A.DACC_BRCD																<!-- 원장 테이블(201 202)로부터 가져온 영업점코드 -->
+		       , A.XPBY_COL_CTR_CUCD AS FC_CUNM                                             <!-- 마스터 테이블(001)로부터 가져온 통화 명칭 -->
+		       , A.XPBY_COL_AM AS AI_INPT_BUY_AM                                            <!-- 마스터 테이블(001)로부터 가져온 금액 -->
+		       , A.CSNO AS AI_INPT_CSNO                                                     <!-- 마스터 테이블(001)로부터 가져온 고객번호-->
+		       , A.CUS_KORL_NM AS AI_INPT_CUS_NM                                            <!-- 마스터 테이블(001)로부터 가져온 고객명-->
+		       , A.AI_INSPE_ENO                                                             <!-- 마스터 테이블(001)로부터 가져온 심사자 번호-->
+		       , I.AI_INPT_USER_NM AS S1_USER                                               <!-- 마스터 테이블(001)로부터 가져온 심사자 이름-->
+		       , A.AI_INPT_SNPE_ENO                                                         <!-- 마스터 테이블(001)로부터 가져온 결재자 번호-->
+		       , J.AI_INPT_USER_NM AS S2_USER                                               <!-- 마스터 테이블(001)로부터 가져온 결재자 이름-->
+		       , E.AI_INPT_CMN_CD_ENG_NM AS TOTALTEXT_AI_INPT_RST_NM                        <!-- 마스터 테이블(001)로부터 가져온 TotalText 상태 명 (alert/waiting/clean)-->
+		       , F.AI_INPT_CMN_CD_ENG_NM AS ITM_INPT_AI_INPT_RST_NM                         <!-- 마스터 테이블(001)로부터 가져온 항목심사 상태명 (alert/waiting/clean) -->
+		       , G.AI_INPT_CMN_CD_ENG_NM AS SAFEWATCH_AI_INPT_RST_NM                        <!-- 마스터 테이블(001)로부터 가져온 SafeWatch 상태명 (alert/waiting/clean)-->
+		       , H.AI_INPT_CMN_CD_NM AS QARST_NM                                            <!-- 마스터 테이블(001)로부터 가져온 QA 상태명 (적정/비적정) -->		       
+		       , A.TRN_OPR_NO AS TRN_OPR_NO
+		       , NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.TRN_OPR_NO), ' ') AS TRN_OPR_NO_ER
+		       , A.AI_INPT_DOC_SCAN_CHRG_ENO AS AI_INPT_DOC_SCAN_CHRG_ENO
+		       , NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO), ' ') AS AI_INPT_DOC_SCAN_CHRG_ENO_ER
+		       , CASE WHEN A.INPT_ATMC_BIZ_DSCD = '3' THEN H.AI_INPT_CMN_CD_NM ELSE D.AI_INPT_CMN_CD_NM END AS COMPLETE_BIZ_NM		       
+		       , CASE WHEN A.INPT_ATMC_BIZ_DSCD = '3' THEN H.AI_INPT_CMN_CD_NM ELSE D.AI_INPT_CMN_CD_NM END AS COMPLETE_BIZ_NM_XLS
+			   
+		<include refid="selectBody" />
+		
+		<choose>
+			<when test="'inptRcpDt'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 업무수행 날짜 기준 올림차순 정렬 처리  -->
+			ORDER BY A.INPT_RCP_DT 
+			</when>
+			<when test="'inptRcpDt'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 업무수행 날짜 기준 내림차순 정렬 처리 -->
+			ORDER BY A.INPT_RCP_DT  DESC
+			</when>
+			<when test="'inptAtmcBizNm'.equals(sortItem) and 'asc'.equals(sortDir)">                      <!-- 업무구분 코드 기준 올림차순 정렬 처리 -->
+			ORDER BY C.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptAtmcBizNm'.equals(sortItem) and 'desc'.equals(sortDir)">                     <!-- 업무구분 코드  기준 내림차순 정렬 처리 -->
+			ORDER BY C.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'aiInptBizNm'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 완료구분 코드 기준 올림차순 정렬 처리 -->
+			ORDER BY CASE WHEN A.INPT_ATMC_BIZ_DSCD = '3' THEN H.AI_INPT_CMN_CD_NM ELSE D.AI_INPT_CMN_CD_NM END
+			</when>
+			<when test="'aiInptBizNm'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 완료구분 코드 기준 내림차순 정렬 처리-->
+			ORDER BY CASE WHEN A.INPT_ATMC_BIZ_DSCD = '3' THEN H.AI_INPT_CMN_CD_NM ELSE D.AI_INPT_CMN_CD_NM END DESC
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- Reference Number 기준 올림차순 정렬 처리 -->
+			ORDER BY A.ACTL_FX_REFNO
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- Reference Number 기준 내림차순 정렬 처리  -->
+			ORDER BY A.ACTL_FX_REFNO DESC
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'asc'.equals(sortDir)">                             <!-- 통화 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY A.XPBY_COL_CTR_CUCD
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'desc'.equals(sortDir)">                            <!-- 통화 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY A.XPBY_COL_CTR_CUCD DESC
+			</when>			
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 통화 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY A.XPBY_COL_AM
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 통화 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY A.XPBY_COL_AM DESC
+			</when>	
+			<when test="'aiInptCusNo'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 사용자 번호 기준 올림차순 정렬 처리 -->
+			ORDER BY A.CSNO
+			</when>
+			<when test="'aiInptCusNo'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 사용자 번호 기준  내림차순 정렬 처리 -->
+			ORDER BY A.CSNO DESC
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 사용자 이름 기준 올림차순 정렬 처리 -->
+			ORDER BY A.CUS_KORL_NM 
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 사용자 이름 기준 내림차순 정렬 처리 -->
+			ORDER BY A.CUS_KORL_NM DESC
+			</when>
+			<when test="'s1User'.equals(sortItem) and 'asc'.equals(sortDir)">                             <!-- 심사자 이름 기준 올림차순 정렬 처리 -->
+			ORDER BY I.AI_INPT_USER_NM 
+			</when>
+			<when test="'s1User'.equals(sortItem) and 'desc'.equals(sortDir)">                            <!-- 심사자 이름 기준 내림차순 정렬 처리 -->
+			ORDER BY I.AI_INPT_USER_NM DESC
+			</when>
+			<when test="'s2User'.equals(sortItem) and 'asc'.equals(sortDir)">                             <!-- 결재자 이름 기준 올림차순 정렬 처리 -->
+			ORDER BY J.AI_INPT_USER_NM 
+			</when>
+			<when test="'s2User'.equals(sortItem) and 'desc'.equals(sortDir)">                            <!-- 결재자 이름 기준 내림차순 정렬 처리 -->
+			ORDER BY J.AI_INPT_USER_NM DESC
+			</when>
+			<when test="'totaltextAiInptRstNm'.equals(sortItem) and 'asc'.equals(sortDir)">               <!-- TotalText 상태 명칭  기준 올림차순 정렬 처리 -->
+			ORDER BY E.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test="'totaltextAiInptRstNm'.equals(sortItem) and 'desc'.equals(sortDir)">              <!-- TotalText 상태 명칭  기준 내림차순 정렬 처리 -->
+			ORDER BY E.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test="'itmInptAiInptRstNm'.equals(sortItem) and 'asc'.equals(sortDir)">                 <!-- 항목심사 상태 명칭  기준 올림차순 정렬 처리 -->
+			ORDER BY F.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test="'itmInptAiInptRstNm'.equals(sortItem) and 'desc'.equals(sortDir)">                <!-- 항목심사 상태 명칭  기준 내림차순 정렬 처리 -->
+			ORDER BY F.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test="'safewatchAiInptRstNm'.equals(sortItem) and 'asc'.equals(sortDir)">               <!-- SafeWatch 상태 명칭  기준 올림차순 정렬 처리 -->
+			ORDER BY G.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test="'safewatchAiInptRstNm'.equals(sortItem) and 'desc'.equals(sortDir)">              <!-- SafeWatch 상태 명칭  기준 내림차순 정렬 처리 -->
+			ORDER BY G.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test="'qarstNm'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  QA 상태 명칭  기준 올림차순 정렬 처리 -->
+			ORDER BY H.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'qarstNm'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  QA 상태 명칭  기준 내림차순 정렬 처리 -->
+			ORDER BY H.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'aiInptQlasProsCd'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  프로세스  기준 올림차순 정렬 처리 -->
+			ORDER BY A.AI_INPT_QLAS_PROS_CD
+			</when>
+			<when test="'aiInptQlasProsCd'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  프로세스  기준 내림차순 정렬 처리 -->
+			ORDER BY A.AI_INPT_QLAS_PROS_CD DESC
+			</when>
+			<when test="'s1UserQa'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  QA담당자  기준 올림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.QLAS_CRPE_ENO), ' ')
+			</when>
+			<when test="'s1UserQa'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  QA담당자  기준 내림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.QLAS_CRPE_ENO), ' ') DESC
+			</when>
+			<when test="'s2UserQa'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  QA결재자  기준 올림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.QLAS_SNPE_ENO), ' ')
+			</when>
+			<when test="'s2UserQa'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  QA결재자  기준 내림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.QLAS_SNPE_ENO), ' ') DESC
+			</when>
+			<when test="'krbrNm'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  영업점명(코드)  기준 올림차순 정렬 처리 -->
+			ORDER BY A.KRBR_NM
+			</when>
+			<when test="'krbrNm'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  영업점명(코드)  기준 내림차순 정렬 처리 -->
+			ORDER BY A.KRBR_NM DESC
+			</when>
+			<when test="'trnOprNo'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  접수자사번  기준 올림차순 정렬 처리 -->
+			ORDER BY A.TRN_OPR_NO
+			</when>
+			<when test="'trnOprNo'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  접수자사번  기준 내림차순 정렬 처리 -->
+			ORDER BY A.TRN_OPR_NO DESC
+			</when>
+			<when test="'trnOprNoEr'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  접수자이름  기준 올림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.TRN_OPR_NO), ' ')
+			</when>
+			<when test="'trnOprNoEr'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  접수자이름  기준 내림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.TRN_OPR_NO), ' ') DESC
+			</when>
+			<when test="'aiInptDocScanChrgEno'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  스캔자사번  기준 올림차순 정렬 처리 -->
+			ORDER BY A.AI_INPT_DOC_SCAN_CHRG_ENO
+			</when>
+			<when test="'aiInptDocScanChrgEno'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  스캔자사번  기준 내림차순 정렬 처리 -->
+			ORDER BY A.AI_INPT_DOC_SCAN_CHRG_ENO DESC
+			</when>
+			<when test="'aiInptDocScanChrgEnoEr'.equals(sortItem) and 'asc'.equals(sortDir)">                            <!--  스캔자이름  기준 올림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO), ' ')
+			</when>
+			<when test="'aiInptDocScanChrgEnoEr'.equals(sortItem) and 'desc'.equals(sortDir)">                           <!--  스캔자이름  기준 내림차순 정렬 처리 -->
+			ORDER BY NVL((SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO), ' ') DESC
+			</when>
+			
+			<otherwise>                                                                                   <!--  Default 업무수행 일자 내림차순 정렬 처리 -->
+			ORDER BY A.LST_DB_CHG_DTM DESC
+			</otherwise>
+		</choose>
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 수출수입심사현황 - 완료건 (4030) */
+		/* RevertStatCompleteMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt                                                                           <!--  selectList 건수 갯수 -->
+		<include refid="selectBody" />
+	</select>
+</mapper>

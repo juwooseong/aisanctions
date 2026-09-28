@@ -1,0 +1,128 @@
+.anno-canvas-wrap {
+  position: relative;
+}
+.anno-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.anno-toolbar .anno-mode-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.anno-marker-palette {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+.anno-toolbar.marker-on .anno-marker-palette,
+.anno-toolbar.pin-on .anno-marker-palette {
+  display: flex;
+}
+.anno-swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #94a3b8;
+  border-radius: 3px;
+  padding: 0;
+  cursor: pointer;
+}
+.anno-swatch.active {
+  outline: 2px solid #1F3864;
+  outline-offset: 1px;
+}
+.anno-swatch.yellow { background: #fde047; }
+.anno-swatch.pink { background: #f9a8d4; }
+.anno-swatch.green { background: #86efac; }
+.anno-swatch.blue { background: #93c5fd; }
+.anno-swatch.orange { background: #fdba74; }
+.anno-swatch.black { background: #111827; }
+.anno-hint {
+  display: none;
+}
+.anno-pin-modal {
+  display: none;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 4100;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+}
+.anno-pin-modal.open { display: flex; }
+.anno-pin-box {
+  width: 400px;
+  max-width: 92vw;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.anno-pin-head {
+  padding: 12px 16px;
+  background: #1e3a5f;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+.anno-pin-body { padding: 16px; }
+.anno-pin-body label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+.anno-pin-body textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 8px;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  resize: vertical;
+}
+.anno-pin-color-label {
+  margin-top: 12px;
+}
+.anno-pin-colors {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.anno-pin-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+.anno-pin-foot .anno-del { margin-right: auto; }
+.anno-pin-view-text {
+  min-height: 90px;
+  padding: 8px;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #f8fafc;
+}

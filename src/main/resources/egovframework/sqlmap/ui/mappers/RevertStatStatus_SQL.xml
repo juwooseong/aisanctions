@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.RevertStatStatusMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.RevertStatStatusVO">
+	<result property="inptMstSrno" column="INPT_MST_SRNO" />                                    <!-- 마스터 번호  -->
+		<result property="inptRcpDt" column="INPT_RCP_DT" />                                    <!-- 업무수행 일자  -->
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />                                <!-- Reference Number -->
+		<result property="wrrInfo" column="WRR_INFO" />                                         <!-- 주의정보 -->
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM" />                               <!-- 사용자 이름 -->
+		<result property="aiInptCusNo" column="AI_INPT_CSNO" />                                 <!-- 사용자  번호 -->
+		<result property="inptPrcsCd" column="AI_INPT_PROS_CD" />                               <!-- 프로세스 상태 코드-->
+		<result property="inptPrcsNm" column="INPT_PRCSNM" />                                   <!-- 프로세스 상태 이름-->
+		<result property="inptAtvtCd" column="AI_INPT_ACVT_CD" />                               <!-- 액티비티 코드-->
+		<result property="inptAtvtNm" column="INPT_ATVTNM" />                                   <!-- 액티비티 명칭-->
+		<result property="fcCuNm" column="FC_CUNM" />                                           <!-- 통화 명칭-->
+		<result property="jingheng" column="JINGHENG" />                                        <!-- 진행구분 -->
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM" />                               <!-- 금액-->
+		<result property="inptBizAlctCrpeFnm" column="INPT_BIZ_ALCT_CRPE_FNM" />                <!-- 담당자 이름 --> 
+		<result property="inptBizAlctCrpeEno" column="INPT_BIZ_ALCT_CRPE_ENO" />                <!-- 담당자 번호 -->
+		<result property="inptAtmcBizNm" column="INPT_ATMC_BIZ_NM" />                           <!-- 업무명칭 -->
+		<result property="aiInptCmnCd" column="AI_INPT_CMN_CD" />                               <!-- 업무 구분 코드-->
+		<result property="preLstDbChgDtm" column="PRE_LST_DB_CHG_DTM" />
+		<result property="warrning" column="WARRNING" />
+		<result property="intever" column="INTEVER" />
+		<result property="aiInptProsStaDtm" column="AI_INPT_PROS_STA_DTM" />
+	</resultMap>
+
+	<sql id="selectBody">
+		 FROM (                                                                            
+			 SELECT  A.INPT_MST_SRNO                                                          
+			       , A.INPT_RCP_DT                                                           
+			       , A.INPT_ATMC_BIZ_DSCD                                                    
+			       , A.ACTL_FX_REFNO                                                       
+			       , A.AI_INPT_PROS_CD                                                      
+			       , A.AI_INPT_ACVT_CD     
+			                                                          				   
+			  	  ,(SELECT MAX(CASE WHEN E.AI_INPT_ACVT_CD = '40' THEN '재추출'
+					           WHEN E.AI_INPT_ACVT_CD = '70' THEN '재심사'
+						       ELSE B.AI_INPT_CMN_CD_NM  END)  KEEP( DENSE_RANK FIRST  ORDER BY E.AI_INPT_PRG_SRNO DESC)
+						       AS AI_INPT_CMN_CD_NM
+					  FROM CSPD008TH E  
+					       , CSPD112TI B                                                     
+					  WHERE E.INPT_MST_SRNO = A.INPT_MST_SRNO
+					        AND (AI_INPT_ACVT_STS_CD IN ('60', '70', '100', '120') OR AI_INPT_ACVT_CD IN ('40', '70'))
+							AND (E.AI_INPT_BIZ_DSCD != '3' OR E.AI_INPT_BIZ_DSCD IS NULL)
+							AND E.AI_INPT_ACVT_STS_CD = B.AI_INPT_CMN_CD
+							AND B.AI_INPT_GRP_CD = '300'
+					) AS AI_INPT_CMN_CD_NM  
+						
+		  		   , NVL(E.XPBY_COL_CTR_CUCD, I.TDOC_RCP_CUCD)AS XPBY_COL_CTR_CUCD
+				   , NVL(E.XPBY_COL_AM,I.TDOC_RCP_AM) 		AS XPBY_COL_AM
+		           , NVL(E.CUS_KORL_NM,I.CUS_KORL_NM) 		AS CUS_KORL_NM
+		           , NVL(E.CSNO, I.CSNO)						AS CSNO
+			       , CASE WHEN A.AI_INPT_ACVT_CD IN ('100', '130')                           
+			         THEN A.AI_INPT_SNPE_ENO ELSE A.AI_INSPE_ENO END AS CUR_ENO
+			       , A.FX_REFNO_SRNO
+			       ,(
+			       		SELECT LST_DB_CHG_DTM
+						FROM CSPD001TM 
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND TO_NUMBER(AI_INPT_ACVT_CD) &lt; 80
+			        ) AS PRE_AI_INPT_PRG_SRNO
+					
+			   , CASE WHEN TO_NUMBER(AI_INPT_ACVT_CD) &lt; 80 
+			   		       THEN (TO_DATE(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS')                                          
+				 		         - TO_DATE(SUBSTR(REPLACE(A.LST_DB_CHG_DTM ,'-',''),1,14),'YYYYMMDDHH24MISS')) * 24 * 60
+			          ELSE 0 END AS DELAY_TIME
+			   
+			   , (SELECT MAX(CASE WHEN AI_INPT_ACVT_STS_CD IN ('20', '60') AND AI_INPT_PRC_OPI_TXT IS NOT NULL THEN '21' 
+		          				  ELSE AI_INPT_ACVT_STS_CD END) KEEP(
+													DENSE_RANK FIRST  
+													ORDER BY AI_INPT_PRG_SRNO  DESC  
+													) AS INPT_TASK_ID
+					FROM CSPD008TH 
+					WHERE INPT_MST_SRNO  = A.INPT_MST_SRNO 
+					) AS STATUS	
+					
+			  ,  Q.AI_SYS_INPT_PRG_STCD AS Q_PRG_STCD
+					
+			  FROM CSPD001TM A            
+			       , CSPD201TM E 															
+				   , CSPD202TM I 																             
+				   , CSPD900TI Q	                                                             				
+			WHERE A.ACTL_FX_REFNO = E.FX_ACNO(+)						
+			AND A.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ(+)
+			AND A.ACTL_FX_REFNO = I.FX_ACNO(+)
+			AND A.FX_REFNO_SRNO = I.TDOC_RCP_SRNO(+)
+			AND A.INPT_MST_SRNO = Q.INPT_MST_SRNO(+)
+			AND A.AI_INPT_ACVT_CD NOT IN ('140', '160')	
+		    AND A.PAPS_RE_SCAN_CMPL_YN IS NULL	   
+		     <if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)"> 		<!-- 날짜 조회 조건 -->
+				AND A.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') 
+			</if>
+			
+			<if test= "!(aiInptCmnCd == '' or aiInptCmnCd == null)">                           <!-- 업무구분 코드를 통한 WHERE 조건절  -->
+			  <choose>
+				<when test= "aiInptCmnCd == '0102'">                                           <!-- '수출  + 수입' -->
+					AND A.INPT_ATMC_BIZ_DSCD IN ('1', '2')
+				</when>
+				<otherwise>                                                                    <!-- 수출/수입/QA -->
+					AND A.INPT_ATMC_BIZ_DSCD = #{aiInptCmnCd}
+				</otherwise>
+			  </choose>
+			</if>
+			<if test="!(actlFxRefno == '' or actlFxRefno == null)">                            <!-- Reference Number를 통한 WHERE 조건절  -->
+			  AND A.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+			</if>
+			
+		    UNION ALL                                                                        
+		
+			SELECT A.INPT_MST_SRNO                                                          
+			       , A.INPT_RCP_DT                                                           
+			       , '3' AS INPT_ATMC_BIZ_DSCD                                            
+			       , A.ACTL_FX_REFNO                                                                                                         
+			       , A.AI_INPT_QLAS_PROS_CD AS AI_INPT_PROS_CD                             
+			       , A.AI_INPT_QLAS_ACVT_CD AS AI_INPT_ACVT_CD  		
+			        ,(
+			       		SELECT MAX(B.AI_INPT_CMN_CD_NM)KEEP( DENSE_RANK FIRST  ORDER BY E.AI_INPT_PRG_SRNO DESC)
+						       AS AI_INPT_CMN_CD_NM  
+						 FROM CSPD008TH E  
+						      , CSPD112TI B                                                        
+						 WHERE E.INPT_MST_SRNO = A.INPT_MST_SRNO
+				         AND E.AI_INPT_ACVT_STS_CD IN ('100', '120')                            
+						 AND E.AI_INPT_ACVT_STS_CD = B.AI_INPT_CMN_CD
+						 AND B.AI_INPT_GRP_CD = '300'
+				    	 AND E.AI_INPT_BIZ_DSCD = '3'                                         
+					 ) AS AI_INPT_CMN_CD_NM                  
+			       , NVL(E.XPBY_COL_CTR_CUCD, I.TDOC_RCP_CUCD)AS XPBY_COL_CTR_CUCD
+				   , NVL(E.XPBY_COL_AM,I.TDOC_RCP_AM) 		AS XPBY_COL_AM
+		           , NVL(E.CUS_KORL_NM,I.CUS_KORL_NM) 		AS CUS_KORL_NM
+		           , NVL(E.CSNO, I.CSNO)						AS CSNO
+			       , CASE WHEN A.AI_INPT_QLAS_ACVT_CD = '120'                                      
+			        THEN A.QLAS_SNPE_ENO ELSE A.QLAS_CRPE_ENO END AS CUR_ENO                 
+			       , A.FX_REFNO_SRNO
+			       , NULL AS PRE_AI_INPT_PRG_SRNO
+		
+			       , 0 AS DELAY_TIME
+			       , NULL AS STATUS
+			       , NULL AS Q_PRG_STCD
+			FROM CSPD001TM A     
+			     , CSPD201TM E 
+				 , CSPD202TM I                                                                    
+			WHERE A.AI_INPT_QLAS_ACVT_CD NOT IN ('140', '160')                            
+			AND A.ACTL_FX_REFNO = E.FX_ACNO(+)						
+			AND A.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ(+)
+			AND A.ACTL_FX_REFNO = I.FX_ACNO(+)
+			AND A.FX_REFNO_SRNO = I.TDOC_RCP_SRNO(+)
+			AND A.QLAS_PRG_YN = 'Y'                                                         
+			AND A.QLAS_CRPE_ENO IS NOT NULL                                               
+			AND A.PAPS_RE_SCAN_CMPL_YN IS NULL	
+			
+			<if test= "!(aiInptCmnCd == '' or aiInptCmnCd == null)">                          <!-- 업무구분 코드를 통한 WHERE 조건절  -->
+				AND '3' = #{aiInptCmnCd}
+			</if>
+			 
+			<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)"> 		<!-- 날짜 조회 조건 -->
+				AND A.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') 
+			</if>
+
+			<if test="!(actlFxRefno == '' or actlFxRefno == null)">                           <!-- Reference Number를 통한 WHERE 조건절  --> 
+				AND A.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+			</if>
+		) Z                                             								
+		, CSPD101TI U                                            						
+		, CSPD112TI F                                           
+		, CSPD112TI X                                        
+		, CSPD112TI W                                          
+		WHERE U.AI_INPT_USER_ID = Z.CUR_ENO                                                  
+		AND F.AI_INPT_GRP_CD = '280' AND F.AI_INPT_CMN_CD = Z.AI_INPT_PROS_CD                 
+		AND X.AI_INPT_GRP_CD = '290' AND X.AI_INPT_CMN_CD = Z.AI_INPT_ACVT_CD               
+		AND W.AI_INPT_GRP_CD = '150' AND W.AI_INPT_CMN_CD = Z.INPT_ATMC_BIZ_DSCD
+		
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">                                <!-- 고객번호를 통한 WHERE 조건절 -->
+			AND Z.CSNO = #{aiInptCusNo} 
+		</if>
+		<if test="!(inptBizAlctCrpeEno == '' or inptBizAlctCrpeEno == null)">                  <!-- 담당자 번호를 통한 WHERE 조건절 -->
+			AND Z.CUR_ENO = #{inptBizAlctCrpeEno}
+		</if>
+		<if test="!(inptAtvtCd == '' or inptAtvtCd == null)">                                  <!-- 액티비티 코드를 통한 WHERE 조건절 -->
+			<choose>
+				<when test="inptAtvtCd == '130'">
+					AND Z.AI_INPT_ACVT_CD = #{inptAtvtCd}
+				</when>
+				<otherwise>
+					AND Z.AI_INPT_ACVT_CD != '130'
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT Z.INPT_MST_SRNO                                                                            --union된 001 테이블의 마스터번호 --  
+	 	   , Z.INPT_RCP_DT AS INPT_RCP_DT                 
+	       , Z.INPT_ATMC_BIZ_DSCD AS AI_INPT_CMN_CD                                                   --union된 001 테이블의 업무구분 코드 --
+	       , W.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM                                                  --업무 이름 (수출/수입/QA) --
+	       , Z.ACTL_FX_REFNO                                                                          --001 테이블의 Reference Number --
+	       , Z.AI_INPT_CMN_CD_NM AS WRR_INFO                                                         --업무 액티비티 상태코드에서 뽑아온 주의정보 --
+	       , CASE WHEN Z.AI_INPT_ACVT_CD != '130' THEN '진행'                                          --액티비티 상태코드를 통한 진행구분 상태 (pending/진행) --
+	         ELSE X.AI_INPT_CMN_CD_NM END AS JINGHENG 
+	       , Z.AI_INPT_ACVT_CD                                                                        --union된 001 테이블의 업무 액티비티 코드--
+	       , F.AI_INPT_CMN_CD_NM AS INPT_PRCSNM                                                       --업무 프로세스 명칭 (수입(출)선적서류 제재심사/자체점검(QA)-TotalText 등등) --
+	       , X.AI_INPT_CMN_CD_NM AS INPT_ATVTNM                                                       --업무 현재 액티비티 명칭 --
+	       , Z.XPBY_COL_CTR_CUCD AS FC_CUNM                                                           --수출입 테이블(201, 202) 테이블로부터 뽑아온 통화 명칭 --
+	       , Z.XPBY_COL_AM AS AI_INPT_BUY_AM                                                          --수출입 테이블(201, 202) 테이블로부터 뽑아온 금액--
+	       , Z.CSNO AS AI_INPT_CSNO                                                                   --수출입 테이블(201, 202) 테이블로부터 뽑아온 고객번호--
+	       , Z.CUS_KORL_NM AS AI_INPT_CUS_NM                                                           --수출입 테이블(201, 202) 테이블로부터 뽑아온 고객이름--
+	       , Z.CUR_ENO AS INPT_BIZ_ALCT_CRPE_ENO                                                      --union된 001 테이블의 담당자 번호 --
+	       , U.AI_INPT_USER_NM AS INPT_BIZ_ALCT_CRPE_FNM
+			 
+		   , CASE WHEN TO_NUMBER(Z.AI_INPT_ACVT_CD) &lt; 80 
+			            AND (Z.Q_PRG_STCD IN ('16','24') OR  Z.STATUS IN ('21','32','42','47')) THEN '오류' 
+			       WHEN Z.DELAY_TIME > (SELECT AI_INPT_SORT_SEQ FROM CSPD112TI WHERE AI_INPT_GRP_CD = 371 AND AI_INPT_CMN_CD = '01') THEN '지연' 
+			       ELSE Z.AI_INPT_CMN_CD_NM END WARRNING
+	       , Z.STATUS
+	       , Z.DELAY_TIME
+		<include refid="selectBody" />                                                                 
+		<choose>
+			<when test="'inptRcpDt'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 업무수행 날짜 기준 올림차순 정렬 처리 -->
+			ORDER BY Z.INPT_RCP_DT 
+			</when>
+			<when test="'inptRcpDt'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 업무수행 날짜 기준 내림차순 정렬 처리 -->
+			ORDER BY Z.INPT_RCP_DT DESC
+			</when>
+			<when test="'warrning'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 업무수행 날짜 기준 올림차순 정렬 처리 -->
+			ORDER BY WARRNING 
+			</when>
+			<when test="'warrning'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 업무수행 날짜 기준 내림차순 정렬 처리 -->
+			ORDER BY WARRNING DESC
+			</when>
+			<when test="'aiInptCusNo'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 고객 번호  기준 올림차순 정렬 처리 -->
+			ORDER BY Z.CSNO
+			</when>
+			<when test="'aiInptCusNo'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 고객 번호 기준 내림차순 정렬 처리 -->
+			ORDER BY Z.CSNO DESC
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- Reference 번호  기준 올림차순 정렬 처리 -->
+			ORDER BY Z.ACTL_FX_REFNO
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- Reference 번호  기준 내림차순 정렬 처리  -->
+			ORDER BY Z.ACTL_FX_REFNO DESC
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 고객 이름 기준 올림차순 정렬 처리 -->
+			ORDER BY Z.CUS_KORL_NM 
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 고객 이름 기준 내림차순 정렬 처리 -->
+			ORDER BY Z.CUS_KORL_NM DESC
+			</when>
+			<when test="'inptPrcsNm'.equals(sortItem) and 'asc'.equals(sortDir)">                         <!-- 프로세스 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY F.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptPrcsNm'.equals(sortItem) and 'desc'.equals(sortDir)">                        <!-- 프로세스 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY F.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'inptAtvtNm'.equals(sortItem) and 'asc'.equals(sortDir)">                         <!-- 액티비티 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY X.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptAtvtNm'.equals(sortItem) and 'desc'.equals(sortDir)">                        <!-- 액티비티 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY X.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'asc'.equals(sortDir)">                             <!-- 통화 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY Z.XPBY_COL_CTR_CUCD
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'desc'.equals(sortDir)">                            <!-- 통화 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY Z.XPBY_COL_CTR_CUCD DESC
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'asc'.equals(sortDir)">                        <!-- 금액  기준 올림차순 정렬 처리 -->
+			ORDER BY Z.XPBY_COL_AM
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'desc'.equals(sortDir)">                       <!-- 금액  기준 내림차순 정렬 처리 -->
+			ORDER BY Z.XPBY_COL_AM DESC
+			</when>
+			<when test="'inptBizAlctCrpeFnm'.equals(sortItem) and 'asc'.equals(sortDir)">                 <!-- 담당자명 기준 올림차순 정렬 처리 -->
+			ORDER BY U.AI_INPT_USER_NM
+			</when>
+			<when test="'inptBizAlctCrpeFnm'.equals(sortItem) and 'desc'.equals(sortDir)">                <!-- 담당자명 기준 내림차순 정렬 처리 -->
+			ORDER BY U.AI_INPT_USER_NM DESC
+			</when>
+			<when test="'inptAtmcBizNm'.equals(sortItem) and 'asc'.equals(sortDir)">                      <!-- 업무구분 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY W.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptAtmcBizNm'.equals(sortItem) and 'desc'.equals(sortDir)">                     <!-- 업무구분 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY W.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'wrrInfo'.equals(sortItem) and 'asc'.equals(sortDir)">                      <!-- 업무구분 명칭 기준 올림차순 정렬 처리 -->
+			ORDER BY Y.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'wrrInfo'.equals(sortItem) and 'desc'.equals(sortDir)">                     <!-- 업무구분 명칭 기준 내림차순 정렬 처리 -->
+			ORDER BY Y.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<otherwise>                                                                                   <!-- Default 업무수행 날짜 기준 내림차순 정렬 처리 -->
+			ORDER BY Z.INPT_RCP_DT DESC
+			</otherwise> 
+		</choose>
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* RevertTodoMapper.selectListTotCnt */
+		SELECT COUNT(*) AS totcnt
+		<include refid="selectBody" />
+	</select>
+</mapper>

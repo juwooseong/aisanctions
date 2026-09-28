@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminCodeMapper">
+	<resultMap id="codeGrpRstMap" type="com.woori.ajs.model.CodeGrpVO">
+		<result property="aiInptGrpCd" column="AI_INPT_GRP_CD"/>
+		<result property="aiInptGrpNm" column="AI_INPT_GRP_NM"/>
+		<result property="aiInptGrpStaDtm" column="AI_INPT_GRP_STA_DTM"/>
+		<result property="aiInptGrpEndDtm" column="AI_INPT_GRP_END_DTM"/>
+		<result property="aiInptGrpUsgYn" column="AI_INPT_GRP_USG_YN"/>
+		<result property="aiInptRmrkTxt" column="AI_INPT_RMRK_TXT"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+	
+	<resultMap id="codeRstMap" type="com.woori.ajs.model.CodeVO">
+		<result property="aiInptGrpCd" column="AI_INPT_GRP_CD"/>
+		<result property="aiInptCmnCd" column="AI_INPT_CMN_CD"/>
+		<result property="aiInptCmnCdNm" column="AI_INPT_CMN_CD_NM"/>
+		<result property="aiInptCmnCdEngNm" column="AI_INPT_CMN_CD_ENG_NM"/>
+		<result property="aiInptCmnCdStaDtm" column="AI_INPT_CMN_CD_STA_DTM"/>
+		<result property="aiInptCmnCdEndDtm" column="AI_INPT_CMN_CD_END_DTM"/>
+		<result property="aiInptCmnUsgYn" column="AI_INPT_CMN_USG_YN"/>
+		<result property="aiInptRmrkTxt" column="AI_INPT_RMRK_TXT"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptIntfItmNm" column="AI_INPT_INTF_ITM_NM"/>
+		<result property="aiInptSortSeq" column="AI_INPT_SORT_SEQ"/>
+	</resultMap>
+
+	<select id="selectCodeGrpList" parameterType="com.woori.ajs.model.SearchVO" resultMap="codeGrpRstMap">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.selectCodeGrpList */
+		SELECT A.AI_INPT_GRP_CD
+		       , A.AI_INPT_GRP_NM
+		       , A.AI_INPT_GRP_STA_DTM
+		       , A.AI_INPT_GRP_END_DTM
+		       , A.AI_INPT_GRP_USG_YN
+		       , A.AI_INPT_RMRK_TXT
+		       , A.TRN_LOG_SRNO
+		       , A.LST_DB_CHG_ID
+		       , A.LST_DB_CHG_DTM
+		  FROM CSPD111TI A
+		  
+		  <choose>
+		  	<!-- 그룹코드 -->
+			<when test='"aiInptGrpCd".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_CD
+			</when>
+			<when test='"aiInptGrpCd".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_CD DESC
+			</when>
+			<!-- 그룹코드명 -->
+			<when test='"aiInptGrpNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_NM
+			</when>
+			<when test='"aiInptGrpNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_NM DESC
+			</when>
+			<!-- 비고 -->
+			<when test='"aiInptRmrkTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_RMRK_TXT
+			</when>
+			<when test='"aiInptRmrkTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_RMRK_TXT DESC
+			</when>
+			<!-- 사용여부 -->
+			<when test='"aiInptGrpUsgYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_USG_YN
+			</when>
+			<when test='"aiInptGrpUsgYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_USG_YN DESC
+			</when>
+			<otherwise>
+				ORDER BY LENGTH(A.AI_INPT_GRP_CD) ASC, A.AI_INPT_GRP_CD ASC	
+			</otherwise>
+		  </choose>
+		 
+	</select>
+
+	<select id="selectCodeGrp" parameterType="com.woori.ajs.model.SearchVO" resultMap="codeGrpRstMap">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.selectCodeGrp */
+		SELECT A.AI_INPT_GRP_CD
+		       , A.AI_INPT_GRP_NM
+		       , A.AI_INPT_GRP_STA_DTM
+		       , A.AI_INPT_GRP_END_DTM
+		       , A.AI_INPT_GRP_USG_YN
+		       , A.AI_INPT_RMRK_TXT
+		       , A.TRN_LOG_SRNO
+		       , A.LST_DB_CHG_ID
+		       , A.LST_DB_CHG_DTM
+		  FROM CSPD111TI A
+		 WHERE A.AI_INPT_GRP_CD = #{aiInptGrpCd}
+	</select>
+	
+	<insert id="insertCodeGrp" parameterType="com.woori.ajs.model.CodeGrpVO">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.insertCodeGrp */
+		MERGE INTO CSPD111TI A
+		USING DUAL
+			ON (A.AI_INPT_GRP_CD = #{aiInptGrpCd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_GRP_NM = #{aiInptGrpNm},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>,
+				A.AI_INPT_GRP_USG_YN = NVL(#{aiInptGrpUsgYn},'Y'),
+				A.AI_INPT_RMRK_TXT = #{aiInptRmrkTxt}
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_GRP_CD, A.AI_INPT_GRP_NM, A.AI_INPT_GRP_STA_DTM, A.AI_INPT_GRP_END_DTM, 
+				A.AI_INPT_GRP_USG_YN, A.AI_INPT_RMRK_TXT, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{aiInptGrpCd}, #{aiInptGrpNm}, <include refid="com.woori.ajs.common.curdate"/>, <include refid="com.woori.ajs.common.curdate"/>, 
+				NVL(#{aiInptGrpUsgYn},'Y'), #{aiInptRmrkTxt}, #{trnLogSrno}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+	<delete id="deleteCodeGrp" parameterType="com.woori.ajs.model.CodeGrpVO">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.deleteCodeGrp */
+		DELETE FROM CSPD111TI
+		WHERE AI_INPT_GRP_CD = #{aiInptGrpCd}
+	</delete>
+	
+	<select id="selectCodeList" parameterType="com.woori.ajs.model.SearchVO" resultMap="codeRstMap">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.selectCodeList */
+		SELECT	A.AI_INPT_GRP_CD
+				, A.AI_INPT_CMN_CD
+				, A.AI_INPT_CMN_CD_NM
+				, A.AI_INPT_CMN_CD_ENG_NM
+				, A.AI_INPT_CMN_CD_STA_DTM
+				, A.AI_INPT_CMN_CD_END_DTM
+				, A.AI_INPT_CMN_USG_YN
+				, A.AI_INPT_RMRK_TXT
+				, A.TRN_LOG_SRNO
+				, A.LST_DB_CHG_ID
+				, A.LST_DB_CHG_DTM
+				, A.AI_INPT_INTF_ITM_NM
+				, A.AI_INPT_SORT_SEQ
+		FROM	CSPD112TI A
+		WHERE	A.AI_INPT_GRP_CD = #{aiInptGrpCd}
+		
+		<choose>
+			<!-- 그룹코드 -->
+			<when test='"aiInptGrpCd".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_CD
+			</when>
+			<when test='"aiInptGrpCd".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_GRP_CD DESC
+			</when>
+			<!-- 공통코드 -->
+			<when test='"aiInptCmnCd".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CMN_CD
+			</when>
+			<when test='"aiInptCmnCd".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CMN_CD DESC
+			</when>
+			<!-- 코드명 한글 -->
+			<when test='"aiInptCmnCdNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CMN_CD_NM
+			</when>
+			<when test='"aiInptCmnCdNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<!-- 코드명 영문 -->
+			<when test='"aiInptCmnCdEngNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test='"aiInptCmnCdEngNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<!-- 비고 -->
+			<when test='"aiInptRmrkTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_RMRK_TXT
+			</when>
+			<when test='"aiInptRmrkTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_RMRK_TXT DESC
+			</when>
+			<!-- 사용여부 -->
+			<when test='"aiInptCmnUsgYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY  A.AI_INPT_CMN_USG_YN
+			</when>
+			<when test='"aiInptCmnUsgYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY  A.AI_INPT_CMN_USG_YN DESC
+			</when>
+			<!-- 사용여부 -->
+			<when test='"aiInptSortSeq".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY  A.AI_INPT_SORT_SEQ
+			</when>
+			<when test='"aiInptSortSeq".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY  A.AI_INPT_SORT_SEQ DESC
+			</when>
+			<otherwise>
+				ORDER BY LENGTH(A.AI_INPT_CMN_CD) ASC, A.AI_INPT_CMN_CD ASC	
+			</otherwise>
+		</choose>
+		
+	</select>
+	
+	<select id="selectCode" parameterType="com.woori.ajs.model.SearchVO" resultMap="codeRstMap">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.selectCode */
+		SELECT	A.AI_INPT_GRP_CD
+				, A.AI_INPT_CMN_CD
+				, A.AI_INPT_CMN_CD_NM
+				, A.AI_INPT_CMN_CD_ENG_NM
+				, A.AI_INPT_CMN_CD_STA_DTM
+				, A.AI_INPT_CMN_CD_END_DTM
+				, A.AI_INPT_CMN_USG_YN
+				, A.AI_INPT_RMRK_TXT
+				, A.TRN_LOG_SRNO
+				, A.LST_DB_CHG_ID
+				, A.LST_DB_CHG_DTM
+				, A.AI_INPT_INTF_ITM_NM
+				, A.AI_INPT_SORT_SEQ
+		FROM	CSPD112TI A
+		WHERE	A.AI_INPT_GRP_CD = #{aiInptGrpCd}
+		AND		A.AI_INPT_CMN_CD = #{aiInptCmnCd}
+	</select>
+	
+	<insert id="insertCode" parameterType="com.woori.ajs.model.CodeVO">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.insertCode */
+		MERGE INTO CSPD112TI A
+		USING DUAL
+			ON (A.AI_INPT_GRP_CD = #{aiInptGrpCd} AND A.AI_INPT_CMN_CD = #{aiInptCmnCd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_CMN_CD_NM = #{aiInptCmnCdNm},
+				A.AI_INPT_CMN_CD_ENG_NM = #{aiInptCmnCdEngNm},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>,
+				A.AI_INPT_CMN_USG_YN = NVL(#{aiInptCmnUsgYn},'Y'),
+				A.AI_INPT_RMRK_TXT = #{aiInptRmrkTxt},
+				A.AI_INPT_INTF_ITM_NM = #{aiInptIntfItmNm},
+			    A.AI_INPT_SORT_SEQ = #{aiInptSortSeq}
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_GRP_CD, A.AI_INPT_CMN_CD, A.AI_INPT_CMN_CD_NM, A.AI_INPT_CMN_CD_ENG_NM, 
+				A.AI_INPT_CMN_CD_STA_DTM, A.AI_INPT_CMN_CD_END_DTM, A.AI_INPT_CMN_USG_YN, 
+				A.AI_INPT_RMRK_TXT, A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM, 
+				A.AI_INPT_INTF_ITM_NM, A.AI_INPT_SORT_SEQ)
+			VALUES (#{aiInptGrpCd}, #{aiInptCmnCd}, NVL(#{aiInptCmnCdNm},'-'), NVL(#{aiInptCmnCdEngNm},'-'), 
+				<include refid="com.woori.ajs.common.curdate"/>, <include refid="com.woori.ajs.common.curdate"/>, NVL(#{aiInptCmnUsgYn},'Y'),
+				NVL(#{aiInptRmrkTxt},'-'), #{trnLogSrno}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>, 
+				NVL(#{aiInptIntfItmNm},'-'), NVL(#{aiInptSortSeq},0))
+	</insert>
+	
+	<delete id="deleteCode" parameterType="com.woori.ajs.model.CodeVO">
+		/* 공통코드 관리 (8001) */
+		/* AdminCodeMapper.deleteCode */
+		DELETE FROM CSPD112TI
+		WHERE AI_INPT_GRP_CD = #{aiInptGrpCd}
+		AND AI_INPT_CMN_CD = #{aiInptCmnCd}
+	</delete>
+	
+</mapper>

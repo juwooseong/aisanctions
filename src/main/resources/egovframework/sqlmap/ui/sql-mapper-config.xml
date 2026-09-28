@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <settings>
+    	<setting name="cacheEnabled" value="false"/>
+    	<setting name="jdbcTypeForNull" value="NULL"/>
+    </settings>
+    
+    <typeAliases>
+		<typeAlias alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+		<typeAlias alias="searchVO" type="com.woori.ajs.model.SearchVO"/>
+		<typeAlias alias="appStatusVO" type="com.woori.ajs.model.AppStatusVO"/>
+		<typeAlias alias="appTodoVO" type="com.woori.ajs.model.AppTodoVO"/>
+		<typeAlias alias="codeVO" type="com.woori.ajs.model.CodeVO"/>
+		<typeAlias alias="loginVO" type="com.woori.ajs.model.LoginVO"/>
+		<typeAlias alias="qaTodoVO" type="com.woori.ajs.model.QaTodoVO"/>
+		<typeAlias alias="reverTodoVO" type="com.woori.ajs.model.ReverTodoVO"/>
+		<typeAlias alias="revertSearchVO" type="com.woori.ajs.model.SearchVO"/>
+		<typeAlias alias="revertStatCompleteVO" type="com.woori.ajs.model.RevertStatCompleteVO"/>
+		<typeAlias alias="revertStatusVO" type="com.woori.ajs.model.RevertStatusVO"/>
+		<typeAlias alias="revertUngeneratedVO" type="com.woori.ajs.model.RevertUngeneratedVO"/>
+		<typeAlias alias="watchListVO" type="com.woori.ajs.model.WatchListVO"/>
+		<typeAlias alias="adminBusinessDayVO" type="com.woori.ajs.model.AdminBusinessDayVO"/>
+		<typeAlias alias="AdminStatusVO" type="com.woori.ajs.model.AdminStatusVO"/>
+		<typeAlias alias="WordDictionaryRegBatchVO" type="com.woori.ajs.model.WordDictionaryRegBatchVO"/>
+		<typeAlias alias="commonManualVO" type="com.woori.ajs.model.CommonManualVO"/>
+    </typeAliases>
+    
+</configuration>

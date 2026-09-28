@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminReTaskMapper">
+	
+	<resultMap id="listUserMap" type="com.woori.ajs.model.AdminReTaskUserVO">
+		<result property="aiInptUserId" column="AI_INPT_USER_ID"/>
+		<result property="aiInptUserEno" column="AI_INPT_USER_ENO"/>
+		<result property="aiInptUserNm" column="AI_INPT_USER_NM"/>
+		<result property="aiInptUserFaReYn" column="AI_INPT_USER_FA_RE_YN"/>
+		<result property="aiInptUserAutCd" column="AI_INPT_AUT_CD"/>
+		<result property="aiInptUserAutVal" column="AI_INPT_USER_AUT_VAL"/>
+		<result property="aiInptSnpeEno" column="AI_INPT_SNPE_ENO"/>
+		<result property="aiInptUserYn" column="AI_INPT_USER_YN"/>
+		<result property="aiInptUserRgsDtm" column="AI_INPT_USER_RGS_DTM"/>
+		<result property="aiInptUserEndDtm" column="AI_INPT_USER_END_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="taskCnt" column="TASK_CNT"/>
+	</resultMap>
+
+	<resultMap id="listTaskMap" type="com.woori.ajs.model.AdminReTaskTaskVO">
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD"/>
+		<result property="inptAtmcBizDsVal" column="INPT_ATMC_BIZ_DS_VAL"/>
+		<result property="inptMstSrno" column="INPT_MST_SRNO"/>
+		<result property="actlFxRefno" column="ACTL_FX_REFNO"/>
+		<result property="aiInptAppvStcd" column="AI_INPT_APPV_STCD"/>
+		<result property="appvPrgStVal" column="APPV_PRG_ST_VAL"/>
+		<result property="appvActStcd" column="APPV_ACT_STCD"/>
+		<result property="appvActStVal" column="APPV_ACT_ST_VAL"/>
+		<result property="aiInptCsno" column="AI_INPT_CSNO"/>
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM"/>
+		<result property="totaltextAiInptRstCd" column="TOTALTEXT_AI_INPT_RST_CD"/>
+		<result property="itmInptAiInptRstCd" column="ITM_INPT_AI_INPT_RST_CD"/>
+		<result property="safewatchAiInptRstCd" column="SAFEWATCH_AI_INPT_RST_CD"/>
+		<result property="totaltextAiInptRstVal" column="TOTALTEXT_AI_INPT_RST_VAL"/>
+		<result property="itmInptAiInptRstVal" column="ITM_INPT_AI_INPT_RST_VAL"/>
+		<result property="safewatchAiInptRstVal" column="SAFEWATCH_AI_INPT_RST_VAL"/>
+		<result property="inptPrcscd" column="AI_INPT_PROS_CD"/>
+		<result property="inptPrcsVal" column="INPT_PRCS_VAL"/>
+		<result property="inptAtvtcd" column="AI_INPT_ACVT_CD"/>
+		<result property="inptAtvtVal" column="INPT_ATVT_VAL"/>
+	</resultMap>
+
+	<select id="selectUserList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listUserMap">
+		/* 업무재할당 관리 (7080) */
+		/* AdminReTaskMapper.selectUserList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT * FROM(	
+			SELECT
+				A.AI_INPT_USER_ID,
+				A.AI_INPT_USER_ENO,
+				A.AI_INPT_USER_NM,
+				A.AI_INPT_USER_FA_RE_YN,
+				A.AI_INPT_AUT_CD,
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '120'
+					AND AI_INPT_CMN_CD = A.AI_INPT_AUT_CD) AS AI_INPT_USER_AUT_VAL,
+				A.AI_INPT_SNPE_ENO,
+				A.AI_INPT_USER_YN,
+				A.AI_INPT_USER_RGS_DTM,
+				A.AI_INPT_USER_END_DTM,
+				A.TRN_LOG_SRNO,
+				A.LST_DB_CHG_ID,
+				A.LST_DB_CHG_DTM,
+				(SELECT NVL(SUM(CASE 
+							WHEN A.AI_INPT_AUT_CD = '01' AND AI_INPT_ACVT_CD IN ('80', '90', '150') AND AI_INSPE_ENO = A.AI_INPT_USER_ENO AND PAPS_RE_SCAN_NED_YN IS NULL THEN 1			/* 심사자 */
+							WHEN A.AI_INPT_AUT_CD = '02' AND ((AI_INPT_ACVT_CD IN ('100','130') AND AI_INPT_SNPE_ENO = A.AI_INPT_USER_ENO) OR (AI_INPT_QLAS_ACVT_CD IN ('120','130') AND QLAS_SNPE_ENO = A.AI_INPT_USER_ENO)) THEN 1		/* 결재자 */
+							WHEN A.AI_INPT_AUT_CD = '03' AND (AI_INPT_ACVT_CD IN ('140', '160') AND AI_INPT_QLAS_ACVT_CD = '110' ) AND QLAS_CRPE_ENO = A.AI_INPT_USER_ENO THEN 1			/* QA */
+							ELSE 0 END
+							),0) 
+				 FROM CSPD001TM
+				) AS TASK_CNT														/* 사용자별, 업무진행건수 */
+			FROM CSPD101TI A
+			WHERE 1=1
+			<include refid="selectUserListCond" />
+		)WHERE TASK_CNT > 0
+		<choose>
+			<when test='"aiInptUserAutVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_AUT_VAL
+			</when>
+			<when test='"aiInptUserAutVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_AUT_VAL DESC
+			</when>
+			<when test='"aiInptUserEno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_ENO
+			</when>
+			<when test='"aiInptUserEno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_ENO DESC
+			</when>
+			<when test='"aiInptUserNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_NM
+			</when>
+			<when test='"aiInptUserNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_NM DESC
+			</when>
+			<when test='"taskCnt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY TASK_CNT
+			</when>
+			<when test='"taskCnt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY TASK_CNT DESC
+			</when>
+			<when test='"aiInptUserYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_YN
+			</when>
+			<when test='"aiInptUserYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_YN DESC
+			</when>
+			<when test='"aiInptUserFaReYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_FA_RE_YN
+			</when>
+			<when test='"aiInptUserFaReYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_FA_RE_YN DESC
+			</when>
+		</choose>
+		<!-- ORDER BY A.AI_INPT_USER_NM ASC -->
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectUserListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 업무재할당 관리 (7080) */
+		/* AdminReTaskMapper.selectUserListTotCnt */
+		SELECT COUNT(*) FROM(	
+			SELECT
+				A.AI_INPT_USER_ID,
+				A.AI_INPT_USER_ENO,
+				A.AI_INPT_USER_NM,
+				A.AI_INPT_USER_FA_RE_YN,
+				A.AI_INPT_AUT_CD,
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '120'
+					AND AI_INPT_CMN_CD = A.AI_INPT_AUT_CD) AS AI_INPT_USER_AUT_VAL,
+				A.AI_INPT_SNPE_ENO,
+				A.AI_INPT_USER_YN,
+				A.AI_INPT_USER_RGS_DTM,
+				A.AI_INPT_USER_END_DTM,
+				A.TRN_LOG_SRNO,
+				A.LST_DB_CHG_ID,
+				A.LST_DB_CHG_DTM,
+				(SELECT NVL(SUM(CASE 
+							WHEN A.AI_INPT_AUT_CD = '01' AND AI_INPT_ACVT_CD IN ('80', '90', '150') AND AI_INSPE_ENO = A.AI_INPT_USER_ENO AND PAPS_RE_SCAN_NED_YN IS NULL THEN 1			/* 심사자 */
+							WHEN A.AI_INPT_AUT_CD = '02' AND ((AI_INPT_ACVT_CD IN ('100','130') AND AI_INPT_SNPE_ENO = A.AI_INPT_USER_ENO) OR (AI_INPT_QLAS_ACVT_CD IN ('120','130') AND QLAS_SNPE_ENO = A.AI_INPT_USER_ENO)) THEN 1		/* 결재자 */
+							WHEN A.AI_INPT_AUT_CD = '03' AND (AI_INPT_ACVT_CD IN ('140', '160') AND AI_INPT_QLAS_ACVT_CD = '110' ) AND QLAS_CRPE_ENO = A.AI_INPT_USER_ENO THEN 1			/* QA */
+							ELSE 0 END
+							),0) 
+				 FROM CSPD001TM
+				) AS TASK_CNT														/* 사용자별, 업무진행건수 */
+			FROM CSPD101TI A
+			WHERE 1=1
+			<include refid="selectUserListCond" />
+		)WHERE TASK_CNT > 0
+	</select>
+	
+	<sql id="selectUserListCond">
+		AND A.AI_INPT_AUT_CD IN ('01','02','03')
+		<if test="schAuth != null and schAuth != ''">
+			AND A.AI_INPT_AUT_CD = #{schAuth}
+		</if>
+		<if test="schUserNo != null and schUserNo != ''">
+			AND A.AI_INPT_USER_ENO LIKE '%'||#{schUserNo}||'%'
+		</if>
+		<if test="schUserNm != null and schUserNm != ''">
+			AND A.AI_INPT_USER_NM LIKE '%'||#{schUserNm}||'%'
+		</if>
+		<if test="aiInptUserFaReYn != null and aiInptUserFaReYn != ''">
+			AND A.AI_INPT_USER_FA_RE_YN = #{aiInptUserFaReYn}
+		</if>
+	</sql>
+	
+	<select id="selectTaskList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listTaskMap">
+		/* 업무재할당 관리 (7080) */
+		/* AdminReTaskMapper.selectTaskList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT
+		    CASE WHEN A.QLAS_PRG_YN IS NULL THEN A.INPT_ATMC_BIZ_DSCD
+		    ELSE '3' END AS INPT_ATMC_BIZ_DSCD,
+		    
+		    CASE WHEN A.QLAS_PRG_YN IS NULL THEN														/* 업무구분 */
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '150'
+					AND AI_INPT_CMN_CD = A.INPT_ATMC_BIZ_DSCD) 
+			ELSE(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '150'
+					AND AI_INPT_CMN_CD = '3') 
+			END AS INPT_ATMC_BIZ_DS_VAL,
+								                                        							/* 업무구분명 */
+			A.INPT_MST_SRNO, 																		/* 업무번호 */ 
+			A.ACTL_FX_REFNO,		
+																									/* RefNo */
+			CASE WHEN A.QLAS_PRG_YN IS NULL THEN
+				A.AI_INPT_PROS_CD
+			ELSE A.AI_INPT_QLAS_PROS_CD 
+			END AS AI_INPT_PROS_CD,  	
+			
+			CASE WHEN A.QLAS_PRG_YN IS NULL THEN													/* 프로세스 */
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '280'
+					AND AI_INPT_CMN_CD = A.AI_INPT_PROS_CD) 
+			ELSE (SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '280'
+					AND AI_INPT_CMN_CD = A.AI_INPT_QLAS_PROS_CD) 
+			END AS INPT_PRCS_VAL,							/* 프로세스명 */
+			
+			CASE WHEN A.QLAS_PRG_YN IS NULL THEN	
+				A.AI_INPT_ACVT_CD
+			ELSE A.AI_INPT_QLAS_ACVT_CD END AS AI_INPT_ACVT_CD,		
+			
+			CASE WHEN A.QLAS_PRG_YN IS NULL THEN													/* 액티비티 */
+				(SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '290'
+					AND AI_INPT_CMN_CD = A.AI_INPT_ACVT_CD) 
+			ELSE (SELECT AI_INPT_CMN_CD_NM
+					FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '290'
+					AND AI_INPT_CMN_CD = A.AI_INPT_QLAS_ACVT_CD)
+			END INPT_ATVT_VAL,							/* 액티비티명 */
+            NVL(EP.CUS_KORL_NM,IP.CUS_KORL_NM) 		AS AI_INPT_CUS_NM,
+            NVL(EP.CSNO, IP.CSNO)						AS AI_INPT_CSNO,													
+			A.TOTALTEXT_AI_INPT_RST_CD, 															/* TotalText */
+			(SELECT AI_INPT_CMN_CD_ENG_NM
+				FROM CSPD112TI
+				WHERE AI_INPT_GRP_CD = '170'
+				AND AI_INPT_CMN_CD = A.TOTALTEXT_AI_INPT_RST_CD) AS TOTALTEXT_AI_INPT_RST_VAL,		/* TotalText명 */
+			A.ITM_INPT_AI_INPT_RST_CD,  															/* 항목심사 */
+			(SELECT AI_INPT_CMN_CD_ENG_NM
+				FROM CSPD112TI
+				WHERE AI_INPT_GRP_CD = '170'
+				AND AI_INPT_CMN_CD = A.ITM_INPT_AI_INPT_RST_CD) AS ITM_INPT_AI_INPT_RST_VAL,		/* 항목심사명 */
+			A.SAFEWATCH_AI_INPT_RST_CD,  															/* SafeWatch */
+			(SELECT AI_INPT_CMN_CD_ENG_NM
+				FROM CSPD112TI
+				WHERE AI_INPT_GRP_CD = '170'
+				AND AI_INPT_CMN_CD = A.SAFEWATCH_AI_INPT_RST_CD) AS SAFEWATCH_AI_INPT_RST_VAL		/* SafeWatch명 */
+		FROM CSPD001TM A
+		   , CSPD201TM EP
+		   , CSPD202TM IP
+		WHERE A.ACTL_FX_REFNO = EP.FX_ACNO(+)						
+		AND A.FX_REFNO_SRNO = EP.XPO_CVRG_MK_SQ(+)
+		AND A.ACTL_FX_REFNO = IP.FX_ACNO(+)
+		AND A.FX_REFNO_SRNO = IP.TDOC_RCP_SRNO(+)
+		AND PAPS_RE_SCAN_NED_YN IS NULL
+		<include refid="selectTaskListCond" />
+		
+		<choose>
+			<when test='"inptAtmcBizDsVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY INPT_ATMC_BIZ_DS_VAL
+			</when>
+			<when test='"inptAtmcBizDsVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY INPT_ATMC_BIZ_DS_VAL DESC
+			</when>
+			<when test='"actlFxRefno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.ACTL_FX_REFNO
+			</when>
+			<when test='"actlFxRefno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.ACTL_FX_REFNO DESC
+			</when>
+			<when test='"inptPrcscd".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_PROS_CD
+			</when>
+			<when test='"inptPrcscd".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.AI_INPT_PROS_CD DESC
+			</when>
+			<when test='"inptPrcsVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY INPT_PRCS_VAL
+			</when>
+			<when test='"inptPrcsVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY INPT_PRCS_VAL DESC
+			</when>
+			<when test='"inptAtvtVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY INPT_ATVT_VAL
+			</when>
+			<when test='"inptAtvtVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY INPT_ATVT_VAL DESC
+			</when>
+			<when test='"aiInptCsno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY W.AI_INPT_CSNO
+			</when>
+			<when test='"aiInptCsno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY W.AI_INPT_CSNO DESC
+			</when>
+			<when test='"aiInptCusNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY W.AI_INPT_CUS_NM
+			</when>
+			<when test='"aiInptCusNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY W.AI_INPT_CUS_NM DESC
+			</when>
+			<when test='"totaltextAiInptRstVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY TOTALTEXT_AI_INPT_RST_VAL
+			</when>
+			<when test='"totaltextAiInptRstVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY TOTALTEXT_AI_INPT_RST_VAL DESC
+			</when>
+			<when test='"itmInptAiInptRstVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY ITM_INPT_AI_INPT_RST_VAL
+			</when>
+			<when test='"itmInptAiInptRstVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY ITM_INPT_AI_INPT_RST_VAL DESC
+			</when>
+			<when test='"safewatchAiInptRstVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY SAFEWATCH_AI_INPT_RST_VAL
+			</when>
+			<when test='"safewatchAiInptRstVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY SAFEWATCH_AI_INPT_RST_VAL DESC
+			</when>
+		</choose>
+		<!-- ORDER BY A.INPT_MST_SRNO ASC -->
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectTaskListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 업무재할당 관리 (7080) */
+		/* AdminReTaskMapper.selectTaskListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD001TM A
+		WHERE 1=1
+		<include refid="selectTaskListCond" />
+	</select>
+	
+	<sql id="selectTaskListCond">
+		<if test="schUserNo != null and schUserNo != '' and schAuth != null and schAuth != ''">
+			<choose>
+			<when test="schAuth eq '01'">
+			/* 심사자(01) - CSPD001TM (심사마스터테이블)의 AI_INSPE_ENO (심사자직원번호) */
+			AND A.AI_INSPE_ENO = #{schUserNo}
+			AND A.AI_INPT_ACVT_CD IN ('80', '90', '150')
+			</when>
+			<when test="schAuth eq '02'">
+			/* 결재자(02) - CSPD001TM (심사마스터테이블)의 AI_INPT_SNPE_ENO (담당결재자직원번호) */
+			AND ((A.AI_INPT_SNPE_ENO = #{schUserNo} AND A.AI_INPT_ACVT_CD IN ('100','130')) 
+				 OR (A.QLAS_SNPE_ENO = #{schUserNo} AND A.AI_INPT_QLAS_ACVT_CD IN ('120','130') AND QLAS_PRG_YN = 'Y'))
+			</when>
+			<when test="schAuth eq '03'">
+			/* QA(03) - CSPD001TM (심사마스터테이블)의 QLAS_CRPE_ENO (품질보증담당자직원번호) */
+			AND A.QLAS_CRPE_ENO = #{schUserNo}
+			AND A.AI_INPT_ACVT_CD IN ('140', '160') AND A.AI_INPT_QLAS_ACVT_CD = '110' 
+			</when>
+			</choose>
+		</if>
+	</sql>
+	
+	<update id="updateReTask" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		/* 업무재할당 관리 (7080) */
+		/* AdminReTaskMapper.updateReTask */
+		/* 업무재할당 처리 */
+		DECLARE
+			V_CHK							NUMBER(3);										/* 권한 인수인계 가능여부, 1 - 가능, 0 - 불가 */
+			V_INPT_MST_SRNO					CSPD001TM.INPT_MST_SRNO%TYPE;					/* 업무 인수인계할 심사번호 */
+			V_INPT_USER_ENO					CSPD101TI.AI_INPT_USER_ENO%TYPE;				/* 인수자 직원 번호 */
+			V_INPT_USER_AUT_CD				CSPD101TI.AI_INPT_AUT_CD%TYPE;				/* 인수자 직원 권한코드 */
+			V_QLAS_PRG_YN					CSPD001TM.QLAS_PRG_YN%TYPE;				/* 업무구분 코드 */
+			V_OLD_INPT_USER_ENO				CSPD101TI.AI_INPT_USER_ENO%TYPE;				/* 인계자 직원 번호 */
+			V_OLD_INPT_USER_AUT_CD			CSPD101TI.AI_INPT_AUT_CD%TYPE;				/* 인계자 직원 권한코드 */
+		BEGIN
+		/*
+		[참조사항]
+		* 심사업무 마스터 테이블의 권한별 담당직원 컬럼정보
+		- CSPD001TM.AI_INSPE_ENO	: 심사자직원번호
+		- CSPD001TM.AI_APPV_ENO		: 담당결재자직원번호
+		- CSPD001TM.QLAS_CRPE_ENO	: 품질보증담당자직원번호
+		* 사용자 권한 코드
+		- 01 : S1 (심사자)
+		- 02 : S2 (결재자)
+		- 03 : QA
+		- 04 : 일반
+		*/
+
+			/* 변수 초기화 */
+			V_CHK							:= 1;
+			V_INPT_MST_SRNO					:= #{inptMstSrno};
+			V_INPT_USER_ENO					:= #{inptBizAlctCrpeEno};
+			V_OLD_INPT_USER_ENO				:= #{oldUserEno};
+			V_QLAS_PRG_YN					:= #{qlasPrgYn};	
+			/* 인계자 사용자 정보 설정 - 권한코드 */
+			SELECT AI_INPT_AUT_CD
+			INTO V_OLD_INPT_USER_AUT_CD
+			FROM CSPD101TI
+			WHERE AI_INPT_USER_ENO = V_OLD_INPT_USER_ENO;
+			
+			/* 인수자 사용자 정보 설정 - 권한코드 */
+			SELECT AI_INPT_AUT_CD
+			INTO V_INPT_USER_AUT_CD
+			FROM CSPD101TI
+			WHERE AI_INPT_USER_ENO = V_INPT_USER_ENO;
+			
+			/* 인수자와 인계자가 같으면, 인수인계 불가 */
+			IF V_CHK = 1 AND V_INPT_USER_ENO = V_OLD_INPT_USER_ENO THEN
+				V_CHK := 0;
+			END IF;
+			
+			/* 인수자와 인계자의 권한이 다르면, 작업 인수인계 불가 */
+			IF V_CHK = 1 AND V_INPT_USER_AUT_CD != V_OLD_INPT_USER_AUT_CD THEN
+				V_CHK := 0;
+			END IF;
+			
+			/* 일반사용자는, 작업 인수인계 불가 */
+			IF V_CHK = 1 AND V_INPT_USER_AUT_CD = '04' OR V_OLD_INPT_USER_AUT_CD = '04' THEN
+				V_CHK := 0;
+			END IF;
+			
+			/* 권한별 심사업무 업데이트 */
+			IF V_CHK = 1 THEN
+				
+				/* 심사자 업무 인수인계 처리 */
+				IF V_INPT_USER_AUT_CD = '01' THEN
+					UPDATE CSPD001TM SET
+						AI_INSPE_ENO = #{inptBizAlctCrpeEno}
+						, AI_INPT_SNPE_ENO = (
+												SELECT AI_INPT_SNPE_ENO 
+												  FROM CSPD101TI
+												 WHERE AI_INPT_USER_ID = #{inptBizAlctCrpeEno}
+						                      )
+						, LST_DB_CHG_ID = #{lstDbChgId}
+						, LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+						, TRN_LOG_SRNO = #{trnLogSrno}
+					WHERE INPT_MST_SRNO = #{inptMstSrno};
+				END IF;
+				
+				/* 결재자 업무 인수인계 처리 */
+				IF V_INPT_USER_AUT_CD = '02' THEN
+					IF V_QLAS_PRG_YN = 'Y' THEN
+						UPDATE CSPD001TM SET
+							QLAS_SNPE_ENO = #{inptBizAlctCrpeEno}
+							, LST_DB_CHG_ID = #{lstDbChgId}
+							, LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+							, TRN_LOG_SRNO = #{trnLogSrno}
+						WHERE INPT_MST_SRNO = #{inptMstSrno};
+					END IF;
+					
+					IF V_QLAS_PRG_YN ='N' THEN
+						UPDATE CSPD001TM SET
+							AI_INPT_SNPE_ENO = #{inptBizAlctCrpeEno}
+							, LST_DB_CHG_ID = #{lstDbChgId}
+							, LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+							, TRN_LOG_SRNO = #{trnLogSrno}
+						WHERE INPT_MST_SRNO = #{inptMstSrno};
+					END IF;	
+				END IF;
+				
+				/* QA 업무 인수인계 처리 */
+				IF V_INPT_USER_AUT_CD = '03' THEN
+					UPDATE CSPD001TM SET
+						QLAS_CRPE_ENO = #{inptBizAlctCrpeEno}
+						, QLAS_SNPE_ENO = (
+												SELECT AI_INPT_SNPE_ENO 
+												  FROM CSPD101TI
+												 WHERE AI_INPT_USER_ID = #{inptBizAlctCrpeEno}
+						                      )
+						, LST_DB_CHG_ID = #{lstDbChgId}
+						, LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+						, TRN_LOG_SRNO = #{trnLogSrno}
+					WHERE INPT_MST_SRNO = #{inptMstSrno};
+				END IF;
+				
+			END IF;
+			
+		EXCEPTION
+			WHEN NO_DATA_FOUND THEN NULL;
+		END;
+	</update>
+	
+	<update id="updateReTaskHistory" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		UPDATE CSPD008TH 
+		   SET LST_DB_CHG_DTM = TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6'),
+		   	   TRN_LOG_SRNO = #{trnLogSrno}
+ 		 WHERE AI_INPT_PRG_SRNO = (SELECT MAX(AI_INPT_PRG_SRNO) AS A
+							         FROM CSPD008TH
+									WHERE INPT_MST_SRNO = #{inptMstSrno})
+	</update>
+	
+	<insert id="insertReTaskHistory" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		INSERT INTO CSPD008TH ( 
+			AI_INPT_PRG_SRNO
+			 , INPT_MST_SRNO
+			 , AI_INPT_BIZ_DSCD
+			 , AI_INPT_ACVT_CD
+			 , AI_INPT_ACVT_STS_CD
+			 , AI_INPT_CRPE_ENO
+			 , AI_INPT_PROS_STA_DTM
+			 , AI_INPT_PRC_OPI_TXT
+			 , TRN_LOG_SRNO
+			 , LST_DB_CHG_ID
+			 , LST_DB_CHG_DTM 
+		) VALUES (
+			CSPD008TH_SG01.NEXTVAL
+			, #{inptMstSrno}
+			, #{inptAtmcBizDscd}
+			, (SELECT AI_INPT_ACVT_CD FROM CSPD008TH WHERE AI_INPT_PRG_SRNO =(
+			 	SELECT MAX(TO_NUMBER(AI_INPT_PRG_SRNO)) 
+				FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = #{inptMstSrno}))
+			, '50'
+			, #{inptBizAlctCrpeEno}
+			, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+			, '업무재할당'
+			, #{trnLogSrno}
+			, #{lstDbChgId}
+			, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		)
+	</insert>
+	
+	<delete id="qaDelete" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD008TH 
+		WHERE INPT_MST_SRNO = #{inptMstSrno} 
+			AND AI_INPT_BIZ_DSCD = '3'
+			AND AI_INPT_PRG_SRNO = (
+				SELECT MAX(AI_INPT_PRG_SRNO)FROM CSPD008TH 
+				WHERE INPT_MST_SRNO = #{inptMstSrno} 
+				AND AI_INPT_BIZ_DSCD = '3'
+			)
+
+	</delete>
+	
+	<update id="updateMaster" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		UPDATE CSPD001TM SET QLAS_PRG_YN = NULL
+			, AI_INPT_QLAS_APPV_STCD = NULL
+			, AI_INPT_QLAS_PROS_CD = NULL
+			, AI_INPT_QLAS_ACVT_CD = NULL
+			, QLAS_ALOC_DT = NULL
+			, TRN_LOG_SRNO = #{trnLogSrno}
+			, LST_DB_CHG_ID = #{lstDbChgId}
+			, LST_DB_CHG_DTM = (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		WHERE INPT_MST_SRNO = #{inptMstSrno} 
+	</update>
+	
+	<delete id="delete1Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD001TM WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete2Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD002TG WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete3Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD003TF WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete4Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD004TF WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete5Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD005TH WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete6Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD006TL WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete7Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD007TL WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="delete8Table" parameterType="com.woori.ajs.model.AdminReTaskTaskVO">
+		DELETE FROM CSPD008TH WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+</mapper>

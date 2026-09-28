@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminBusinessDayMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminBusinessDayVO">
+		<result property="basDt" column="BAS_DT"/>
+		<result property="wkdCd" column="WKD_CD"/>
+		<result property="hldyDscd" column="HLDY_DSCD"/>
+		<result property="hldyTxt" column="HLDY_TXT"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	<select id="selectBusinessDayList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 영업일관리 (8030) */
+		/* AdminBusinessDayMapper.selectBusinessDayList */
+		SELECT A.DATES AS BAS_DT, 
+       A.WEEK AS WKD_CD, 
+       NVL(B.HLDY_DSCD, CASE WHEN A.WEEK = '6' THEN '4' WHEN A.WEEK = '0' THEN '5' ELSE '0' END) AS HLDY_DSCD,
+       B.HLDY_TXT
+       FROM(
+			SELECT TO_CHAR((MAKE_DATES + DAY - 1), 'YYYYMMDD') DATES,
+				   DECODE(week, '1', '0', '2', '1', '3', '2', '4', '3', '5', '4', '6', '5', '7', '6') WEEK
+			  FROM(
+					SELECT LEVEL DAY, 
+						   TO_DATE(#{hldyYear} || #{hldyMonth} || '01', 'YYYYMMDD') MAKE_DATES,
+						   TO_CHAR(TO_DATE(#{hldyYear} || #{hldyMonth}, 'YYYYMM')+ LEVEL - 1, 'D') WEEK
+					  FROM DUAL
+					  CONNECT BY LEVEL &lt;= TO_CHAR(last_day(TO_DATE(#{hldyYear}||#{hldyMonth},'YYYYMM')), 'DD'))
+					) A,
+					-- BASDT 20191212
+					-- WKD_CD 일월화수목금토  0123456
+					(
+					SELECT * FROM CSPD118TM
+					WHERE BAS_DT LIKE #{hldyYear} || #{hldyMonth} || '%'
+					ORDER BY BAS_DT ASC) B
+					
+					WHERE A.DATES = B.BAS_DT(+)
+	</select>
+	
+	<update id="updateBusinessDay" parameterType="com.woori.ajs.model.AdminBusinessDayVO">
+		/* 영업일 관리 (8030) */
+		/* AdminBusinessDayMapper.selectBusinessDayList */
+		MERGE INTO CSPD118TM A
+		USING DUAL ON (A.BAS_DT = #{basDt})
+		
+		WHEN MATCHED THEN
+		  UPDATE SET A.HLDY_DSCD = #{hldyDscd},
+			     	 A.HLDY_TXT = #{hldyTxt},
+			     	 A.TRN_LOG_SRNO = #{trnLogSrno}
+		  
+		WHEN NOT MATCHED THEN
+		  INSERT (A.BAS_DT,
+		  		  A.WKD_CD,
+		  		  A.HLDY_DSCD,
+		  		  A.TRN_LOG_SRNO,
+		  		  A.LST_DB_CHG_ID,
+		  		  A.LST_DB_CHG_DTM,
+		  		  A.HLDY_TXT)
+		   VALUES (#{basDt},
+		   		  #{wkdCd},
+		   		  #{hldyDscd},
+				  #{trnLogSrno}, <!-- 거래로그일련번호 -->
+		          #{lstDbChgId}, <!-- 최종변경자ID -->
+		          TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6'),
+		          #{hldyTxt}
+		   		  )
+	</update>
+	
+	<insert id="deleteBusinessDay" parameterType="com.woori.ajs.model.AdminBusinessDayVO">
+		/* 영업일 관리 (8030) */
+		/* AdminBusinessDayMapper.selectBusinessDayList */
+		
+	</insert>
+	
+</mapper>

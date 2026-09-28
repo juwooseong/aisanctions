@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminCityMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminCityVO">
+		<result property="citySrno" column="CITY_SRNO"/>
+		<result property="cityPortDscd" column="CITY_PORT_DSCD"/>
+		<result property="aiInptCmnCdNm" column="AI_INPT_CMN_CD_NM"/>
+		<result property="engCityNm" column="ENG_CITY_NM"/>
+		<result property="nacd" column="NACD"/>
+		<result property="engNlNm" column="ENG_NL_NM"/>
+		<result property="engCityRgnNm" column="ENG_CITY_RGN_NM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	 <select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT 
+			A.CITY_SRNO,
+			A.CITY_PORT_DSCD,
+			N.AI_INPT_CMN_CD_NM,
+			A.ENG_CITY_NM,
+			A.NACD,
+			B.ENG_NL_NM,
+			A.ENG_CITY_RGN_NM,
+			A.TRN_LOG_SRNO,
+			A.LST_DB_CHG_ID,
+			A.LST_DB_CHG_DTM
+		FROM CSPD118TI A
+			, CSPD115TI B
+			, CSPD112TI N
+		WHERE A.NACD = B.NACD (+)
+		AND B.RPRS_CD_YN = 'Y'
+		AND N.AI_INPT_GRP_CD = '905'
+		AND A.CITY_PORT_DSCD = N.AI_INPT_CMN_CD
+		<include refid="selectListCond" />
+		<choose>
+			<when test='"nacd".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.NACD
+			</when>
+			<when test='"nacd".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.NACD DESC
+			</when>
+			<when test='"engNlNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY B.ENG_NL_NM
+			</when>
+			<when test='"engNlNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY B.ENG_NL_NM DESC
+			</when>
+			<when test='"aiInptCmnCdNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY N.AI_INPT_CMN_CD_NM
+			</when>
+			<when test='"aiInptCmnCdNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY N.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test='"engCityNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.ENG_CITY_NM
+			</when>
+			<when test='"engCityNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.ENG_CITY_NM DESC
+			</when> 
+			<when test='"engCityRgnNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.ENG_CITY_RGN_NM
+			</when>
+			<when test='"engCityRgnNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.ENG_CITY_RGN_NM DESC
+			</when>
+	
+			<otherwise>
+				ORDER BY A.CITY_PORT_DSCD, A.ENG_CITY_RGN_NM
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select> 
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 부재관리 (7070) */
+		/* AdminCityMapper.selectListTotCnt */
+		SELECT 
+			COUNT(*)
+		FROM CSPD118TI A
+			, CSPD115TI B
+			, CSPD112TI N
+		WHERE A.NACD = B.NACD
+		AND B.RPRS_CD_YN = 'Y'
+		AND N.AI_INPT_GRP_CD = '905'
+		AND A.CITY_PORT_DSCD = N.AI_INPT_CMN_CD
+		<include refid="selectListCond" />
+	</select>
+	
+	<insert id="insert" parameterType="com.woori.ajs.model.AdminCityVO">
+		MERGE INTO CSPD118TI A
+		USING DUAL ON (A.CITY_SRNO = #{citySrno})
+		WHEN MATCHED THEN
+		UPDATE SET
+		    A.CITY_PORT_DSCD = UPPER(#{cityPortDscd}),
+			A.LST_DB_CHG_ID = #{lstDbChgId},
+			A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>,
+			A.ENG_CITY_NM = UPPER(#{engCityNm}),
+			A.ENG_CITY_RGN_NM = UPPER(#{engCityRgnNm}),
+			A.TRN_LOG_SRNO = #{trnLogSrno},
+			A.NACD = UPPER(#{nacd})
+		WHEN NOT MATCHED THEN
+		INSERT (
+			A.CITY_SRNO,
+			A.CITY_PORT_DSCD,
+			A.ENG_CITY_NM,
+			A.NACD,
+			A.ENG_CITY_RGN_NM,
+			A.TRN_LOG_SRNO,
+			A.LST_DB_CHG_ID,
+			A.LST_DB_CHG_DTM
+		)VALUES(
+			(SELECT MAX(CITY_SRNO) FROM CSPD118TI)+1
+			, UPPER(#{cityPortDscd})
+			, UPPER(#{engCityNm})
+			, UPPER(#{nacd})
+			, UPPER(#{engCityRgnNm})
+			, #{trnLogSrno}
+			, #{lstDbChgId}
+			, <include refid="com.woori.ajs.common.curdate"/>
+		)
+	</insert>
+	
+	<delete id="delete" parameterType="com.woori.ajs.model.AdminCityVO">
+		DELETE FROM CSPD118TI
+		WHERE CITY_SRNO = UPPER(#{citySrno})
+	</delete>
+	
+	<sql id="selectListCond">
+
+		<if test="cityPortDscd != null and cityPortDscd != ''">
+			AND CITY_PORT_DSCD = #{cityPortDscd}
+		</if>
+		<if test="engCityRgnNm != null and engCityRgnNm != ''">
+			AND ENG_CITY_RGN_NM LIKE '%' || UPPER(#{engCityRgnNm}) || '%'
+		</if>
+		<if test="nacd != null and nacd != ''">
+			AND A.NACD = UPPER(#{nacd})
+		</if>
+	
+	</sql>
+	
+</mapper>

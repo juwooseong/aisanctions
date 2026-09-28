@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminStatusMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminStatusVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO"/>
+		<result property="aiInptMstStsTxt" column="AI_INPT_MST_STS_TXT"/>
+		<result property="aiInptSvrInfTxt" column="AI_INPT_SVR_INF_TXT"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptPrcDscd" column="AI_INPT_PRC_DSCD"/>
+		<result property="aiSysInptPrgStcd" column="AI_SYS_INPT_PRG_STCD"/>
+		<result property="rprocTcn" column="RPROC_TCN"/>
+		
+		<result property="inptRcpDt" column="INPT_RCP_DT"/>
+		<result property="actlFxRefno" column="ACTL_FX_REFNO"/>
+		<result property="fxRefnoSrno" column="FX_REFNO_SRNO"/>
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD"/>
+		<result property="inptAtmcBizDsnm" column="INPT_ATMC_BIZ_DSNM"/>
+		<result property="aiInspeEno" column="AI_INSPE_ENO"/>
+		<result property="aiInptProsCd" column="AI_INPT_PROS_CD"/>
+		<result property="aiInptProsNm" column="AI_INPT_PROS_NM"/>
+		<result property="aiInptAcvtCd" column="AI_INPT_ACVT_CD"/>
+		<result property="aiInptAcvtNm" column="AI_INPT_ACVT_NM"/>
+		<result property="aiInptPrcDsnm" column="AI_INPT_PRC_DSNM"/>
+		<result property="aiSysInptPrgStnm" column="AI_SYS_INPT_PRG_STNM"/>
+		<result property="procSec" column="PROC_SEC"/>
+		<result property="procMinute" column="PROC_MINUTE"/>
+		<result property="procHour" column="PROC_HOUR"/>
+		<result property="procDay" column="PROC_DAY"/>
+		<result property="processGroup" column="PROCESS_GROUP"/>
+		<result property="aiInptAppvStcd" column="AI_INPT_APPV_STCD"/>
+		<result property="docPageNum" column="DOC_PAGE_NUM"/>
+		
+		<result property="daily1" column="DAILY1"/>
+		<result property="daily2" column="DAILY2"/>
+		<result property="daily3" column="DAILY3"/>
+		<result property="daily4" column="DAILY4"/>
+		<result property="daily5" column="DAILY5"/>
+		<result property="daily6" column="DAILY6"/>
+		
+		<result property="nonCrCnt" column="NON_CR_CNT"/>
+		<result property="scanCnt" column="SCAN_CNT"/>
+		<result property="errCnt" column="ERR_CNT"/>
+		<result property="delayCnt" column="DELAY_CNT"/>
+		<result property="normalCnt" column="NORMAL_CNT"/>
+		<result property="inspCnt" column="INSP_CNT"/>
+		<result property="apprCnt" column="APPR_CNT"/>
+		<result property="cmplCnt" column="CMPL_CNT"/>
+		<result property="totImgCnt" column="TOT_IMG_CNT"/>
+	</resultMap>
+	
+	<resultMap id="adminStatusListMap" type="com.woori.ajs.model.AdminStatusTablesVO">
+		<result property="aiInptQlasPrcStsCd"  column="AI_INPT_QLAS_PRC_STS_CD"/>
+		<result property="trnLogSrno"  column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId"  column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm"  column="LST_DB_CHG_DTM"/>
+		<result property="inptMstSrno"  column="INPT_MST_SRNO"/>
+		<result property="aiInptAtflSrno"  column="AI_INPT_ATFL_SRNO"/>
+		<result property="aiInptAtflNm"  column="AI_INPT_ATFL_NM"/>
+		<result property="aiInptAtflPathTxt"  column="AI_INPT_ATFL_PATH_TXT"/>
+		<result property="aiInptBizDscd"  column="AI_INPT_BIZ_DSCD"/>
+		<result property="aiInptPrgSrno"  column="AI_INPT_PRG_SRNO"/>
+		<result property="inptBlGrpNo"  column="INPT_BL_GRP_NO"/>
+		<result property="filtInptRstSrno"  column="FILT_INPT_RST_SRNO"/>
+		<result property="aiInptBlNoNcnt"  column="AI_INPT_BL_NO_NCNT"/>
+		<result property="blNo"  column="BL_NO"/>
+		<result property="filtDtctNo"  column="FILT_DTCT_NO"/>
+		<result property="filtInptRstRecpDtm"  column="FILT_INPT_RST_RECP_DTM"/>
+		<result property="safewatchAiInptRstCd"  column="SAFEWATCH_AI_INPT_RST_CD"/>
+		<result property="aiInptFiltTxt"  column="AI_INPT_FILT_TXT"/>
+		<result property="filtInptReqDtm"  column="FILT_INPT_REQ_DTM"/>
+		<result property="aiInptAcvtCd"  column="AI_INPT_ACVT_CD"/>
+		<result property="aiInptAcvtStsCd"  column="AI_INPT_ACVT_STS_CD"/>
+		<result property="aiInptProsStaDtm"  column="AI_INPT_PROS_STA_DTM"/>
+		<result property="aiInptPrcOpiTxt"  column="AI_INPT_PRC_OPI_TXT"/>
+		<result property="aiInptClsDt"  column="AI_INPT_CLS_DT"/>
+		<result property="aiInptClsDscd"  column="AI_INPT_CLS_DSCD"/>
+		<result property="aiInptClsItcd"  column="AI_INPT_CLS_ITCD"/>
+		<result property="aiInptSnpeEno"  column="AI_INPT_SNPE_ENO"/>
+		<result property="aiInptClsCnt"  column="AI_INPT_CLS_CNT"/>
+		<result property="aiInptRmrkTxt"  column="AI_INPT_RMRK_TXT"/>
+		<result property="aiInptMstStsTxt"  column="AI_INPT_MST_STS_TXT"/>
+		<result property="aiInptSvrInfTxt"  column="AI_INPT_SVR_INF_TXT"/>
+		<result property="aiInptPrcDscd"  column="AI_INPT_PRC_DSCD"/>
+		<result property="aiSysInptPrgStcd"  column="AI_SYS_INPT_PRG_STCD"/>
+		<result property="rprocTcn"  column="RPROC_TCN"/>
+		<result property="inptRcpDt" column="INPT_RCP_DT"/>
+		<result property="actlFxRefno" column="ACTL_FX_REFNO"/>
+		<result property="fxRefnoSrno" column="FX_REFNO_SRNO"/>
+		<result property="aiInptImgKeyNo" column="AI_INPT_IMG_KEY_NO"/>
+		<result property="inptAtmcBizDscd"   column="INPT_ATMC_BIZ_DSCD"/>
+		<result property="aiInptDocScanChrgEno"   column="AI_INPT_DOC_SCAN_CHRG_ENO"/>
+		<result property="aiInptDocScanDtm" column="AI_INPT_DOC_SCAN_DTM"/>
+		<result property="totaltextAiInptRstCd"   column="TOTALTEXT_AI_INPT_RST_CD"/>
+		<result property="itmInptAiInptRstCd"   column="ITM_INPT_AI_INPT_RST_CD"/>
+		<result property="aiInspeEno" column="AI_INSPE_ENO"/>
+		<result property="papsClfErrYn"   column="PAPS_CLF_ERR_YN"/>
+		<result property="papsReScanCmplYn"   column="PAPS_RE_SCAN_CMPL_YN"/>
+		<result property="papsReScanNedYn" column="PAPS_RE_SCAN_NED_YN"/>
+		<result property="qlasPrgYn"   column="QLAS_PRG_YN"/>
+		<result property="qlasCrpeEno"   column="QLAS_CRPE_ENO"/>
+		<result property="qltGrnAiInptRstCd"   column="QLT_GRN_AI_INPT_RST_CD"/>
+		<result property="aiInptProsCd" column="AI_INPT_PROS_CD"/>
+		<result property="aiInptQlasAppvStcd"   column="AI_INPT_QLAS_APPV_STCD"/>
+		<result property="aiInptQlasProsCd" column="AI_INPT_QLAS_PROS_CD"/>
+		<result property="aiInptQlasAcvtCd"   column="AI_INPT_QLAS_ACVT_CD"/>
+		<result property="qlasSnpeEno"   column="QLAS_SNPE_ENO"/>
+		<result property="qlasAlocDt"   column="QLAS_ALOC_DT"/>
+		<result property="imexHisCd"   column="IMEX_HIS_CD"/>
+		<result property="imexHisSrno"   column="IMEX_HIS_SRNO"/>
+		<result property="shipRgsNo" column="SHIP_RGS_NO"/>
+		<result property="aiInptCnnStsTxt"   column="AI_INPT_CNN_STS_TXT"/>
+		<result property="aiInptRcnnStsTxt"   column="AI_INPT_RCNN_STS_TXT"/>
+		<result property="aiInptDsrsExeSvrTxt"   column="AI_INPT_DSRS_EXE_SVR_TXT"/>
+		<result property="inptElmtId" column="INPT_ELMT_ID"/>
+		<result property="inptPapsFileNm"   column="INPT_PAPS_FILE_NM"/>
+		<result property="inptPapsFilePathTxt"   column="INPT_PAPS_FILE_PATH_TXT"/>
+		<result property="aiInptDocTpNm"   column="AI_INPT_DOC_TP_NM"/>
+		<result property="aiInptAicrRstTxt" column="AI_INPT_AICR_RST_TXT"/>
+		<result property="aiInptAllAicrRstTxt"   column="AI_INPT_ALL_AICR_RST_TXT"/>
+		<result property="aiInptPapsQltScre"   column="AI_INPT_PAPS_QLT_SCRE"/>
+		<result property="inptTaskId"   column="INPT_TASK_ID"/>
+		<result property="aiInptTotaltextSrno"  column="AI_INPT_TOTALTEXT_SRNO"/>
+		<result property="aiInptTotaltextRvsnYn"  column="AI_INPT_TOTALTEXT_RVSN_YN"/>
+		<result property="inptSanctionNo"  column="INPT_SANCTION_NO"/>
+		<result property="itmInptNacrdYn"  column="ITM_INPT_NACRD_YN"/>
+		<result property="itmInptRvsnYn"  column="ITM_INPT_RVSN_YN"/>
+		<result property="inptSanctionDatTxt"  column="INPT_SANCTION_DAT_TXT"/>
+		<result property="bfrsAicrExtcTxt"  column="BFRS_AICR_EXTC_TXT"/>
+		<result property="afrsAicrExtcTxt"  column="AFRS_AICR_EXTC_TXT"/>
+		<result property="bfrsTaExtcTxt"  column="BFRS_TA_EXTC_TXT"/>
+		<result property="afrsTaExtcTxt"  column="AFRS_TA_EXTC_TXT"/>
+		<result property="itmInptHndgInpDatTxt"  column="ITM_INPT_HNDG_INP_DAT_TXT"/>
+		<result property="safewatchItmYn"  column="SAFEWATCH_ITM_YN"/>
+		<result property="itmInptXaxisStaCrdnCn"  column="ITM_INPT_XAXIS_STA_CRDN_CN"/>
+		<result property="itmInptYaxisStaCrdnCn"  column="ITM_INPT_YAXIS_STA_CRDN_CN"/>
+		<result property="itmInptXaxisEndCrdnCn"  column="ITM_INPT_XAXIS_END_CRDN_CN"/>
+		<result property="itmInptYaxisEndCrdnCn"  column="ITM_INPT_YAXIS_END_CRDN_CN"/>
+		<result property="aiInptAltYn"  column="AI_INPT_ALT_YN"/>
+		<result property="aiInptSanctionRuleTxt"  column="AI_INPT_SANCTION_RULE_TXT"/>
+		<result property="aiInptWordAcrdRt"  column="AI_INPT_WORD_ACRD_RT"/>
+		<result property="aiInptExtcSntnTxt"  column="AI_INPT_EXTC_SNTN_TXT"/>
+		<result property="aiInptAppvSrno"  column="AI_INPT_APPV_SRNO"/>
+		<result property="aiInptCrpeEno"  column="AI_INPT_CRPE_ENO"/>
+		<result property="aiInptPrcDtm"  column="AI_INPT_PRC_DTM"/>
+		<result property="aiInptTpySaveYn"  column="AI_INPT_TPY_SAVE_YN"/>
+		<result property="aiInptAppvStcd"  column="AI_INPT_APPV_STCD"/>
+		<result property="aiInptTotaltextRstCd"  column="AI_INPT_TOTALTEXT_RST_CD"/>
+		<result property="aiInptItmRstCd"  column="AI_INPT_ITM_RST_CD"/>
+		<result property="inptSysMntgDt"  column="INPT_SYS_MNTG_DT"/>
+		<result property="inptSysMntgTm"  column="INPT_SYS_MNTG_TM"/>
+		<result property="inptSysSvrNm"  column="INPT_SYS_SVR_NM"/>
+		<result property="inptSysPfmDatTpcd"  column="INPT_SYS_PFM_DAT_TPCD"/>
+		<result property="inptSysPfmDatNm"  column="INPT_SYS_PFM_DAT_NM"/>
+		<result property="inptSysPfmDatTxt"  column="INPT_SYS_PFM_DAT_TXT"/>
+		<result property="inptSysPfmDatLvlTxt"  column="INPT_SYS_PFM_DAT_LVL_TXT"/>
+		<result property="inptSysMntgNmlLvlTxt"  column="INPT_SYS_MNTG_NML_LVL_TXT"/>
+	</resultMap>
+
+	
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 관리자메뉴 - 시스템심사진행현황 (8050) */
+		/* AdminStatusMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+SELECT X.* FROM (
+			SELECT 
+				 M.INPT_MST_SRNO		AS INPT_MST_SRNO		--심사마스터일련번호
+				,M.INPT_RCP_DT 			AS INPT_RCP_DT			--심사접수일자
+				,M.ACTL_FX_REFNO 		AS ACTL_FX_REFNO		--ACTUAL외환참조번호
+				,M.FX_REFNO_SRNO 		AS FX_REFNO_SRNO		--외환참조번호일련번호
+				,M.INPT_ATMC_BIZ_DSCD 	AS INPT_ATMC_BIZ_DSCD	--심사자동화업무구분코드
+				,M.AI_INPT_APPV_STCD    AS AI_INPT_APPV_STCD    --결재진행상태코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '150'  AND AI_INPT_CMN_CD = M.INPT_ATMC_BIZ_DSCD) AS INPT_ATMC_BIZ_DSNM --심사자동화업무구분명
+--				,M.AI_INSPE_ENO 		AS AI_INSPE_ENO			--AI심사자직원번호
+				,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = M.AI_INSPE_ENO) AS AI_INSPE_ENO
+				,M.AI_INPT_PROS_CD 		AS AI_INPT_PROS_CD		--AI심사프로세스코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '280'  AND AI_INPT_CMN_CD = M.AI_INPT_PROS_CD) AS AI_INPT_PROS_NM --프로세스명
+				,M.AI_INPT_ACVT_CD 		AS AI_INPT_ACVT_CD 		--AI심사활동코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '290'  AND AI_INPT_CMN_CD = M.AI_INPT_ACVT_CD) AS AI_INPT_ACVT_NM --AI심사활동명
+				,NVL(Q.AI_INPT_PRC_DSCD,'3')	AS AI_INPT_PRC_DSCD		--AI심사처리구분코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '361'  AND AI_INPT_CMN_CD = NVL(Q.AI_INPT_PRC_DSCD,'3')) AS AI_INPT_PRC_DSNM --AI심사처리구분명
+				,NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD) AS AI_SYS_INPT_PRG_STCD --AI심사진행상태코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = DECODE(Q.AI_SYS_INPT_PRG_STCD, null, '300','360')  AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)) AS AI_SYS_INPT_PRG_STNM --AI심사진행상태명
+			--	,(SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = DECODE(Q.AI_SYS_INPT_PRG_STCD, null, '300','360') AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)) AS PROCESS_GROUP
+				--,NVL(
+				--	 (SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '360' AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)),
+				--	  (SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '300' AND AI_INPT_CMN_CD = H.AI_INPT_ACVT_STS_CD)) AS PROCESS_GROUP
+					  
+					  
+				,(SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = DECODE(Q.AI_SYS_INPT_PRG_STCD, null, '300', '360') AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)) AS PROCESS_GROUP
+					  
+				,(SELECT COUNT(*) FROM CSPD002TG WHERE INPT_MST_SRNO = M.INPT_MST_SRNO) AS DOC_PAGE_NUM					  
+				,NVL(Q.AI_INPT_SVR_INF_TXT, ' ') AS AI_INPT_SVR_INF_TXT	 
+				,NVL(Q.LST_DB_CHG_DTM, M.LST_DB_CHG_DTM) AS LST_DB_CHG_DTM
+					  
+				,NVL(Q.RPROC_TCN, 1) 	AS RPROC_TCN			--재처리횟수
+				,NVL(Q.LST_DB_CHG_DTM, H.LST_DB_CHG_DTM) AS LST_DB_CHG_DTM --최종변경일시
+				,(SELECT EXTRACT(SECOND FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(NVL(Q.LST_DB_CHG_DTM ,H.AI_INPT_PROS_STA_DTM), 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_SEC        
+				,(SELECT EXTRACT(MINUTE FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(NVL(Q.LST_DB_CHG_DTM ,H.AI_INPT_PROS_STA_DTM), 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_MINUTE
+			    ,(SELECT EXTRACT(HOUR FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(NVL(Q.LST_DB_CHG_DTM ,H.AI_INPT_PROS_STA_DTM), 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_HOUR
+			    ,(SELECT EXTRACT(DAY FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(NVL(Q.LST_DB_CHG_DTM ,H.AI_INPT_PROS_STA_DTM), 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_DAY
+			    /*,(SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(NVL(Q.LST_DB_CHG_DTM ,H.AI_INPT_PROS_STA_DTM), 1, 14), 'YYYYMMDDHH24MISAI_INPT_PROS_NMS') AS PROC_TIMESTAMP FROM DUAL)*/
+			 FROM   CSPD001TM M  
+			       ,CSPD900TI Q
+			       ,CSPD008TH H
+			 WHERE M.AI_INPT_ACVT_CD IN ( 
+				 	 '20'	--이미지스캔(신규)
+					,'21'	--이미지스캔(재스캔)
+					,'30'	--문자인식 및 항목추출 (정상)
+					,'40'	--문자인식 및 항목추출 (재추출)
+					,'50'	--AI 자동심사 (수기)
+					,'60'    --AI 자동심사 (정상)
+					,'70'	--AI 자동심사 (재심사)
+					)   
+			   AND M.INPT_MST_SRNO = Q.INPT_MST_SRNO(+)	
+			   AND M.INPT_MST_SRNO = H.INPT_MST_SRNO
+			   AND H.AI_INPT_PRG_SRNO = (SELECT MAX(AI_INPT_PRG_SRNO)
+			                               FROM CSPD008TH
+			                              WHERE INPT_MST_SRNO = H.INPT_MST_SRNO)
+				<if test="schSdate != null and schSdate != ''">
+					AND M.INPT_RCP_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+				</if>
+			) X
+			WHERE 1=1
+			
+		
+		<if test="aiSysInptPrgStcd != null and aiSysInptPrgStcd != ''">
+			AND X.AI_SYS_INPT_PRG_STCD = #{aiSysInptPrgStcd}
+		</if>
+		<if test="schRefNo != null and schRefNo != ''">
+			AND X.ACTL_FX_REFNO LIKE '%' || #{schRefNo} || '%'
+		</if>
+		<if test="aiInptProcTime != null and aiInptProcTime != ''">
+			AND (X.PROC_DAY * 24 * 60) + (X.PROC_HOUR * 60) + (PROC_MINUTE) > #{aiInptProcTime}
+		</if>
+		<if test="schUserYn != null and schUserYn != ''">
+			AND X.AI_INPT_PRC_DSCD != '3'
+		</if>
+		<if test="btnFlag != null and btnFlag != ''">
+			AND X.AI_INPT_SVR_INF_TXT = #{btnFlag}
+		</if>
+  
+  		<choose>
+  			<!-- 생성일 -->
+			<when test='"inptRcpDt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.INPT_RCP_DT
+			</when>
+			<when test='"inptRcpDt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.INPT_RCP_DT DESC
+			</when>
+			<!-- 업무 -->
+			<when test='"inptAtmcBizDsnm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.INPT_ATMC_BIZ_DSCD
+			</when>
+			<when test='"inptAtmcBizDsnm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.INPT_ATMC_BIZ_DSCD DESC
+			</when>
+			<!-- REFNO -->
+			<when test='"actlFxRefno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.ACTL_FX_REFNO
+			</when>
+			<when test='"actlFxRefno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.ACTL_FX_REFNO DESC
+			</when>
+			<!-- 액티비티 -->
+			<when test='"aiInptAcvtNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.AI_INPT_ACVT_CD
+			</when>
+			<when test='"aiInptAcvtNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.AI_INPT_ACVT_CD DESC
+			</when>
+			<!-- 담당자 -->
+			<when test='"aiInspeEno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.AI_INSPE_ENO
+			</when>
+			<when test='"aiInspeEno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.AI_INSPE_ENO DESC
+			</when>
+			<!-- 처리구분 -->
+			<when test='"aiInptPrcDsnm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.AI_INPT_PRC_DSCD
+			</when>
+			<when test='"aiInptPrcDsnm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.AI_INPT_PRC_DSCD DESC
+			</when>
+			<!-- 심사진행상태 -->
+			<when test='"aiSysInptPrgStnm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.AI_SYS_INPT_PRG_STCD
+			</when>
+			<when test='"aiSysInptPrgStnm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.AI_SYS_INPT_PRG_STCD DESC
+			</when>
+			<!-- 처리횟수 -->
+			<when test='"rprocTcn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.RPROC_TCN
+			</when>
+			<when test='"rprocTcn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.RPROC_TCN DESC
+			</when>
+			<!-- 경과시간 -->
+			<when test='"procDay".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.PROC_DAY ASC, X.PROC_HOUR ASC, X.PROC_MINUTE ASC, X.PROC_SEC ASC
+			</when>
+			<when test='"procDay".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.PROC_DAY DESC, X.PROC_HOUR DESC, X.PROC_MINUTE DESC, X.PROC_SEC DESC
+			</when>
+			<!-- 수행서버 -->
+			<when test='"aiInptSvrInfTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.AI_INPT_SVR_INF_TXT
+			</when>
+			<when test='"aiInptSvrInfTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.AI_INPT_SVR_INF_TXT DESC
+			</when>
+			<!-- 페이지수 -->
+			<when test='"docPageNum".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.DOC_PAGE_NUM
+			</when>
+			<when test='"docPageNum".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.DOC_PAGE_NUM DESC
+			</when>
+			<!-- 마스터 -->
+			<when test='"inptMstSrno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.INPT_MST_SRNO
+			</when>
+			<when test='"inptMstSrno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.INPT_MST_SRNO DESC
+			</when>
+			<!-- 최종DB변경시간 -->
+			<when test='"lstDbChgDtm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY X.LST_DB_CHG_DTM
+			</when>
+			<when test='"lstDbChgDtm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY X.LST_DB_CHG_DTM DESC
+			</when>
+			
+			<otherwise>
+				ORDER BY X.PROC_DAY DESC, X.PROC_HOUR DESC, X.PROC_MINUTE DESC, X.PROC_SEC DESC 
+			</otherwise>
+		</choose>
+  
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 관리자메뉴 - 시스템심사진행현황 (8050) */
+		/* AdminStatusMapper.selectListTotCnt */	
+
+		SELECT COUNT(*) FROM (
+			SELECT 
+				 M.INPT_MST_SRNO		AS INPT_MST_SRNO		--심사마스터일련번호
+				,M.INPT_RCP_DT 			AS INPT_RCP_DT			--심사접수일자
+				,M.ACTL_FX_REFNO 		AS ACTL_FX_REFNO		--ACTUAL외환참조번호
+				,M.FX_REFNO_SRNO 		AS FX_REFNO_SRNO		--외환참조번호일련번호
+				,M.INPT_ATMC_BIZ_DSCD 	AS INPT_ATMC_BIZ_DSCD	--심사자동화업무구분코드
+				,M.AI_INPT_APPV_STCD    AS AI_INPT_APPV_STCD    --결재진행상태코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '150'  AND AI_INPT_CMN_CD = M.INPT_ATMC_BIZ_DSCD) AS INPT_ATMC_BIZ_DSNM --심사자동화업무구분명
+--				,M.AI_INSPE_ENO 		AS AI_INSPE_ENO			--AI심사자직원번호
+				,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = M.AI_INSPE_ENO) AS AI_INSPE_ENO
+				,M.AI_INPT_PROS_CD 		AS AI_INPT_PROS_CD		--AI심사프로세스코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '280'  AND AI_INPT_CMN_CD = M.AI_INPT_PROS_CD) AS AI_INPT_PROS_NM --프로세스명
+				,M.AI_INPT_ACVT_CD 		AS AI_INPT_ACVT_CD 		--AI심사활동코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '290'  AND AI_INPT_CMN_CD = M.AI_INPT_ACVT_CD) AS AI_INPT_ACVT_NM --AI심사활동명
+				,NVL(Q.AI_INPT_PRC_DSCD,'3')	AS AI_INPT_PRC_DSCD		--AI심사처리구분코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '361'  AND AI_INPT_CMN_CD = NVL(Q.AI_INPT_PRC_DSCD,'3')) AS AI_INPT_PRC_DSNM --AI심사처리구분명
+				,NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD) AS AI_SYS_INPT_PRG_STCD --AI심사진행상태코드
+				,(SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = DECODE(Q.AI_SYS_INPT_PRG_STCD, null, '300','360')  AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)) AS AI_SYS_INPT_PRG_STNM --AI심사진행상태명
+			--	,(SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = DECODE(Q.AI_SYS_INPT_PRG_STCD, null, '300','360') AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)) AS PROCESS_GROUP
+				--,NVL(
+				--	 (SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '360' AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)),
+				--	  (SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = '300' AND AI_INPT_CMN_CD = H.AI_INPT_ACVT_STS_CD)) AS PROCESS_GROUP
+					  
+					  
+				,(SELECT AI_INPT_INTF_ITM_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD = DECODE(Q.AI_SYS_INPT_PRG_STCD, null, '300', '360') AND AI_INPT_CMN_CD = NVL(Q.AI_SYS_INPT_PRG_STCD, H.AI_INPT_ACVT_STS_CD)) AS PROCESS_GROUP
+				,(SELECT COUNT(*) FROM CSPD002TG WHERE INPT_MST_SRNO = M.INPT_MST_SRNO) AS DOC_PAGE_NUM					  
+				,NVL(Q.AI_INPT_SVR_INF_TXT, ' ') AS AI_INPT_SVR_INF_TXT	 
+				,NVL(Q.LST_DB_CHG_DTM, M.LST_DB_CHG_DTM) AS LST_DB_CHG_DTM
+					  
+				,NVL(Q.RPROC_TCN, 1) 	AS RPROC_TCN			--재처리횟수
+				,NVL(Q.LST_DB_CHG_DTM, H.LST_DB_CHG_DTM) AS LST_DB_CHG_DTM --최종변경일시
+				,(SELECT EXTRACT(SECOND FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(H.AI_INPT_PROS_STA_DTM, 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_SEC        
+				,(SELECT EXTRACT(MINUTE FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(H.AI_INPT_PROS_STA_DTM, 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_MINUTE
+			    ,(SELECT EXTRACT(HOUR FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(H.AI_INPT_PROS_STA_DTM, 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_HOUR
+			    ,(SELECT EXTRACT(DAY FROM PROC_TIMESTAMP_T.PROC_TIMESTAMP) FROM(
+				  SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(H.AI_INPT_PROS_STA_DTM, 1, 14), 'YYYYMMDDHH24MISS') AS PROC_TIMESTAMP
+			        FROM DUAL) PROC_TIMESTAMP_T ) AS PROC_DAY
+			    /*,(SELECT TO_TIMESTAMP(TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'), 'YYYYMMDDHH24MISS') 
+			  		   - TO_TIMESTAMP(SUBSTR(H.AI_INPT_PROS_STA_DTM, 1, 14), 'YYYYMMDDHH24MISAI_INPT_PROS_NMS') AS PROC_TIMESTAMP FROM DUAL)*/
+			 FROM   CSPD001TM M  
+			       ,CSPD900TI Q
+			       ,CSPD008TH H
+			 WHERE M.AI_INPT_ACVT_CD IN ( 
+				 	 '20'	--이미지스캔(신규)
+					,'21'	--이미지스캔(재스캔)
+					,'30'	--문자인식 및 항목추출 (정상)
+					,'40'	--문자인식 및 항목추출 (재추출)
+					,'50'	--AI 자동심사 (수기)
+					,'60'    --AI 자동심사 (정상)
+					,'70'	--AI 자동심사 (재심사)
+					)   
+			   AND M.INPT_MST_SRNO = Q.INPT_MST_SRNO(+)	
+			   AND M.INPT_MST_SRNO = H.INPT_MST_SRNO
+			   AND H.AI_INPT_PRG_SRNO = (SELECT MAX(AI_INPT_PRG_SRNO)
+			                               FROM CSPD008TH
+			                              WHERE INPT_MST_SRNO = H.INPT_MST_SRNO)
+			) X
+			WHERE 1=1
+			
+		<if test="schSdate != null and schSdate != ''">
+			AND X.INPT_RCP_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		</if>
+		<if test="aiSysInptPrgStcd != null and aiSysInptPrgStcd != ''">
+			AND X.AI_SYS_INPT_PRG_STCD = #{aiSysInptPrgStcd}
+		</if>
+		<if test="schRefNo != null and schRefNo != ''">
+			AND X.ACTL_FX_REFNO LIKE '%' || #{schRefNo} || '%'
+		</if>
+		<if test="aiInptProcTime != null and aiInptProcTime != ''">
+			AND (X.PROC_DAY * 24 * 60) + (X.PROC_HOUR * 60) + (PROC_MINUTE) > #{aiInptProcTime}
+		</if>
+		<if test="schUserYn != null and schUserYn != ''">
+			AND X.AI_INPT_PRC_DSCD != '3'
+		</if>
+		<if test="btnFlag != null and btnFlag != ''">
+			AND X.AI_INPT_SVR_INF_TXT = #{btnFlag}
+		</if>
+
+	</select>
+	
+	<select id="selectDailyList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 관리자메뉴 - 시스템심사진행현황 (8050) */
+		/* AdminStatusMapper.selectDailyList */	
+		SELECT NVL(SUM(CASE WHEN  PAPS_RE_SCAN_NED_YN  IS NULL THEN 1 ELSE 0 END ), 0) AS DAILY1,												-- 스캔건수(합계)
+			   NVL(SUM(CASE WHEN TO_NUMBER(AI_INPT_ACVT_CD) &lt; 80 AND PAPS_RE_SCAN_NED_YN  IS NULL THEN 1 ELSE 0 END), 0) AS DAILY2,			-- AI자동심사
+			   NVL(SUM(CASE WHEN TO_NUMBER(AI_INPT_ACVT_CD) IN (80, 90) AND PAPS_RE_SCAN_NED_YN  IS NULL THEN 1 ELSE 0 END), 0) AS DAILY3,		-- 심사중
+			   NVL(SUM(CASE WHEN AI_INPT_ACVT_CD IN ('100', '130') THEN 1 ELSE 0 END), 0) AS DAILY4,											-- 결재중
+			   NVL(SUM(CASE WHEN AI_INPT_ACVT_CD IN ('140', '160') THEN 1 ELSE 0 END), 0) AS DAILY5,											-- 완료
+			   NVL(SUM((SELECT COUNT(*) FROM CSPD002TG WHERE INPT_MST_SRNO = M.INPT_MST_SRNO)), 0) AS DAILY6									-- 총 이미지수
+		FROM   CSPD001TM M
+		WHERE  M.INPT_RCP_DT = REPLACE(#{schSdate},'-','')
+	</select>
+	
+	<select id="selectAsideInterval" resultType="string">
+		/* aside (공통) */
+		/* AdminStatusMapper.selectAsideInterval */
+		SELECT AI_INPT_SORT_SEQ FROM CSPD112TI
+		 WHERE AI_INPT_GRP_CD = '371'
+		   AND AI_INPT_CMN_CD = '02'
+	</select>
+	
+	<select id="selectAsideUngeneratedCount" resultType="int">
+		/* aside (공통_미생성건수) */
+		/* AdminStatusMapper.selectAsideUngeneratedCount */
+		SELECT  COUNT(*)  CNT
+		FROM    CSPD011TL 
+		WHERE	INPT_RCP_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		AND   	NVL(AI_INPT_XT_PRC_STS_DSCD,'11')  = '11'  -- 11:미확인
+	</select>
+	
+	<select id="selectAsideList" resultMap="listMap">
+		/* aside (공통) */
+		/* AdminStatusMapper.selectAsideList */
+		SELECT  
+			COUNT(A.INPT_MST_SRNO)  													AS 	SCAN_CNT    --스켄건수
+		--AI자동심사 중 16:회전각도추출결과오류, 24:OCR추추렬과오류, 32:추출오류, 42:심사오류, 47:SW필터링오류, 심사이력 미존재시, 오류
+	,	NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD &lt; 80 THEN
+					CASE WHEN A.Q_PRG_STCD IN ('16','24') OR  A.LST_ACVT_STSCD IN ('21','32','42','47')  THEN 1 
+					ELSE 0 
+					END
+				ELSE 0 END ),0) 	AS ERR_CNT 		--오류건수
+		--AI자동심사 중 지연기준시간(분) 초과시 지연	(오류를 제외한)
+	,	NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD &lt; 80 THEN
+					CASE WHEN A.Q_PRG_STCD IN ('16','24') OR  A.LST_ACVT_STSCD IN ('21','32','42','47')  THEN 0 
+					ELSE 
+						CASE WHEN A.LEAD_MIN > B.DELAY_BAS_MIN THEN 1 ELSE 0 END
+					END
+				ELSE 0 END ),0) 	AS DELAY_CNT 	--지연건수		
+		--AI자동심사 중 오류와 지연을 제외한 건수											
+	,	NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD &lt; 80 THEN
+					CASE WHEN A.Q_PRG_STCD IN ('16','24') OR  A.LST_ACVT_STSCD IN ('21','32','42','47')   THEN 0 
+					ELSE 
+						CASE WHEN A.LEAD_MIN &gt; B.DELAY_BAS_MIN THEN 0 ELSE 1 END
+					END
+				ELSE 0 END ),0) 	AS NORMAL_CNT 	--정상건수				
+	,   NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD IN (80, 90) 	THEN 1 ELSE 0 END), 0) 	AS 	INSP_CNT 	-- 심사중
+	,   NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD IN (100, 130) 	THEN 1 ELSE 0 END), 0) 	AS 	APPR_CNT	-- 결재중
+	,   NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD IN (140, 160) 	THEN 1 ELSE 0 END), 0) 	AS 	CMPL_CNT	-- 완료
+	,	NVL(SUM(A.IMG_CNT), 0)														AS 	TOT_IMG_CNT	-- 총 이미지수
+FROM 
+(  
+	 SELECT  M.INPT_MST_SRNO
+		,   ROUND((SYSDATE - TO_DATE(SUBSTR(M.LST_DB_CHG_DTM,1,14),'YYYYMMDDHH24MISS')) * 24 * 60 ,0) AS LEAD_MIN
+		,	TO_NUMBER(M.AI_INPT_ACVT_CD)  AS  AI_INPT_ACVT_CD
+		,   Q.AI_SYS_INPT_PRG_STCD  AS Q_PRG_STCD
+		,  (SELECT MAX(CASE WHEN  AI_INPT_ACVT_STS_CD IN ('20', '60') AND AI_INPT_PRC_OPI_TXT IS NOT NULL 
+		           THEN '21' 
+		           ELSE   AI_INPT_ACVT_STS_CD END) KEEP(
+											DENSE_RANK FIRST  
+											ORDER BY AI_INPT_PRG_SRNO  DESC  
+											) AS INPT_TASK_ID
+		   	FROM 	CSPD008TH 
+		  	WHERE 	INPT_MST_SRNO  = M.INPT_MST_SRNO 
+		   	) AS LST_ACVT_STSCD	
+		, ( SELECT COUNT(*) FROM CSPD002TG WHERE INPT_MST_SRNO = M.INPT_MST_SRNO) AS IMG_CNT
+	FROM   CSPD001TM M, 
+	       CSPD900TI Q
+	WHERE  M.INPT_RCP_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	AND    M.PAPS_RE_SCAN_NED_YN IS NULL
+	AND    M.INPT_MST_SRNO = Q.INPT_MST_SRNO(+)
+) A ,
+(SELECT AI_INPT_SORT_SEQ AS DELAY_BAS_MIN FROM CSPD112TI WHERE AI_INPT_GRP_CD = '371' AND AI_INPT_CMN_CD  = '01')  B --지연기준시간
+	
+	</select>
+	
+	<update id="statusActivityUpdate" parameterType="com.woori.ajs.model.AdminStatusVO">
+		UPDATE CSPD001TM
+		
+		  SET   AI_INPT_ACVT_CD = #{aiInptAcvtCd}
+		  	  , AI_INPT_APPV_STCD = #{aiSysInptPrgStcd}	
+			  , TRN_LOG_SRNO = #{trnLogSrno}
+			  , LST_DB_CHG_ID = #{lstDbChgId}
+			  , LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</update>
+	
+	<insert id="statusActivityModHistory" parameterType="com.woori.ajs.model.CommonRevertDetailVO">
+		INSERT INTO CSPD008TH
+			(
+			 AI_INPT_PRG_SRNO
+			 , INPT_MST_SRNO
+			 , AI_INPT_BIZ_DSCD
+			 , AI_INPT_ACVT_CD
+			 , AI_INPT_ACVT_STS_CD
+			 , AI_INPT_CRPE_ENO
+			 , AI_INPT_PROS_STA_DTM
+			 , AI_INPT_PRC_OPI_TXT
+			 , TRN_LOG_SRNO
+			 , LST_DB_CHG_ID
+			 , LST_DB_CHG_DTM
+			)
+			VALUES
+			(
+			CSPD008TH_SG01.NEXTVAL
+			, #{inptMstSrno}
+			, #{aiInptBizDscd}
+			, #{nextAiInspAtvtCd}
+			, #{aiInptAcvtStsCd}
+			, #{aiInptCrpeEno}
+			, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+			, #{aiInptPrcOpiTxt}
+			, #{trnLogSrno}
+			, #{lstDbChgId}
+			, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+			)
+	</insert>
+	
+	<update id="statusReprocess" parameterType="com.woori.ajs.model.AdminStatusVO">
+		UPDATE CSPD900TI
+		   SET AI_SYS_INPT_PRG_STCD = #{aiSysInptPrgStcd}
+			  ,RPROC_TCN = 0
+			  ,AI_INPT_PRC_DSCD = #{aiInptPrcDscd}
+              ,LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+              ,LST_DB_CHG_ID = #{lstDbChgId}
+              ,TRN_LOG_SRNO = #{trnLogSrno}
+			WHERE INPT_MST_SRNO = #{inptMstSrno} 
+
+	</update>
+	
+	<delete id="statusDeleteMaster" parameterType="com.woori.ajs.model.AdminStatusVO">
+		DELETE FROM CSPD001TM
+		WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="statusDeleteMasterDetail" parameterType="com.woori.ajs.model.AdminStatusVO">
+		DELETE FROM CSPD002TG
+		WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="statusDeleteHistory" parameterType="com.woori.ajs.model.AdminStatusVO">
+		DELETE FROM CSPD008TH
+		WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<delete id="statusDeleteQueue" parameterType="com.woori.ajs.model.AdminStatusVO">
+		DELETE FROM CSPD900TI
+		WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</delete>
+	
+	<insert id="queryTestInsert" parameterType="com.woori.ajs.model.SearchVO">
+		${queryTestParam}
+	</insert>
+	
+	<update id="queryTestUpdate" parameterType="com.woori.ajs.model.SearchVO">
+		${queryTestParam}
+	</update>
+	
+	<delete id="queryTestDelete" parameterType="com.woori.ajs.model.SearchVO">
+		${queryTestParam}
+	</delete>
+	
+	<select id="queryTest" parameterType="com.woori.ajs.model.SearchVO" resultMap="adminStatusListMap">
+		 SELECT * FROM ${table} ${queryTestParam} 
+	</select>
+	
+ 	<select id="queryTestDefault" parameterType="com.woori.ajs.model.SearchVO" resultMap="adminStatusListMap">
+		SELECT INPT_MST_SRNO, AI_INPT_CRPE_ENO, TRN_LOG_SRNO FROM CSPD008TH WHERE INPT_MST_SRNO IS NULL 
+	</select>
+	
+	<select id="queryTestNew" parameterType="com.woori.ajs.model.SearchVO" resultType="java.util.LinkedHashMap">
+		SELECT ROWNUM AS NO, A.* 
+		  FROM (
+		 	${queryTestParam}
+		 ) A
+	</select>
+	
+</mapper>
+
+
+
+
+  

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CommonRevertHistoryMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.CommonHistoryListVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />                                         <!-- 마스터 번호 -->
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />                                         <!-- Reference 번호--> 
+		<result property="aiInptCrpeEno" column="AI_INPT_CRPE_ENO" />                                    <!-- 담당자 번호 --> 
+		<result property="aiInptCrpeNm" column="AI_INPT_CRPE_NM" />                                      <!-- 심사자 이름 -->
+		<result property="aiInptSnpeNm" column="AI_INPT_SNPE_NM" />										 <!-- 결재자 이름 -->
+		<result property="damdang" column="DAMDANG" />													 <!-- 담당자 이름 -->
+		<result property="aiInspPrcOpi" column="AI_INPT_PRC_OPI_TXT" />                                  <!-- 심사 의견 -->
+		<result property="timeDiff" column="TIME_DIFF" />                                                <!-- 처리시간 -->
+		<result property="endTime" column="END_TIME" />                                                  <!-- 종료시간 -->
+		<result property="startTime" column="START_TIME" />
+		<result property="aiInspAtvtNm" column="AI_INSP_ATVT_NM" />                                      <!-- 액티비티 명 -->
+		<result property="aiInspAtvtStsNm" column="AI_INSP_ATVT_STS_NM" />                               <!-- 처리 명 -->
+		<result property="trnlogsrno" column="TRN_LOG_SRNO" />                                           <!-- 거래로그 일련번호 -->
+		<result property="lstDbChgId" column="LST_DB_CHG_ID" />                                          <!-- 최종 db 변경   id -->
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM" />                                        <!-- 최종 db 변경 일시 -->
+		<result property="aiInptAtflSrno" column="AI_INPT_ATFL_SRNO" />                                  <!-- 첨부파일 일련 번호 -->
+		<result property="aiInptAtflNm" column="AI_INPT_ATFL_NM" />                                      <!-- 첨부파일 명 -->
+		<result property="aiInptAtflPathTxt" column="AI_INPT_ATFL_PATH_TXT" />                           <!-- 첨부파일 경로 --> 
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD" />
+		<result property="aiInptSnpeEno" column="AI_INPT_SNPE_ENO" />                           <!-- 첨부파일 경로 --> 
+		<result property="aiInspeEno" column="AI_INSPE_ENO" />
+		<result property="fxRefnoSrno" column="FX_REFNO_SRNO" /> 
+		<result property="aiInptPrgSrno" column="AI_INPT_PRG_SRNO" />
+		<result property="aiInptAcvtStsCd" column="AI_INPT_ACVT_STS_CD" />
+	</resultMap>
+
+	 <select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 심사이력 (9080) */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+			SELECT 
+				(SELECT SUBSTR('0000'||a.fhour,-4,4)||':'||SUBSTR('0'||a.fmin,-2,2)||':'||SUBSTR('0'||a.fsec,-2,2)                      <!-- 5. 포맷팅 된 시간, 분 , 초 값을 다시한번 format 정렬 -->
+				 FROM (
+				    SELECT MOD(ROUND(a.vsec),60) as fsec                                                                                <!-- 4. '3'번 값을 초 단위로 format -->
+				    	, MOD(FLOOR(ROUND(a.vsec) / 60),60) as fmin                                                                     <!-- 3. '2'번 값을 분 단위로 format -->
+				    	, FLOOR(FLOOR(ROUND(a.vsec) / 60) / 60) as fhour                                                                <!-- 2. '1'번 값을 시간 단위로 format -->
+				    FROM (
+				     SELECT 
+				       (TO_DATE(SUBSTR(REPLACE(AFT.AI_INPT_PROS_STA_DTM,'-',''),1,14),'YYYYMMDDHH24MISS') 
+				        - TO_DATE(SUBSTR(Z.AI_INPT_PROS_STA_DTM,1,14),'YYYYMMDDHH24MISS')) * 24 * 60 * 60 AS vsec     
+				     FROM DUAL                                                                                                          <!-- 1. 현재 row의 디비 변경 시간 컬럼값과 이전 row의 프로세스 시작 일시 컬럽값의 차를 통해 구한 처리시간 값 -->
+				    ) a
+				  ) a                                                                                                                  
+				 ) AS TIME_DIFF                                                                                                        
+				, TO_TIMESTAMP(Z.FOR_START_TIME, 'YYYY-MM-DD HH24:MI:SS:FF6') AS START_TIME                                                                        
+				, Z.*                                                                                        <!-- main from 절 list -->                      
+			FROM(                                                                                            <!-- Main From 절 -->
+				SELECT ROW_NUMBER() OVER(ORDER BY A.AI_INPT_PRG_SRNO) NUM                                    <!-- 008(심사이력) 테이블의 이력 번호순의 정렬 번호 값 -->
+					    , ROW_NUMBER()OVER(ORDER BY A.AI_INPT_PRG_SRNO) + 1 AS AFT_NUM                       <!-- [현재 row : n 일경우] n-1 row의 NUM 값 : '0' 일경우 '1'로 대체-->
+					    , MST.AI_INPT_SNPE_ENO
+						, MST.AI_INSPE_ENO 
+						, A.AI_INPT_PRG_SRNO                                                                 <!-- 008(심사이력) 테이블의 심사 이력 번호 값 -->
+						, MST.ACTL_FX_REFNO                                                                  <!-- 008(심사이력) 테이블의 Reference 번호 값 -->
+						, MST.FX_REFNO_SRNO																	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+						, A.INPT_MST_SRNO                                                                    <!-- 008(심사이력) 테이블의 마스터 번호 값 -->
+						, A.AI_INPT_ACVT_CD                                                                  <!-- 008(심사이력) 테이블의 액티비티 코드 값 -->
+						, ATVT.AI_INPT_CMN_CD_NM AS AI_INSP_ATVT_NM                                          <!-- 008(심사이력) 테이블의 액티비티 명 값 -->
+						, A.AI_INPT_ACVT_STS_CD                                                              <!-- 008(심사이력) 테이블의 액티비티 상태코드 값 -->
+						, STS.AI_INPT_CMN_CD_NM AS AI_INSP_ATVT_STS_NM                                       <!-- 008(심사이력) 테이블의 액티비티 상태 명 값 -->
+						, NVL(A.AI_INPT_PROS_STA_DTM,A.LST_DB_CHG_DTM) AS AI_INPT_PROS_STA_DTM
+						, A.AI_INPT_PROS_STA_DTM AS ORI_AI_INPT_PROS_STA_DTM                                 <!-- 008(심사이력) 테이블의 프로세스 시작 시간 값 -->
+						, A.LST_DB_CHG_DTM                                                                   <!-- 008(심사이력) 테이블의 디비 변경 시간 값 (시간 차이 계산을 위한 값) -->
+						, NVL(A.AI_INPT_PROS_STA_DTM,A.LST_DB_CHG_DTM) AS FOR_START_TIME                      
+						<!--, A.LST_DB_CHG_DTM AS FOR_END_TIME -->                                           <!-- 008(심사이력) 테이블의 디비 변경 시간 값  (실제 화면에 보여주기 위한 값) -->
+						, A.AI_INPT_CRPE_ENO AS AI_INPT_CRPE_ENO                                             <!-- 008(심사이력) 테이블의 업무 담당자 번호 값 -->
+						, A.AI_INPT_PRC_OPI_TXT                                                              <!-- 008(심사이력) 테이블의 심사 및 결재 처리 의견 값 -->
+						, ENO.AI_INPT_USER_NM AS DAMDANG                                                     <!-- 008(심사이력) 테이블의 업무 담당자 이름 값 -->
+						, ENO1.AI_INPT_USER_NM AS AI_INPT_CRPE_NM
+						, ENO2.AI_INPT_USER_NM AS AI_INPT_SNPE_NM
+						, A.TRN_LOG_SRNO                                                                     <!-- 008(심사이력) 테이블의 로그 값-->
+						, A.LST_DB_CHG_ID                                                                    <!-- 008(심사이력) 테이블의 거래 로그 일련번호 값 -->
+				        , MST.INPT_ATMC_BIZ_DSCD  AS INPT_ATMC_BIZ_DSCD
+				FROM CSPD008TH A                                                                             <!-- 008(심사이력) 테이블 -->
+					, CSPD112TI ATVT                                                                         <!-- 액티비티 명칭을 뽑아오기 위한 112(공통) 테이블과의 join -->
+					, CSPD112TI STS                                                                          <!-- 액티비티 상태 명칭을 뽑아오기 위한 112(공통) 테이블과의 join -->
+					, CSPD001TM MST                                                                          <!-- 외참조 번호 reference를 뽑아오기 위한 001(마스터) 테이블과의 join -->
+					, CSPD101TI ENO                                                                          <!-- 담당자 이름을 뽑아오기 위한 101(사용자) 테이블과의 join -->
+					, CSPD101TI ENO1
+					, CSPD101TI ENO2
+				WHERE A.INPT_MST_SRNO= #{inptMstSrno}                                                        <!-- 마스터 번호를 통한 조회 조건절 -->
+				AND A.AI_INPT_ACVT_CD != '110' AND A.AI_INPT_ACVT_CD != '120'                                <!-- 조회 조건절 : 액티비티코드 값이 110(자체점검 시행), 120(점검결과 확인 및 결재)이 아닌 경우 (빼도 될것같음) -->
+				AND (A.AI_INPT_BIZ_DSCD != 3 OR A.AI_INPT_BIZ_DSCD IS NULL) 							     <!-- 현재 업무구분 코드가 NULL 값인게 많아서 해당 조건으로 .. 밑에 조건으로 해야 정확함-->
+				<!-- AND A.AI_INPT_BIZ_DSCD != 3 -->                                                         <!-- 조회 조건절 : 업무구분 코드가 QA(3)이 아닌 경우 -->
+				AND ATVT.AI_INPT_GRP_CD = 290 AND ATVT.AI_INPT_CMN_CD = A.AI_INPT_ACVT_CD                    <!-- 공통 테이블(112)과 조인을 통해 액티비티 명을 뽑아오기 위한 Inner Join 조건 -->
+				AND STS.AI_INPT_GRP_CD = 300 AND STS.AI_INPT_CMN_CD = A.AI_INPT_ACVT_STS_CD                  <!-- 공통 테이블(112)과 조인을 통해 액티비티 상태코드 명을 뽑아오기 위한 Inner Join 조건 -->
+				AND MST.INPT_MST_SRNO = A.INPT_MST_SRNO
+				AND ENO.AI_INPT_USER_ID (+)= A.AI_INPT_CRPE_ENO                                              <!-- 사용자 테이블(101)과 조인을통해 담당자 번호를 뽑아오기위한 Join 조건 (데이터가 없어서 left outer join 했지만 inner join으로 바꿔야험) -->
+				AND ENO1.AI_INPT_USER_ID (+)= MST.AI_INSPE_ENO                                          
+			    AND ENO2.AI_INPT_USER_ID (+)= MST.AI_INPT_SNPE_ENO
+			)Z
+			, (SELECT ROW_NUMBER() OVER(ORDER BY AI_INPT_PRG_SRNO) NUM                                       <!-- 008(심사이력) 테이블의 이력 번호순의 정렬 번호 값  -->
+					, NVL(AI_INPT_PROS_STA_DTM, LST_DB_CHG_DTM) AS AI_INPT_PROS_STA_DTM                      <!-- 008(심사이력) 테이블의 프로세스 시작 시간 값 -->
+					, LST_DB_CHG_DTM 
+					, INPT_MST_SRNO                                                                          <!-- 008(심사이력) 테이블의 마스터 번호 값  -->
+				FROM CSPD008TH                                                                               <!-- 008(심사이력) 테이블 -->
+				WHERE INPT_MST_SRNO = #{inptMstSrno}                                                         <!-- 마스터 번호를 통한 조회 조건절 -->
+				AND AI_INPT_ACVT_CD != '110' AND AI_INPT_ACVT_CD != '120'                                    <!-- 조회 조건절 : 액티비티코드 값이 110(자체점검 시행), 120(점검결과 확인 및 결재)이 아닌 경우 (빼도 될것같음) -->
+				AND (AI_INPT_BIZ_DSCD != 3 OR AI_INPT_BIZ_DSCD IS NULL) 									 <!-- 현재 업무구분 코드가 NULL 값인게 많아서 해당 조건으로 .. 밑에 조건으로 해야 정확함-->
+				<!-- AND AI_INPT_BIZ_DSCD != 3 -->                                                          <!-- 조회 조건절 : 업무구분 코드가 QA(3)이 아닌 경우 -->
+			)AFT                                                                                             <!-- 이전 row의 순번을 가져오기 위한 join 절 -->
+			WHERE AFT.NUM (+)= Z.AFT_NUM                                                                     <!-- 이전 row와 현재 row의 번호가 같다는 inner join 조회 조건 -->
+			 
+			 <choose>
+				<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY Z.ACTL_FX_REFNO
+				</when>
+				<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY Z.ACTL_FX_REFNO DESC
+				</when>
+				<when test="'aiInptCrpeEno'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY Z.AI_INPT_CRPE_ENO
+				</when>
+				<when test="'aiInptCrpeEno'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY Z.AI_INPT_CRPE_ENO DESC
+				</when>
+				<when test="'damdang'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY DAMDANG
+				</when>
+				<when test="'damdang'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY DAMDANG DESC
+				</when>
+				<when test="'aiInspPrcOpi'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY Z.AI_INPT_PRC_OPI_TXT
+				</when>
+				<when test="'aiInspPrcOpi'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY Z.AI_INPT_PRC_OPI_TXT DESC
+				</when>
+				<when test="'timeDiff'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY TIME_DIFF
+				</when>
+				<when test="'timeDiff'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY TIME_DIFF DESC
+				</when>
+			
+				<when test="'startTime'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY START_TIME
+				</when>
+				<when test="'startTime'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY START_TIME DESC
+				</when>
+				
+				<when test="'aiInspAtvtNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY AI_INSP_ATVT_NM
+				</when>
+				<when test="'aiInspAtvtNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY AI_INSP_ATVT_NM DESC
+				</when>
+				
+				<when test="'aiInspAtvtStsNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+					ORDER BY AI_INSP_ATVT_STS_NM
+				</when>
+				<when test="'aiInspAtvtStsNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+					ORDER BY AI_INSP_ATVT_STS_NM DESC
+				</when>
+				<otherwise>
+					ORDER BY Z.AI_INPT_PRG_SRNO ASC  
+				</otherwise>
+			</choose>                                                      <!-- 심사 이력번호 기준 올림차순 정렬 -->
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select> 
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 심사이력 (9080) */
+		SELECT COUNT(*) totcnt                                                                               <!-- selectList 건수 갯수 -->
+		FROM (SELECT Z.AFT_NUM
+			  FROM(SELECT ROW_NUMBER() OVER(ORDER BY A.AI_INPT_PRG_SRNO) NUM                                     <!-- 008(심사이력) 테이블의 이력 번호순의 정렬 번호 값 -->
+						, ROW_NUMBER()OVER(ORDER BY A.AI_INPT_PRG_SRNO) + 1 AS AFT_NUM  
+					FROM CSPD008TH A                                                                             <!-- 008(심사이력) 테이블 -->
+						, CSPD112TI ATVT                                                                         <!-- 액티비티 명칭을 뽑아오기 위한 112(공통) 테이블과의 join -->
+						, CSPD112TI STS                                                                          <!-- 액티비티 상태 명칭을 뽑아오기 위한 112(공통) 테이블과의 join -->
+						, CSPD001TM MST                                                                          <!-- 외참조 번호 reference를 뽑아오기 위한 001(마스터) 테이블과의 join -->
+						, CSPD101TI ENO                                                                          <!-- 담당자 이름을 뽑아오기 위한 101(사용자) 테이블과의 join -->
+					WHERE A.INPT_MST_SRNO= #{inptMstSrno}                                                        <!-- 마스터 번호를 통한 조회 조건절 -->
+					AND A.AI_INPT_ACVT_CD != '110' AND A.AI_INPT_ACVT_CD != '120'                                <!-- 조회 조건절 : 액티비티코드 값이 110(자체점검 시행), 120(점검결과 확인 및 결재)이 아닌 경우 (빼도 될것같음) -->
+					AND (A.AI_INPT_BIZ_DSCD != 3 OR A.AI_INPT_BIZ_DSCD IS NULL) 							     <!-- 현재 업무구분 코드가 NULL 값인게 많아서 해당 조건으로 .. 밑에 조건으로 해야 정확함-->
+					<!-- AND A.AI_INPT_BIZ_DSCD != 3 -->                                                         <!-- 조회 조건절 : 업무구분 코드가 QA(3)이 아닌 경우 -->
+					AND ATVT.AI_INPT_GRP_CD = 290 AND ATVT.AI_INPT_CMN_CD = A.AI_INPT_ACVT_CD                    <!-- 공통 테이블(112)과 조인을 통해 액티비티 명을 뽑아오기 위한 Inner Join 조건 -->
+					AND STS.AI_INPT_GRP_CD = 300 AND STS.AI_INPT_CMN_CD = A.AI_INPT_ACVT_STS_CD                  <!-- 공통 테이블(112)과 조인을 통해 액티비티 상태코드 명을 뽑아오기 위한 Inner Join 조건 -->
+					AND MST.INPT_MST_SRNO = A.INPT_MST_SRNO
+					AND ENO.AI_INPT_USER_ID (+)= A.AI_INPT_CRPE_ENO                                              <!-- 사용자 테이블(101)과 조인을통해 담당자 번호를 뽑아오기위한 Join 조건 (데이터가 없어서 left outer join 했지만 inner join으로 바꿔야험) -->
+				)Z
+				, (SELECT ROW_NUMBER() OVER(ORDER BY AI_INPT_PRG_SRNO) NUM                                       <!-- 008(심사이력) 테이블의 이력 번호순의 정렬 번호 값  -->
+						, NVL(AI_INPT_PROS_STA_DTM, LST_DB_CHG_DTM) AS AI_INPT_PROS_STA_DTM                      <!-- 008(심사이력) 테이블의 프로세스 시작 시간 값 -->
+						, INPT_MST_SRNO                                                                          <!-- 008(심사이력) 테이블의 마스터 번호 값  -->
+					FROM CSPD008TH                                                                               <!-- 008(심사이력) 테이블 -->
+					WHERE INPT_MST_SRNO = #{inptMstSrno}                                                         <!-- 마스터 번호를 통한 조회 조건절 -->
+					AND AI_INPT_ACVT_CD != '110' AND AI_INPT_ACVT_CD != '120'                                    <!-- 조회 조건절 : 액티비티코드 값이 110(자체점검 시행), 120(점검결과 확인 및 결재)이 아닌 경우 (빼도 될것같음) -->
+					AND (AI_INPT_BIZ_DSCD != 3 OR AI_INPT_BIZ_DSCD IS NULL) 									 <!-- 현재 업무구분 코드가 NULL 값인게 많아서 해당 조건으로 .. 밑에 조건으로 해야 정확함-->
+					<!-- AND AI_INPT_BIZ_DSCD != 3 -->                                                          <!-- 조회 조건절 : 업무구분 코드가 QA(3)이 아닌 경우 -->
+				)AFT                                                                                             <!-- 이전 row의 순번을 가져오기 위한 join 절 -->
+				WHERE AFT.NUM (+)= Z.AFT_NUM
+			)
+	</select>
+	
+ 	<insert id="insertFileUpload" parameterType="com.woori.ajs.model.CommonHistoryListVO">
+		/* (9080) 파일 업로드 insert를 위한 쿼리 */	
+		INSERT INTO CSPD006TL(                                      <!-- 파일 업로드(006) 테이블에 data insert -->
+				INPT_MST_SRNO                                       <!-- 심사 마스터 번호 -->
+				, AI_INPT_ATFL_SRNO                                 <!-- 첨부파일 일련번호 -->
+				, AI_INPT_ATFL_NM                                   <!-- 첨부파일 명-->
+				, AI_INPT_ATFL_PATH_TXT                             <!-- 첨부파일 경로 -->
+				, TRN_LOG_SRNO                                      <!-- 거래로그 일련번호 -->
+				, LST_DB_CHG_ID                                     <!-- 최종 db 변경 id -->
+				, LST_DB_CHG_DTM                                    <!-- 최종 db 변경 일시-->
+				, AI_INPT_BIZ_DSCD
+			) VALUES(
+				#{inptMstSrno}                                      
+				, (SELECT NVL(MAX(AI_INPT_ATFL_SRNO), 0)            <!-- 첨부파일 일련번호가 가장 큰 값 -->
+				   FROM CSPD006TL                                   <!-- 파일 업로드 테이블 006 -->            
+				   WHERE INPT_MST_SRNO=#{inptMstSrno}               <!-- 심사 마스터번호 조건절 -->
+				   ) + 1                                            <!-- '가장 최근 첨부파일의 일련번호 + 1' 값을 insert -->
+				, #{aiInptAtflNm}                                  
+				, #{aiInptAtflPathTxt}                              
+				, #{trnlogsrno}							            <!-- 공통 쿼리로부터 뽑아온 거래로그 일련번호 -->
+				, #{lstDbChgId}                                    
+				, <include refid="com.woori.ajs.common.curdate"/>   <!-- 공통 쿼리로부터 뽑아온 최종 db 변경 일시 -->
+				, #{inptAtmcBizDscd}
+			)
+	</insert>
+	
+  	<select id="selectFileList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 심사이력 (9080) 업로드한 파일 리스트들을 db에서 불러오는 쿼리 */
+			SELECT INPT_MST_SRNO                                       <!-- 심사 마스터 번호 -->
+				, AI_INPT_ATFL_SRNO                                    <!-- 첨부파일 일련번호 -->
+				, AI_INPT_ATFL_NM                                      <!-- 첨부파일 명 -->
+				, AI_INPT_ATFL_PATH_TXT                                <!-- 첨부파일 경로 -->
+				, TRN_LOG_SRNO                                         <!-- 거래로그 일련번호  -->
+				, LST_DB_CHG_ID                                        <!-- 최종 db 변경 id -->
+				, LST_DB_CHG_DTM                                       <!-- 최종 db 변경 일시 -->
+				, AI_INPT_BIZ_DSCD
+			FROM CSPD006TL                                             <!-- 파일 업로드 테이블 006 -->
+			WHERE INPT_MST_SRNO = #{inptMstSrno}                       <!-- 심사 마스터 번호 조회 조건-->
+			AND AI_INPT_BIZ_DSCD = #{inptAtmcBizDscd}
+	</select> 
+	
+	<select id="selectFileListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		SELECT COUNT(*) totcnt FROM CSPD006TL WHERE INPT_MST_SRNO = #{inptMstSrno}                                         <!-- selectFileList의 데이터 갯수-->
+	</select> 
+	
+	<delete id="delUploadedFile" parameterType="com.woori.ajs.model.SearchVO">
+		DELETE FROM CSPD006TL WHERE AI_INPT_ATFL_SRNO = #{aiInptAtflSrno} AND INPT_MST_SRNO = #{inptMstSrno}               <!-- 심사 마스터번호 & 첨부파일 일련번호 조회조건을 통한 파일 삭제-->
+	</delete>  
+	
+	<select id="selectFileInfo" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT * FROM CSPD006TL WHERE INPT_MST_SRNO=#{inptMstSrno} AND AI_INPT_ATFL_SRNO=#{aiInptAtflSrno}                 <!-- common agent를 통한 파일 다운로드를 위한 파일 정보 -->
+	</select>
+	
+	<select id="selectOpt" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+			SELECT AI_INPT_PRC_OPI_TXT
+			 	 , LST_DB_CHG_DTM 
+			FROM CSPD008TH 
+			WHERE INPT_MST_SRNO = #{inptMstSrno} 
+			AND AI_INPT_PRG_SRNO = #{aiInptPrgSrno} 
+	</select>
+	
+	<update id="updateOpt" parameterType="com.woori.ajs.model.SearchVO">
+		UPDATE CSPD008TH SET AI_INPT_PRC_OPI_TXT = #{textOpt}
+		WHERE INPT_MST_SRNO = #{inptMstSrno} 
+		AND AI_INPT_PRG_SRNO = #{aiInptPrgSrno} 
+	</update>
+</mapper>

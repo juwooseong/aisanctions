@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/jdbc  http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd">
+		
+    <!-- Tibero (Jeus 에 설정된 DataSource 를 사용하는 방법)
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="jdbc/spddbt"/>
+    </bean>-->
+	
+
+    <!-- Tibero (Spring 에서 Tibero 직접 연결)  개발환경  
+	 <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.tmax.tibero.jdbc.TbDriver"/>
+        <property name="url" value="jdbc:tibero:thin:@10.232.181.109:8639:SPDDBT" />
+        <property name="username" value="SPDAPP"/>
+        <property name="password" value="!w01apdev"/>
+    </bean> -->
+    
+    <!-- Tibero (Spring 에서 Tibero 직접 연결)  운영환경
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.tmax.tibero.jdbc.TbDriver"/>
+        <property name="url" value="jdbc:tibero:thin:@10.233.95.61:8649:SPDDBP" />
+        <property name="username" value="SPDAPP"/>
+        <property name="password" value="!w01appro"/>
+    </bean>  -->
+    
+
+    <!-- hsql (테스트용 메모리 DB)   개발서버 배포용 -->  
+<!--    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">-->
+<!--        <property name="driverClassName" value="net.sf.log4jdbc.DriverSpy"/>-->
+<!--        <property name="url" value="jdbc:log4jdbc:hsqldb:hsql://localhost/sampledb"/>-->
+<!--        <property name="username" value="sa"/>-->
+<!--    </bean>-->
+
+
+<!-- Tibero (Spring 에서 Tibero 직접 연결) 로컬 - 로컬 Oracle Docker 사용으로 전환하며 주석 처리 (2026-09-08)
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="net.sf.log4jdbc.sql.jdbcapi.DriverSpy"/>
+		<property name="url" value="jdbc:log4jdbc:tibero:thin:@localhost:8629:tibero"/>
+		<property name="username" value="APPUSER"/>
+		<property name="password" value="app1234"/>
+	</bean> -->
+
+	<!-- Oracle Database Free (Docker, docker-compose.yml 의 gvenzl/oracle-free 컨테이너) - 로컬 개발용 활성
+	     log4jdbc 래퍼(net.sf.log4jdbc.sql.jdbcapi.DriverSpy)는 SQL 로깅용 부가 의존성인데
+	     배포 클래스패스에 log4jdbc-log4j2 jar가 올라가지 않아 "No suitable driver" 오류가 발생해
+	     로컬 프로필에서는 Oracle 드라이버(ojdbc8, pom.xml에 Maven Central 의존성으로 선언됨)를 직접 사용한다. -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+		<property name="url" value="jdbc:oracle:thin:@//localhost:1521/FREEPDB1"/>
+		<property name="username" value="sanction"/>
+		<property name="password" value="sanction"/>
+	</bean>
+
+
+        <!-- Mysql (POM에서 commons-dbcp, mysql-connector-java 관련 라이브러리 설정 )
+        <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+            <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+            <property name="url" value="jdbc:mysql://127.0.0.1:3306/example" />
+            <property name="username" value="user"/>
+            <property name="password" value="password"/>
+        </bean>
+        -->
+    
+    <!-- oracle (POM에서 commons-dbcp, ojdbc(라이센스 사항으로 별도로 배포되지 않음) 관련 라이브러리 설정)
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:example" />
+        <property name="username" value="user"/>
+        <property name="password" value="password"/>
+    </bean>
+    -->
+    
+</beans>

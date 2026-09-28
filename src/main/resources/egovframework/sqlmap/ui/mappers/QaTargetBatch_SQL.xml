@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.QaTargetBatchMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.QaTargetBatchVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptRcpDt" column="INPT_RCP_DT" />
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />
+		<result property="ffxRefnoSrno" column="FX_REFNO_SRNO" />
+		<result property="aiInptImgKeyNo" column="AI_INPT_IMG_KEY_NO" />
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD" />
+		<result property="inptAtmcBizDsNm" column="INPT_ATMC_BIZ_NM" />
+		<result property="wrrInfo" column="WRR_INFO" />
+		<result property="inptPrcsCd" column="AI_INPT_PROS_CD" />
+		<result property="inptPrcsNm" column="INPT_PRCSNM" />
+		<result property="inptAtvtCd" column="AI_INPT_ACVT_CD" />
+		<result property="inptAtvtNm" column="INPT_ATVTNM" />
+		<result property="fcCucd" column="FC_CUCD" />
+		<result property="fcCuNm" column="FC_CUNM" />
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM" />
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM" />
+		<result property="totaltextAiInptRstCd" column="TOTALTEXT_AI_INPT_RST_CD" />
+		<result property="totaltextAiInptRstNm" column="TOTALTEXT_AI_INPT_RST_NM" />
+		<result property="itmInptAiInptRstCd" column="ITM_INPT_AI_INPT_RST_CD" />
+		<result property="itmInptAiInptRstNm" column="ITM_INPT_AI_INPT_RST_NM" />
+		<result property="safewatchAiInptRstCd" column="SAFEWATCH_AI_INPT_RST_CD" />
+		<result property="safewatchAiInptRstNm" column="SAFEWATCH_AI_INPT_RST_NM" />
+		<result property="filtInptRstSrno" column="FILT_INPT_RST_SRNO" />
+		<result property="filtDtctNo" column="FILT_DTCT_NO" />
+		<result property="aiInptQaPrcsCd" column="AI_INPT_QLAS_PROS_CD" />
+		<result property="aiInptQaAppvPrgStcd" column="AI_INPT_QLAS_APPV_STCD" />
+		<result property="aiInptQaInspAtvtCd" column="AI_INPT_QLAS_ACVT_CD" />
+		<result property="qlasAlocDt" column="QLAS_ALOC_DT" />
+		<result property="trnLogSrno" column="TRN_LOG_SRNO" />
+	</resultMap>
+	
+	<select id="selectToDate" parameterType="com.woori.ajs.model.SearchVO" resultType="String">
+		/* QA 대상 선정 Batch (9060) */
+		/* QaTargetBatchMapper.selectToDate */
+		SELECT MAX(BAS_DT)
+		  FROM CSPD118TM
+		 WHERE BAS_DT = #{inptRcpDt}
+		   AND HLDY_DSCD = '0' --휴일구분코드(0:업업일)
+	</select>
+	
+	<select id="selectRecentDate" parameterType="com.woori.ajs.model.SearchVO" resultType="String">
+		/* QA 대상 선정 Batch (9060) */
+		/* QaTargetBatchMapper.selectRecentDate */
+		SELECT MAX(BAS_DT)
+		  FROM CSPD118TM
+		 WHERE BAS_DT &lt; #{inptRcpDt}
+		   AND HLDY_DSCD = '0' --휴일구분코드(0:업업일)
+	</select>
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* QA 대상 선정 Batch (9060) */
+		/* 심사테이블의 QA선정 배치시 사전 분류 업데이트, 대상 심사업무목록 */		
+		/* QaTargetBatchMapper.selectList */
+		SELECT A.INPT_MST_SRNO
+		  FROM CSPD001TM A
+		 WHERE A.INPT_RCP_DT = #{inptRcpDt}
+		   AND A.AI_INPT_QLAS_PROS_CD IS NULL
+		   AND A.AI_INPT_APPV_STCD IN ('160')
+		   AND NVL(A.QLAS_PRG_YN,'N') = 'N'
+		   AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		   <if test='schGbn != null and schGbn.equals("3")'>
+		   		AND A.TOTALTEXT_AI_INPT_RST_CD = #{errCd}
+		   </if>                        
+		   <if test='schGbn != null and schGbn.equals("4")'>
+				AND A.ITM_INPT_AI_INPT_RST_CD = #{errCd}
+		   </if>                        
+		   <if test='schGbn != null and schGbn.equals("5")'>
+				AND A.SAFEWATCH_AI_INPT_RST_CD = #{errCd}
+		   </if>  
+	</select>
+	
+	<select id="selectRuleSanctionList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* QA 대상 선정 Batch (9060) */
+		/* 심사테이블의 QA선정 배치시 사전 분류 업데이트, 대상 항목심사 목록 */
+		/* QaTargetBatchMapper.selectRuleSafeWatchList */
+		SELECT A.INPT_MST_SRNO
+		  FROM CSPD001TM A,
+		       CSPD004TF B
+		 WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO(+)
+		   AND A.INPT_RCP_DT = #{inptRcpDt}
+		   AND B.SAFEWATCH_ITM_YN = 'Y'
+		   AND A.AI_INPT_QLAS_PROS_CD IS NULL
+		   AND A.AI_INPT_APPV_STCD = '160'
+		   AND NVL(A.QLAS_PRG_YN,'N') = 'N'
+		   AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		   AND B.INPT_SANCTION_NO = #{inptSanctionNo}
+		   AND (
+		   		B.INPT_SANCTION_DAT_TXT IN (
+											 SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+											   FROM CSPD104TI
+											  WHERE AI_INPT_LIST_ID = #{lstCd}
+											    AND AI_INPT_RSPT_TXT_YN = 'Y'
+		                                     ) OR
+		   		B.ITM_INPT_HNDG_INP_DAT_TXT IN (
+											 SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+											   FROM CSPD104TI
+											  WHERE AI_INPT_LIST_ID = #{lstCd}
+											    AND AI_INPT_RSPT_TXT_YN = 'Y'
+		                                     )
+		       )
+		   <if test='schGbn != null and schGbn.equals("3")'>
+				AND A.TOTALTEXT_AI_INPT_RST_CD = #{errCd}
+		   </if>                        
+		   <if test='schGbn != null and schGbn.equals("4")'>
+				AND A.ITM_INPT_AI_INPT_RST_CD = #{errCd}
+		   </if>                        
+		   <if test='schGbn != null and schGbn.equals("5")'>
+				AND A.SAFEWATCH_AI_INPT_RST_CD = #{errCd}
+		   </if>                        
+		 GROUP BY A.INPT_MST_SRNO
+	</select>
+	
+	<update id="updateQaUser" parameterType="com.woori.ajs.model.QaTargetBatchVO">
+		/* QA 대상 선정 Batch (9060) */
+		/* QaTargetBatchMapper.updateQaUser */
+		/* 심사테이블의 QA선정 배치시 QA담당직원 배정 업데이트 */
+		UPDATE CSPD001TM SET
+		    QLAS_ALOC_DT = #{qlasAlocDt}
+		    , TRN_LOG_SRNO = #{trnLogSrno}
+			, QLAS_PRG_YN = 'Y'
+			, AI_INPT_QLAS_PROS_CD = #{aiInptQaPrcsCd}					/* 자체점검시행 진행여부 */
+			, QLAS_CRPE_ENO = #{qlasCrpeEno}							/* QA담당자직원번호 */
+			, AI_INPT_QLAS_ACVT_CD = '110'								/* QA액티비티코드, 자체점검시행 */
+			, LST_DB_CHG_ID = #{lstDbChgId}
+			, LST_DB_CHG_DTM = (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+			, QLAS_SNPE_ENO = (SELECT AI_INPT_SNPE_ENO
+				FROM CSPD101TI
+				WHERE AI_INPT_USER_ENO = #{qlasCrpeEno}
+				AND ROWNUM = 1)											/* 품질보증결재자직원번호 */
+		WHERE INPT_MST_SRNO = #{inptMstSrno}
+	</update>
+	
+	<update id="resetQaUser" parameterType="com.woori.ajs.model.SearchVO">
+		/* QA 대상 선정 Batch (9060) */
+		/* QaTargetBatchMapper.resetQaUser */
+		/* 심사테이블의 QA선정 배치시 QA담당직원 배정 업데이트 */
+		UPDATE CSPD001TM SET
+		       QLAS_ALOC_DT = NULL,
+		       QLAS_PRG_YN = NULL,
+		       AI_INPT_QLAS_PROS_CD = NULL,						/* 자체점검시행 진행여부 */
+		       QLAS_CRPE_ENO = NULL,							/* QA담당자직원번호 */
+		       AI_INPT_QLAS_ACVT_CD = NULL,						/* QA액티비티코드, 자체점검시행 */
+		       QLAS_SNPE_ENO = NULL,							/* 품질보증결재자직원번호 */
+		       LST_DB_CHG_ID = #{lstCd},
+		       LST_DB_CHG_DTM = (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		 WHERE INPT_MST_SRNO IN (
+								SELECT INPT_MST_SRNO
+								  FROM CSPD001TM
+								 WHERE QLAS_ALOC_DT = #{inptRcpDt}
+								   AND QLAS_ALOC_DT IS NOT NULL
+								   AND AI_INPT_QLAS_ACVT_CD = '110'
+								 GROUP BY INPT_MST_SRNO
+								)
+	</update>
+	
+	<insert id="insertSantionHis" parameterType="com.woori.ajs.model.QaTargetBatchVO">
+		/* QA 대상 이력 */
+		INSERT INTO CSPD008TH
+		(
+		 AI_INPT_PRG_SRNO
+		 , INPT_MST_SRNO
+		 , AI_INPT_BIZ_DSCD
+		 , AI_INPT_ACVT_CD
+		 , AI_INPT_ACVT_STS_CD
+		 , AI_INPT_CRPE_ENO
+		 , AI_INPT_PROS_STA_DTM
+		 , TRN_LOG_SRNO
+		 , LST_DB_CHG_ID
+		 , LST_DB_CHG_DTM
+		)
+		VALUES
+		(
+		CSPD008TH_SG01.NEXTVAL
+		, #{inptMstSrno}
+		, #{aiInptBizDscd}
+		, #{curtAiInspAtvtCd}
+		, #{aiInptAcvtStsCd}
+		, #{aiInptCrpeEno}
+		, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		, #{trnLogSrno}
+		, #{lstDbChgId}
+		, (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		)
+	</insert>
+	
+</mapper>

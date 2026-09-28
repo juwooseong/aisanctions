@@ -1,0 +1,128 @@
+-- ============================================================
+-- 32_urgent_review_mig.sql
+-- 긴급심사(DASH-v2 / FR-005) TO-BE 운영 MIG
+-- 선행: 01_ddl (CSPD111TI/112TI, CSPD001TM, CSPD008TH)
+-- 관련: docs/to-be/긴급심사_TO-BE_데이터_마이그레이션.md
+-- ============================================================
+
+-- ------------------------------------------------------------
+-- M1. 그룹 371 — 지연기준시간 (SLA)
+-- 재실행 안전: MERGE WHEN NOT MATCHED / WHEN MATCHED
+-- ------------------------------------------------------------
+MERGE INTO CSPD111TI T
+USING (
+  SELECT '371' AS GRP_CD, '지연기준시간' AS GRP_NM, '지연기준' AS RMRK FROM DUAL
+) S
+ON (T.AI_INPT_GRP_CD = S.GRP_CD)
+WHEN NOT MATCHED THEN
+  INSERT (AI_INPT_GRP_CD, AI_INPT_GRP_NM, AI_INPT_GRP_STA_DTM, AI_INPT_GRP_END_DTM, AI_INPT_GRP_USG_YN, AI_INPT_RMRK_TXT, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM)
+  VALUES (S.GRP_CD, S.GRP_NM, '20200101000000', '99991231235959', 'Y', S.RMRK, '10', 'MIG32', '20260817180000');
+
+MERGE INTO CSPD112TI T
+USING (
+  SELECT '371' AS GRP_CD, '01' AS CMN_CD, '30' AS CMN_NM, 'Delay 30min' AS CMN_ENG,
+         '지연기준분' AS RMRK, '30' AS SORT_SEQ FROM DUAL
+) S
+ON (T.AI_INPT_GRP_CD = S.GRP_CD AND T.AI_INPT_CMN_CD = S.CMN_CD)
+WHEN MATCHED THEN
+  UPDATE SET
+    T.AI_INPT_CMN_CD_NM = S.CMN_NM,
+    T.AI_INPT_CMN_CD_ENG_NM = S.CMN_ENG,
+    T.AI_INPT_RMRK_TXT = S.RMRK,
+    T.AI_INPT_INTF_ITM_NM = S.CMN_NM,
+    T.AI_INPT_SORT_SEQ = S.SORT_SEQ,
+    T.AI_INPT_CMN_USG_YN = 'Y',
+    T.LST_DB_CHG_ID = 'MIG32',
+    T.LST_DB_CHG_DTM = '20260817180000'
+WHEN NOT MATCHED THEN
+  INSERT (AI_INPT_GRP_CD, AI_INPT_CMN_CD, AI_INPT_CMN_CD_NM, AI_INPT_CMN_CD_ENG_NM,
+          AI_INPT_CMN_CD_STA_DTM, AI_INPT_CMN_CD_END_DTM, AI_INPT_CMN_USG_YN,
+          AI_INPT_RMRK_TXT, AI_INPT_INTF_ITM_NM, AI_INPT_SORT_SEQ,
+          TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM)
+  VALUES (S.GRP_CD, S.CMN_CD, S.CMN_NM, S.CMN_ENG,
+          '20200101000000', '99991231235959', 'Y',
+          S.RMRK, S.CMN_NM, S.SORT_SEQ,
+          '3201', 'MIG32', '20260817180000');
+
+-- ------------------------------------------------------------
+-- M2. 그룹 372 — 대시보드표시설정
+-- (31_dashboard_display_config.sql 과 동일, LST_DB_CHG_ID=MIG32)
+-- ------------------------------------------------------------
+MERGE INTO CSPD111TI T
+USING (
+  SELECT '372' AS GRP_CD, '대시보드표시설정' AS GRP_NM, 'DASH-v2 목록 표시' AS RMRK FROM DUAL
+) S
+ON (T.AI_INPT_GRP_CD = S.GRP_CD)
+WHEN NOT MATCHED THEN
+  INSERT (AI_INPT_GRP_CD, AI_INPT_GRP_NM, AI_INPT_GRP_STA_DTM, AI_INPT_GRP_END_DTM, AI_INPT_GRP_USG_YN, AI_INPT_RMRK_TXT, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM)
+  VALUES (S.GRP_CD, S.GRP_NM, '20200101000000', '99991231235959', 'Y', S.RMRK, '43', 'MIG32', '20260817180000');
+
+MERGE INTO CSPD112TI T
+USING (
+  SELECT '372' AS GRP_CD, '01' AS CMN_CD, '20' AS CMN_NM, 'MaxCount' AS CMN_ENG, '최대 표시 건수' AS RMRK, '20' AS SORT_SEQ FROM DUAL UNION ALL
+  SELECT '372', '02', '7',  'UrgentPeriodDays', '긴급심사 표기기간(일)', '7'  FROM DUAL UNION ALL
+  SELECT '372', '03', '30', 'NormalPeriodDays', '일반심사 표기기간(일)', '30' FROM DUAL UNION ALL
+  SELECT '372', '04', '생성일', 'RCP', '표기기준(생성일/처리일)', '1' FROM DUAL
+) S
+ON (T.AI_INPT_GRP_CD = S.GRP_CD AND T.AI_INPT_CMN_CD = S.CMN_CD)
+WHEN MATCHED THEN
+  UPDATE SET
+    T.AI_INPT_CMN_CD_NM = S.CMN_NM,
+    T.AI_INPT_CMN_CD_ENG_NM = S.CMN_ENG,
+    T.AI_INPT_RMRK_TXT = S.RMRK,
+    T.AI_INPT_INTF_ITM_NM = S.CMN_NM,
+    T.AI_INPT_SORT_SEQ = S.SORT_SEQ,
+    T.AI_INPT_CMN_USG_YN = 'Y',
+    T.LST_DB_CHG_ID = 'MIG32',
+    T.LST_DB_CHG_DTM = '20260817180000'
+WHEN NOT MATCHED THEN
+  INSERT (AI_INPT_GRP_CD, AI_INPT_CMN_CD, AI_INPT_CMN_CD_NM, AI_INPT_CMN_CD_ENG_NM, AI_INPT_CMN_CD_STA_DTM, AI_INPT_CMN_CD_END_DTM, AI_INPT_CMN_USG_YN, AI_INPT_RMRK_TXT, AI_INPT_INTF_ITM_NM, AI_INPT_SORT_SEQ, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM)
+  VALUES (S.GRP_CD, S.CMN_CD, S.CMN_NM, S.CMN_ENG, '20200101000000', '99991231235959', 'Y', S.RMRK, S.CMN_NM, S.SORT_SEQ,
+          '43' || S.CMN_CD, 'MIG32', '20260817180000');
+
+COMMIT;
+
+-- ============================================================
+-- 검증 (V-1 ~ V-6) — 기대: 모두 0건 또는 기대값 일치
+-- ============================================================
+
+-- V-1. 그룹 371·372 존재
+-- SELECT AI_INPT_GRP_CD FROM CSPD111TI WHERE AI_INPT_GRP_CD IN ('371','372') ORDER BY 1;
+-- 기대: 371, 372 각 1행
+
+-- V-2. 372 코드 4건 완비
+-- SELECT COUNT(*) AS CNT FROM CSPD112TI WHERE AI_INPT_GRP_CD='372' AND AI_INPT_CMN_USG_YN='Y';
+-- 기대: CNT = 4
+
+-- V-3. 372-01 최대건수 양수
+-- SELECT AI_INPT_CMN_CD_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD='372' AND AI_INPT_CMN_CD='01';
+-- 기대: > 0 (기본 20)
+
+-- V-4. 371-01 SLA 분값
+-- SELECT AI_INPT_SORT_SEQ FROM CSPD112TI WHERE AI_INPT_GRP_CD='371' AND AI_INPT_CMN_CD='01';
+-- 기대: 30 (분)
+
+-- V-5. 372-04 표기기준 ENG (RCP|CHG)
+-- SELECT AI_INPT_CMN_CD_ENG_NM FROM CSPD112TI WHERE AI_INPT_GRP_CD='372' AND AI_INPT_CMN_CD='04';
+-- 기대: RCP 또는 CHG
+
+-- V-6. 긴급 판별 소스 컬럼 존재 (샘플 1건)
+-- SELECT COUNT(*) FROM CSPD001TM
+--  WHERE TOTALTEXT_AI_INPT_RST_CD='30' OR ITM_INPT_AI_INPT_RST_CD='30'
+--     OR SAFEWATCH_AI_INPT_RST_CD='30' OR AI_INPT_ACVT_CD='130';
+-- 기대: 환경별 ≥0 (테스트 데이터 유무)
+
+-- ============================================================
+-- 롤백 (MIG32 로 등록한 371·372 코드만 제거)
+-- ※ 운영에서 31/수동 등록과 혼재 시 LST_DB_CHG_ID 조건 확인 후 실행
+-- ============================================================
+/*
+DELETE FROM CSPD112TI WHERE AI_INPT_GRP_CD IN ('371','372') AND LST_DB_CHG_ID = 'MIG32';
+DELETE FROM CSPD111TI WHERE AI_INPT_GRP_CD IN ('371','372') AND LST_DB_CHG_ID = 'MIG32';
+COMMIT;
+*/
+
+-- 표기기준을 처리일로 변경 (운영 반영 후 802200 또는 직접 UPDATE):
+-- UPDATE CSPD112TI SET AI_INPT_CMN_CD_NM='처리일', AI_INPT_CMN_CD_ENG_NM='CHG',
+--        LST_DB_CHG_ID='ADMIN', LST_DB_CHG_DTM='YYYYMMDDHH24MISS'
+--  WHERE AI_INPT_GRP_CD='372' AND AI_INPT_CMN_CD='04';

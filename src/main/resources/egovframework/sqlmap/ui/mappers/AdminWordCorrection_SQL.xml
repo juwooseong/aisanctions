@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminWordCorrectionMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminWordCorrectionVO">
+		<result property="aiInptWordSrno" column="AI_INPT_WORD_SRNO"/>
+		<result property="aiInptGrpCd" column="AI_INPT_GRP_CD"/>
+		<result property="aiInptWordTxt" column="AI_INPT_WORD_TXT"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptGrpCdCc" column="AI_INPT_GRP_CD_CC"/>
+		<result property="aiInptGrpCdNm" column="AI_INPT_GRP_CD_NM"/>
+		<result property="aiInptCmnCdNm" column="AI_INPT_CMN_CD_NM"/>
+		<result property="aiInptIntfItmNm" column="AI_INPT_INTF_ITM_NM"/>
+		
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT   A.AI_INPT_WORD_SRNO AS AI_INPT_WORD_SRNO   
+				,A.AI_INPT_GRP_CD AS AI_INPT_GRP_CD
+				,A.AI_INPT_WORD_TXT AS AI_INPT_WORD_TXT
+				,A.LST_DB_CHG_DTM AS LST_DB_CHG_DTM
+				,B.AI_INPT_GRP_CD AS AI_INPT_GRP_CD_CC
+				,CASE WHEN A.AI_INPT_GRP_CD = '110' THEN '공통'
+					  WHEN B.AI_INPT_GRP_CD = '241' THEN '수입'
+				      WHEN B.AI_INPT_GRP_CD = '242' THEN '수출' END AS AI_INPT_GRP_CD_NM
+				,B.AI_INPT_CMN_CD_NM AS AI_INPT_CMN_CD_NM
+		
+				FROM CSPD117TI A LEFT JOIN
+					(SELECT  AI_INPT_INTF_ITM_NM
+							,AI_INPT_GRP_CD
+							,AI_INPT_CMN_CD_NM
+					   FROM CSPD112TI
+					  WHERE AI_INPT_GRP_CD IN ('241', '242')
+					    AND AI_INPT_INTF_ITM_NM != '110'
+					
+					UNION ALL
+					  
+					 SELECT   AI_INPT_INTF_ITM_NM
+					   		 ,AI_INPT_GRP_CD
+					  		 ,AI_INPT_CMN_CD_NM
+					   FROM CSPD112TI
+					  WHERE AI_INPT_GRP_CD IN ('241', '242')
+					    AND AI_INPT_INTF_ITM_NM = '110'
+					    AND ROWNUM = 1) B
+				ON A.AI_INPT_GRP_CD = B.AI_INPT_INTF_ITM_NM
+				WHERE 1=1
+		
+		<choose>
+			<when test="inptAtmcBizDscd eq '241' or inptAtmcBizDscd eq '242'">
+				AND B.AI_INPT_GRP_CD = #{inptAtmcBizDscd}
+			</when>
+			<when test="inptAtmcBizDscd eq '110'">
+				AND A.AI_INPT_GRP_CD = #{inptAtmcBizDscd}
+			</when>
+		</choose>
+		<if test="schInptItem != null and schInptItem != ''">
+			AND A.AI_INPT_GRP_CD = #{schInptItem}
+		</if>
+		<if test="schText1 != null and schText1 != ''">
+			AND AI_INPT_WORD_TXT LIKE '%'||TRIM(UPPER(#{schText1}))||'%'
+		</if>
+				
+		<!-- 정렬 -->
+		<choose>
+			<!-- 구분 정렬 오류수정필요(inline으로 한번 더
+			<when test='"aiInptGrpCdNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY CASE WHEN A.AI_INPT_GRP_CD = '110' THEN '공통'
+							  WHEN B.AI_INPT_GRP_CD = '241' THEN '수입'
+						      WHEN B.AI_INPT_GRP_CD = '242' THEN '수출'
+			</when>
+			<when test='"aiInptGrpCdNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY CASE WHEN A.AI_INPT_GRP_CD = '110' THEN '공통'
+							  WHEN B.AI_INPT_GRP_CD = '241' THEN '수입'
+						      WHEN B.AI_INPT_GRP_CD = '242' THEN '수출' DESC
+			</when>-->
+			<!-- 항목 정렬-->
+			<when test='"aiInptCmnCdNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY B.AI_INPT_CMN_CD_NM
+			</when>
+			<when test='"aiInptCmnCdNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY B.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<!-- 용어 정렬-->
+			<when test='"aiInptWordTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY DBMS_LOB.SUBSTR(A.AI_INPT_WORD_TXT, 4000, 1) /* 2026.07.31 MODIFY */
+			</when>
+			<when test='"aiInptWordTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY DBMS_LOB.SUBSTR(A.AI_INPT_WORD_TXT, 4000, 1) DESC /* 2026.07.31 MODIFY */
+			</when>
+			<!-- 기본 -->
+			<otherwise>
+				ORDER BY AI_INPT_GRP_CD_NM ASC,
+						 AI_INPT_CMN_CD_NM ASC,
+						 /* AI_INPT_WORD_TXT ASC */
+						 DBMS_LOB.SUBSTR(A.AI_INPT_WORD_TXT, 4000, 1) ASC /* 2026.07.31 MODIFY */
+			</otherwise>
+		</choose>
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.selectListTotCnt */
+		SELECT COUNT(*) AS totcnt
+		FROM CSPD117TI A LEFT JOIN
+			(SELECT  AI_INPT_INTF_ITM_NM
+					,AI_INPT_GRP_CD
+					,AI_INPT_CMN_CD_NM
+			   FROM CSPD112TI
+			  WHERE AI_INPT_GRP_CD IN ('241', '242')
+			    AND AI_INPT_INTF_ITM_NM != '110'
+			
+			UNION ALL
+			  
+			 SELECT   AI_INPT_INTF_ITM_NM
+			   		 ,AI_INPT_GRP_CD
+			  		 ,AI_INPT_CMN_CD_NM
+			   FROM CSPD112TI
+			  WHERE AI_INPT_GRP_CD IN ('241', '242')
+			    AND AI_INPT_INTF_ITM_NM = '110'
+			    AND ROWNUM = 1) B
+		ON A.AI_INPT_GRP_CD = B.AI_INPT_INTF_ITM_NM
+		WHERE 1=1
+		
+		<choose>
+			<when test="inptAtmcBizDscd eq '241' or inptAtmcBizDscd eq '242'">
+				AND B.AI_INPT_GRP_CD = #{inptAtmcBizDscd}
+			</when>
+			<when test="inptAtmcBizDscd eq '110'">
+				AND A.AI_INPT_GRP_CD = #{inptAtmcBizDscd}
+			</when>
+		</choose>
+		<if test="schInptItem != null and schInptItem != ''">
+			AND A.AI_INPT_GRP_CD = #{schInptItem}
+		</if>
+		<if test="schText1 != null and schText1 != ''">
+			AND AI_INPT_WORD_TXT LIKE '%'||TRIM(UPPER(#{schText1}))||'%'
+		</if>
+		
+	</select>
+	
+	<select id="selectSanctionList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.selectSanctionList */
+		SELECT  A.AI_INPT_INTF_ITM_NM
+			   ,A.AI_INPT_GRP_CD 
+			   ,'('||
+			    CASE WHEN A.AI_INPT_INTF_ITM_NM = '110' THEN '공통'
+			    	 WHEN A.AI_INPT_GRP_CD = '241' THEN '수입'
+			    	 WHEN A.AI_INPT_GRP_CD = '242' THEN '수출' END
+			   ||') '||A.AI_INPT_CMN_CD_NM AS AI_INPT_CMN_CD_NM
+		FROM (
+			SELECT  AI_INPT_INTF_ITM_NM
+					,AI_INPT_GRP_CD
+					,AI_INPT_CMN_CD_NM
+			   FROM CSPD112TI
+			  WHERE AI_INPT_GRP_CD IN ('241', '242')
+			    AND AI_INPT_INTF_ITM_NM != '110'
+			
+			UNION ALL
+			  
+			 SELECT   AI_INPT_INTF_ITM_NM
+			   		 ,AI_INPT_GRP_CD
+			  		 ,AI_INPT_CMN_CD_NM
+			   FROM CSPD112TI
+			  WHERE AI_INPT_GRP_CD IN ('241', '242')
+			    AND AI_INPT_INTF_ITM_NM = '110'
+			    AND ROWNUM = 1 ) A
+		WHERE 1=1
+	    <choose>
+			<when test="inptAtmcBizDscd eq '241' or inptAtmcBizDscd eq '242'">
+				AND AI_INPT_GRP_CD = #{inptAtmcBizDscd}
+				AND AI_INPT_INTF_ITM_NM != '110'
+			</when>
+			<when test="inptAtmcBizDscd eq '110'">
+				AND AI_INPT_INTF_ITM_NM = #{inptAtmcBizDscd}
+			</when>
+		</choose>
+		
+	</select>
+	
+	<select id="selectWordDuplicationCheck" parameterType="com.woori.ajs.model.AdminWordCorrectionVO" resultType="int">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.selectWordDuplicationCheck */
+		SELECT COUNT(*) FROM CSPD117TI
+		 WHERE AI_INPT_GRP_CD = #{aiInptGrpCd}
+		   AND AI_INPT_WORD_TXT = #{aiInptWordTxt}
+	</select>
+	
+	<insert id="insertWord" parameterType="com.woori.ajs.model.AdminWordCorrectionVO">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.insertWord */
+		INSERT INTO CSPD117TI ( AI_INPT_WORD_SRNO,
+					    AI_INPT_GRP_CD,
+					    AI_INPT_WORD_TXT,
+					    AI_INPT_WORD_INF_NM,
+					    AI_INPT_RMRK_TXT,
+					    TRN_LOG_SRNO,
+					    LST_DB_CHG_ID,
+					    LST_DB_CHG_DTM )
+			   VALUES ( (SELECT MAX(AI_INPT_WORD_SRNO)+1 FROM CSPD117TI),
+			   			#{aiInptGrpCd},
+						TRIM(UPPER(#{aiInptWordTxt})),
+						null,
+						null,
+						#{trnLogSrno},
+						#{lstDbChgId},
+						(SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+						)
+	</insert>
+	
+	<update id="updateWord" parameterType="com.woori.ajs.model.AdminWordCorrectionVO">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.updateWord */
+		UPDATE CSPD117TI 
+		   SET AI_INPT_WORD_TXT = TRIM(UPPER(#{aiInptWordTxt})),
+			   TRN_LOG_SRNO = #{trnLogSrno},
+			   LST_DB_CHG_ID = #{lstDbChgId},
+			   LST_DB_CHG_DTM = (SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6') FROM DUAL)
+		 WHERE AI_INPT_WORD_SRNO = #{aiInptWordSrno}
+		   AND AI_INPT_GRP_CD = #{aiInptGrpCd}
+	</update>
+	
+	<delete id="deleteWord" parameterType="com.woori.ajs.model.AdminWordCorrectionVO">
+		/* 후보정용어관리 (8060) */
+		/* AdminWordCorrectionMapper.deleteWord */
+		DELETE FROM CSPD117TI
+	  		  WHERE AI_INPT_WORD_SRNO = #{aiInptWordSrno}
+   				AND AI_INPT_GRP_CD = #{aiInptGrpCd}
+	</delete>
+</mapper>

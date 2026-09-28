@@ -1,0 +1,226 @@
+{
+  "excel_tables": 34,
+  "mapper_tables": 34,
+  "excel_only": [],
+  "mapper_only": [],
+  "common": [
+    "CSPD001TM",
+    "CSPD002TG",
+    "CSPD003TF",
+    "CSPD004TF",
+    "CSPD005TH",
+    "CSPD006TL",
+    "CSPD007TL",
+    "CSPD008TH",
+    "CSPD009TA",
+    "CSPD010TA",
+    "CSPD011TL",
+    "CSPD101TI",
+    "CSPD102TI",
+    "CSPD103TI",
+    "CSPD104TI",
+    "CSPD105TI",
+    "CSPD106TI",
+    "CSPD107TI",
+    "CSPD108TI",
+    "CSPD109TI",
+    "CSPD110TI",
+    "CSPD111TI",
+    "CSPD112TI",
+    "CSPD113TI",
+    "CSPD115TI",
+    "CSPD116TI",
+    "CSPD117TI",
+    "CSPD118TI",
+    "CSPD118TM",
+    "CSPD201TM",
+    "CSPD202TM",
+    "CSPD810TH",
+    "CSPD811TH",
+    "CSPD900TI"
+  ],
+  "pk_tables": {
+    "CSPD001TM": [
+      "INPT_MST_SRNO"
+    ],
+    "CSPD002TG": [
+      "INPT_MST_SRNO",
+      "INPT_ELMT_ID",
+      "IMEX_HIS_CD"
+    ],
+    "CSPD003TF": [
+      "INPT_MST_SRNO",
+      "AI_INPT_TOTALTEXT_SRNO"
+    ],
+    "CSPD004TF": [
+      "INPT_MST_SRNO",
+      "INPT_SANCTION_NO"
+    ],
+    "CSPD005TH": [
+      "INPT_MST_SRNO",
+      "AI_INPT_APPV_SRNO"
+    ],
+    "CSPD006TL": [
+      "INPT_MST_SRNO",
+      "AI_INPT_ATFL_SRNO"
+    ],
+    "CSPD007TL": [
+      "INPT_MST_SRNO",
+      "AI_INPT_PRG_SRNO"
+    ],
+    "CSPD008TH": [
+      "INPT_MST_SRNO",
+      "AI_INPT_PRG_SRNO"
+    ],
+    "CSPD009TA": [],
+    "CSPD010TA": [],
+    "CSPD011TL": [
+      "AI_INPT_XT_SRNO"
+    ],
+    "CSPD101TI": [
+      "AI_INPT_USER_ID"
+    ],
+    "CSPD102TI": [
+      "AI_INPT_CTGR_ID"
+    ],
+    "CSPD103TI": [
+      "AI_INPT_LIST_ID"
+    ],
+    "CSPD104TI": [
+      "AI_INPT_RSPT_TXT_SRNO"
+    ],
+    "CSPD105TI": [
+      "AI_INPT_SNRL1_ID"
+    ],
+    "CSPD106TI": [
+      "AI_INPT_SNRL2_ID"
+    ],
+    "CSPD107TI": [
+      "AI_INPT_IMEX_DSCD",
+      "AI_INPT_LIST_ID"
+    ],
+    "CSPD108TI": [
+      "AI_INPT_MENU_ID"
+    ],
+    "CSPD109TI": [
+      "AI_INPT_AUT_ID"
+    ],
+    "CSPD110TI": [
+      "AI_INPT_APPV_OPI_SRNO"
+    ],
+    "CSPD111TI": [
+      "AI_INPT_GRP_CD"
+    ],
+    "CSPD112TI": [
+      "AI_INPT_GRP_CD",
+      "AI_INPT_CMN_CD"
+    ],
+    "CSPD113TI": [
+      "AI_INPT_SNRL3_ID"
+    ],
+    "CSPD115TI": [
+      "NACD"
+    ],
+    "CSPD116TI": [
+      "AI_INPT_RULE_DSCD"
+    ],
+    "CSPD117TI": [
+      "AI_INPT_WORD_SRNO"
+    ],
+    "CSPD118TI": [
+      "CITY_SRNO"
+    ],
+    "CSPD118TM": [
+      "BAS_DT"
+    ],
+    "CSPD119TI": [
+      "AI_INPT_TASK_CD"
+    ],
+    "CSPD120TI": [
+      "AI_INPT_TASK_ROLE_ID"
+    ],
+    "CSPD121TI": [
+      "AI_INPT_DEPTH_RULE_ID"
+    ],
+    "CSPD122TI": [
+      "AI_INPT_SCRN_ACS_ID"
+    ],
+    "CSPD123TH": [
+      "AI_INPT_AUTH_CHG_SRNO"
+    ],
+    "CSPD124TI": [
+      "AI_INPT_USER_ENO"
+    ],
+    "CSPD127TI": [
+      "AI_INPT_STP_CFG_ID"
+    ],
+    "CSPD201TM": [
+      "XPO_CVRG_MK_SQ"
+    ],
+    "CSPD202TM": [
+      "TDOC_RCP_SRNO"
+    ],
+    "CSPD810TH": [
+      "AI_INPT_LGIN_HST_NO"
+    ],
+    "CSPD811TH": [
+      "AI_INPT_PGM_USG_HST_NO"
+    ],
+    "CSPD900TI": [
+      "INPT_MST_SRNO"
+    ]
+  },
+  "sequences": [
+    "CSPD005TH_SG01",
+    "CSPD008TH_SG01",
+    "CSPD102TI_SG01",
+    "CSPD103TI_SG01",
+    "CSPD107TI_SG01",
+    "CSPD110TI_SG01",
+    "CSPD113TI_SG01",
+    "CSPD120TI_SG01",
+    "CSPD121TI_SG01",
+    "CSPD122TI_SG01",
+    "CSPD123TH_SG01"
+  ],
+  "execution_order": [
+    "00_drop.sql",
+    "01_ddl.sql",
+    "02_sequence.sql",
+    "03_test_data.sql",
+    "26_task_auth_v2.sql",
+    "07_menu_role_test_data.sql",
+    "04_review01_test_data.sql",
+    "05_approv01_test_data.sql",
+    "06_qauser01_test_data.sql"
+  ],
+  "task_auth_v2_tables": [
+    "CSPD119TI",
+    "CSPD120TI",
+    "CSPD121TI",
+    "CSPD122TI",
+    "CSPD123TH",
+    "CSPD124TI",
+    "CSPD127TI"
+  ],
+  "absorbed_patches": [
+    "archive/08_menu_id_layout_fix.sql",
+    "archive/09_menu_url_fix.sql",
+    "archive/10_task_id_fix.sql",
+    "archive/11_bl_grp_no_fix.sql",
+    "archive/12_cspd003tf_alt_yn_fix.sql",
+    "archive/13_cspd003tf_coordinate_fix.sql",
+    "archive/14_cspd004tf_nacrd_yn_fix.sql",
+    "archive/15_cspd007tl_lst_db_chg_dtm_fix.sql",
+    "archive/16_doc_class_image_fix.sql",
+    "archive/17_doc_class_code_rules.sql",
+    "archive/18_itm_inpt_code_rules.sql",
+    "archive/19_itm_inpt_grp230_240_codes.sql",
+    "archive/20_cspd201_202_ledger_cols_fix.sql",
+    "archive/21_cspd811th_cnct_url_nm_fix.sql",
+    "archive/22_cspd900ti_svr_inf_txt_fix.sql",
+    "archive/23_watchlist_numeric_id_fix.sql",
+    "archive/24_cspd201_202_hs_nacd_fix.sql",
+    "archive/25_cspd004tf_hndg_inp_varchar_fix.sql"
+  ]
+}

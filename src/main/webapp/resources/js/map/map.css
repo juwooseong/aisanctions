@@ -1,0 +1,122 @@
+body {
+	 font-family: Arial, Helvetica, sans-serif;
+}
+
+.footer {
+	color: #888888;
+	font-size: 13px;
+	text-align: right;
+}
+
+#states path {
+	fill: #77d4de;
+	stroke: #ffffff;
+}	
+
+/* 포괄적 제재국가 */
+#country_055 path {
+	fill: #ff635f;
+	stroke: #ffffff;
+}
+
+#country_153 path {
+	fill: #ff635f;
+	stroke: #ffffff;
+}			
+
+#country_123 path {
+	fill: #ff635f;
+	stroke: #ffffff;
+}			
+
+#country_103 path {
+	fill: #ff635f;
+	stroke: #ffffff;
+}			
+
+#country_103 path {
+	fill: #ff635f;
+	stroke: #ffffff;
+}			
+
+/* 분야별 제재국가 */
+#country_107 path {
+	fill: #ffbd4f;
+	stroke: #ffffff;
+}	
+
+#country_135 path {
+	fill: #ffbd4f;
+	stroke: #ffffff;
+}	
+
+#country_176 path {
+	fill: #ffbd4f;
+	stroke: #ffffff;
+}	
+
+/* 분야별 제재국가 */
+#country_075 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_010 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_021 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_026 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_056 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_072 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_092 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_166 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_117 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_111 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_140 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+#country_143 path {
+	fill: #da9ed4;
+	stroke: #ffffff;
+}	
+
+.country:hover path {
+	fill: #74ab74 !important;
+	stroke: #ffffff !important;
+}			

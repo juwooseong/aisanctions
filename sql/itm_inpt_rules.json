@@ -1,0 +1,67 @@
+{
+  "source": [
+    "AISYSTEM 고도화 상세요건/04_수출입선적서류심사 항목.md",
+    "AISYSTEM 고도화 상세요건/06_항목별 추출 요건.md",
+    "AISYSTEM 고도화 상세요건/08_추출항목별 레이블링 영역 정의 내역.md"
+  ],
+  "groups": {
+    "export": {
+      "groupCode": "240",
+      "groupName": "수출 항목심사",
+      "bizDscd": ["1", "01"]
+    },
+    "import": {
+      "groupCode": "230",
+      "groupName": "수입 항목심사",
+      "bizDscd": ["2", "02"]
+    }
+  },
+  "dataRule": {
+    "masterTable": "CSPD112TI",
+    "resultTable": "CSPD004TF",
+    "sanctionNoField": "AI_INPT_CMN_CD / INPT_SANCTION_NO",
+    "taskLink": "CSPD004TF.INPT_TASK_ID = CSPD002TG.INPT_TASK_ID",
+    "safewatchFlag": "SAFEWATCH_ITM_YN = 'Y' (selectSancRst 추출값 조인 조건)",
+    "coordinateFields": [
+      "ITM_INPT_XAXIS_STA_CRDN_CN",
+      "ITM_INPT_YAXIS_STA_CRDN_CN",
+      "ITM_INPT_XAXIS_END_CRDN_CN",
+      "ITM_INPT_YAXIS_END_CRDN_CN"
+    ]
+  },
+  "demoMaster": {
+    "inptMstSrno": 10001,
+    "bizDscd": "01",
+    "blTaskId": "10001011",
+    "invoiceTaskId": "10001021"
+  },
+  "items": [
+    { "sanctionNo": "50", "nameEn": "Bill of lading No.", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": null, "labelZone": "B/L No", "cueWords": ["B/L No", "Bill of Lading No."] },
+    { "sanctionNo": "51", "nameEn": "Vessel Name", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "VESSEL", "labelZone": "Vessel/Voyage/Flight/Aircraft", "cueWords": ["Vessel", "Vessel/Voyage No."] },
+    { "sanctionNo": "57", "nameEn": "Port of Loading", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "ALL", "labelZone": "Port of Loading", "cueWords": ["Port of Loading", "Loadport"] },
+    { "sanctionNo": "60", "nameEn": "Port of Discharging", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "ALL", "labelZone": "Port of Discharging", "cueWords": ["Port of Discharge", "Port of Destination"] },
+    { "sanctionNo": "63", "nameEn": "Final Destination", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "ALL", "labelZone": "Final destination", "cueWords": ["Final Destination", "Destination"] },
+    { "sanctionNo": "66", "nameEn": "Shipper Name", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "GROUP", "labelZone": "Shipper", "cueWords": ["Shipper", "Exporter", "Manufacturer"] },
+    { "sanctionNo": "67", "nameEn": "Shipper Address", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "ALL", "labelZone": "Shipper", "cueWords": ["Shipper's name and address"] },
+    { "sanctionNo": "70", "nameEn": "Consignee Name", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "GROUP", "labelZone": "Consignee", "cueWords": ["Consignee", "Sold to", "For Account & Risk"] },
+    { "sanctionNo": "71", "nameEn": "Consignee Address", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "ALL", "labelZone": "Consignee", "cueWords": ["Consignee's name and address"] },
+    { "sanctionNo": "74", "nameEn": "Notify Party Name", "priorityDoc": "B/L", "imexHisCd": "01", "watchAttr": "GROUP", "labelZone": "1st Notify Party", "cueWords": ["Notify Party", "Notify"] },
+    { "sanctionNo": "15", "nameEn": "Exporter Name", "priorityDoc": "Invoice", "imexHisCd": "02", "watchAttr": "GROUP", "labelZone": "Exporter", "cueWords": ["Exporter", "beneficiary", "shipper"] },
+    { "sanctionNo": "19", "nameEn": "Importer Name", "priorityDoc": "Invoice", "imexHisCd": "02", "watchAttr": "GROUP", "labelZone": "Importer", "cueWords": ["Importer", "buyer", "bill to"] },
+    { "sanctionNo": "48", "nameEn": "Country of Origin", "priorityDoc": "C/O", "imexHisCd": "06", "watchAttr": null, "labelZone": "Country of Origin", "cueWords": ["Country of origin", "Certificate of origin"] },
+    { "sanctionNo": "53", "nameEn": "Commodity Name", "priorityDoc": "Invoice", "imexHisCd": "02", "watchAttr": null, "labelZone": "Commodity Name", "cueWords": ["Description of Goods"] },
+    { "sanctionNo": "89", "nameEn": "Insurance Company Name", "priorityDoc": "Insurance", "imexHisCd": "05", "watchAttr": "GROUP", "labelZone": "보험사 로고", "cueWords": ["Insurance Policy", "Insurance Company"] }
+  ],
+  "demoExtractions": [
+    { "sanctionNo": "50", "taskId": "10001011", "value": "WOOLU1234567", "alertYn": "N", "coords": [520, 48, 760, 78] },
+    { "sanctionNo": "51", "taskId": "10001011", "value": "JEONG CHANGE SA YANG", "alertYn": "N", "coords": [520, 100, 760, 130] },
+    { "sanctionNo": "57", "taskId": "10001011", "value": "NAMYANG, NORTH KOREA D.P.R", "alertYn": "Y", "coords": [80, 200, 380, 230] },
+    { "sanctionNo": "60", "taskId": "10001011", "value": "BUSAN, REPUBLIC OF KOREA", "alertYn": "N", "coords": [80, 240, 380, 270] },
+    { "sanctionNo": "63", "taskId": "10001011", "value": "BUSAN, REPUBLIC OF KOREA", "alertYn": "N", "coords": [80, 280, 380, 310] },
+    { "sanctionNo": "66", "taskId": "10001011", "value": "SHANGHAI JIAO YANG INTERNATIONAL TRADE CO., LTD", "alertYn": "N", "coords": [80, 340, 420, 390] },
+    { "sanctionNo": "70", "taskId": "10001011", "value": "MANSOOR AHMADI AND PARTNERS", "alertYn": "Y", "ruleTxt": "[16:Shipper Name]", "coords": [80, 420, 420, 450] },
+    { "sanctionNo": "71", "taskId": "10001011", "value": "NO. 12, VALI ASR ST., TEHRAN, IRAN", "alertYn": "Y", "coords": [80, 460, 420, 500] },
+    { "sanctionNo": "15", "taskId": "10001021", "value": "SHANGHAI JIAO YANG INTERNATIONAL TRADE CO., LTD", "alertYn": "N", "coords": [100, 120, 480, 160] },
+    { "sanctionNo": "19", "taskId": "10001021", "value": "MANSOOR AHMADI AND PARTNERS", "alertYn": "N", "coords": [100, 200, 480, 240] }
+  ]
+}

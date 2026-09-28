@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CommonLoginMapper">
+	
+	<resultMap id="loginMap" type="com.woori.ajs.model.LoginVO">
+		<result property="id" column="ID"/>
+		<result property="eno" column="ENO"/>
+		<result property="pw" column="PW"/>
+		<result property="name" column="NAME"/>
+		<result property="auth" column="AUTH"/>
+		<result property="adminYN" column="ADMIN_YN"/>
+		<result property="aiInptUserYn" column="AI_INPT_USER_YN"/>
+		<result property="aiInptUserFaReYn" column="AI_INPT_USER_FA_RE_YN"/>
+	</resultMap>
+	
+
+	<select id="selectLoginList" parameterType="com.woori.ajs.model.LoginVO" resultMap="loginMap">
+		/* CommonLoginMapper.selectLoginList */
+		SELECT A.*
+		FROM (
+			SELECT ROWNUM AS RNUM, A.*
+			FROM (
+				SELECT
+					AI_INPT_USER_ID AS ID,
+					AI_INPT_USER_ENO AS ENO,
+					AI_INPT_AUT_CD AS AUTH,
+					AI_INPT_MGPE_YN AS ADMIN_YN,
+					AI_INPT_USER_NM AS NAME,
+					AI_INPT_USER_YN
+				FROM CSPD101TI
+				WHERE 1=1
+				<include refid="selectLoginListCond" />
+				ORDER BY ID ASC
+			) A
+			<if test="recordCountPerPage != null and recordCountPerPage != -1">
+			WHERE ROWNUM &lt;= #{lastIndex}
+			</if>
+		) A
+		<if test="recordCountPerPage != null and recordCountPerPage != -1">
+		WHERE ROWNUM &gt;= #{firstIndex}
+		</if>
+	</select>
+	
+	<select id="selectLoginListTotCnt" parameterType="com.woori.ajs.model.LoginVO" resultType="int">
+		/* CommonLoginMapper.selectLoginListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD101TI
+		WHERE 1=1
+		<include refid="selectLoginListCond" />
+	</select>
+	
+	<sql id="selectLoginListCond">
+		<if test="id != null and id != ''">
+			AND AI_INPT_USER_ID = #{id}
+		</if>
+	</sql>
+	
+	<select id="selectLoginTime" parameterType="com.woori.ajs.model.LoginVO" resultType="String">
+		/* CommonLoginMapper.selectLoginTime */
+			SELECT A.AI_INPT_LGIN_DTM
+			  FROM (
+					SELECT
+						TO_CHAR(TO_DATE(SUBSTR(AI_INPT_LGIN_DTM,1,14),'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI:SS') AS AI_INPT_LGIN_DTM,
+						ROW_NUMBER()OVER(ORDER BY AI_INPT_LGIN_DTM DESC) AS RN
+					FROM CSPD810TH
+					WHERE AI_INPT_LGIN_USER_NO = #{id}  
+			        ) A
+			 WHERE A.RN = 1
+	</select>
+	
+	<select id="selectLogin" parameterType="com.woori.ajs.model.LoginVO" resultMap="loginMap">
+		/* CommonLoginMapper.selectLogin */
+		SELECT
+			AI_INPT_USER_ID AS ID,
+			AI_INPT_USER_ENO AS ENO,
+			AI_INPT_AUT_CD AS AUTH,
+			NVL(AI_INPT_MGPE_YN, 'N') AS ADMIN_YN,
+			AI_INPT_USER_NM AS NAME,
+			AI_INPT_USER_YN,
+			AI_INPT_USER_FA_RE_YN AS AI_INPT_USER_FA_RE_YN
+		FROM CSPD101TI
+		WHERE AI_INPT_USER_ID = #{id}
+	</select>
+	
+</mapper>

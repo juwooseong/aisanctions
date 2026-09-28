@@ -1,0 +1,25 @@
+# 로컬/검증용 — 은행 운영 JEUS 대체 아님
+# WAR를 Tomcat에 올려 스모크할 때 참고용 골격
+#
+# 사용 전:
+#   1) ../linux-docker/build_app.sh 로 WAR 생성
+#   2) 아래 war 볼륨 경로를 실제 WAR로 맞춤
+#   3) ./restart_app.sh
+
+services:
+  aisanction-app:
+    image: tomcat:9.0-jdk8
+    container_name: aisanction-app
+    ports:
+      - "8080:8080"
+    environment:
+      TZ: Asia/Seoul
+    volumes:
+      # 호스트 WAR → Tomcat webapps (파일명=컨텍스트)
+      - ../../target/aisanction-1.0.0.war:/usr/local/tomcat/webapps/aisanction.war:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/aisanction/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s

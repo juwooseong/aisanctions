@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.TaskLogInquiryMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.TaskLogInquiryVO">
+		<result property="day" column="DAY"/>
+		<result property="export" column="EXPORT"/>
+		<result property="importt" column="IMPORT"/>
+		<result property="sw" column="SW"/>
+		<result property="hang" column="HANG"/>
+		<result property="tot" column="TOT"/>
+	</resultMap>
+	
+	 <select id="selectForChart" resultMap="listMap" parameterType="com.woori.ajs.model.SearchVO">
+		/* 업무일지 조회 (5030) - 차트1 데이터 */
+		/* TaskLogInquiryMapper.selectList */
+		WITH VW_TASK AS (
+			SELECT	INPT_ATMC_BIZ_DSCD, INPT_MST_SRNO, INPT_RCP_DT
+<!-- 					, SUBSTRING(INPT_RCP_DT,1,6) AS INPT_RCP_YM  -->
+					, SUBSTR(INPT_RCP_DT,1,6) AS INPT_RCP_YM
+			FROM CSPD001TM
+			WHERE INPT_RCP_DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','')
+			AND AI_INPT_APPV_STCD IN ('160', '140' ,'130')
+		)
+		SELECT	A.INPT_RCP_DT AS DAY, A.EXP_CNT AS EXPORT, A.IMP_CNT AS IMPORT
+		FROM (
+			SELECT	A.INPT_RCP_DT
+					, NVL(SUM(CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN 1 ELSE 0 END),0) AS IMP_CNT
+					, NVL(SUM(CASE WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN 1 ELSE 0 END),0) AS EXP_CNT
+			FROM VW_TASK A
+			GROUP BY A.INPT_RCP_DT
+			ORDER BY TO_NUMBER(A.INPT_RCP_DT) ASC
+		) A
+	</select>
+	
+	<select id="selectForChart2" resultMap="listMap" parameterType="com.woori.ajs.model.SearchVO">
+		/* 업무일지 조회 (5030) - 차트2 데이터 */
+		/* TaskLogInquiryMapper.selectList */
+		WITH VW_TASK AS (
+			/* 심사작업목록 - 검색일자 */
+			SELECT	INPT_MST_SRNO, AI_INPT_QLAS_PROS_CD, AI_INPT_PROS_CD, AI_INPT_ACVT_CD, INPT_ATMC_BIZ_DSCD
+					, TOTALTEXT_AI_INPT_RST_CD, ITM_INPT_AI_INPT_RST_CD, SAFEWATCH_AI_INPT_RST_CD, INPT_RCP_DT
+					, CASE WHEN AI_INPT_ACVT_CD IN ('160','140') AND 
+						(TOTALTEXT_AI_INPT_RST_CD IN ('30','40') OR ITM_INPT_AI_INPT_RST_CD IN('30','40') OR
+						SAFEWATCH_AI_INPT_RST_CD IN ('30','40')) THEN 'Y'
+						ELSE 'N' END AS ALERT_YN								/* 경보건 여부 YN */
+					, (SELECT COUNT(DISTINCT INPT_MST_SRNO)
+						FROM CSPD008TH
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND AI_INPT_ACVT_STS_CD = '60') AS RESCAN_CNT			/* 재스캔 건수 */
+					, (SELECT COUNT(DISTINCT INPT_MST_SRNO)
+						FROM CSPD008TH
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND AI_INPT_ACVT_STS_CD = '70') AS REPROC_CNT			/* 재추출 건수 */
+					, (SELECT COUNT(DISTINCT INPT_MST_SRNO)
+						FROM CSPD008TH
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND AI_INPT_ACVT_STS_CD = '80') AS SUGI_CNT				/* 수기 건수 */
+			FROM CSPD001TM A
+			WHERE INPT_RCP_DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','')
+		)
+		
+		SELECT DISTINCT
+			A.INPT_RCP_DT AS DAY,
+			NVL(SUM(CASE WHEN A.ALERT_YN = 'Y' AND A.SAFEWATCH_AI_INPT_RST_CD IN('30', '40') THEN 1 ELSE 0 END),0)||'' AS SW,
+			NVL(SUM(CASE WHEN A.ALERT_YN = 'Y' AND A.ITM_INPT_AI_INPT_RST_CD  IN('30', '40') THEN 1 ELSE 0 END),0)||'' AS HANG,
+			NVL(SUM(CASE WHEN A.ALERT_YN = 'Y' AND A.TOTALTEXT_AI_INPT_RST_CD IN('30', '40') THEN 1 ELSE 0 END),0)||'' AS TOT
+		FROM VW_TASK A
+		GROUP BY A.INPT_RCP_DT
+		ORDER BY A.INPT_RCP_DT
+	</select>
+
+</mapper>

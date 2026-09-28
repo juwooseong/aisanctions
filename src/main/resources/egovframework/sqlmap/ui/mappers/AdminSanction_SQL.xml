@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminSanctionMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminSanctionVO">
+		<result property="aiInptRuleDscd" column="AI_INPT_RULE_DSCD"/>
+ 		<result property="aiInptWordAcrdRt" column="AI_INPT_WORD_ACRD_RT"/>
+ 		<result property="aiInptSnrl2UsgYn" column="AI_INPT_SNRL2_USG_YN"/>
+ 		<result property="aiInptSnrl3UsgYn" column="AI_INPT_SNRL3_USG_YN"/>
+ 		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+ 		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+ 		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/> 
+	</resultMap>
+	
+	<resultMap id="listRule1Map" type="com.woori.ajs.model.AdminSanctionRule1VO">
+ 		<result property="aiInptSnrl1Id" column="AI_INPT_SNRL1_ID"/>
+ 		<result property="aiInptSnrl1Nm" column="AI_INPT_SNRL1_NM"/>
+ 		<result property="aiInptRuleDscd" column="AI_INPT_RULE_DSCD"/>
+ 		<result property="inptSanctionNo" column="INPT_SANCTION_NO"/>
+ 		<result property="inptSanctionNm" column="INPT_SANCTION_NM"/>
+ 		<result property="aiInptListId" column="AI_INPT_LIST_ID"/>
+ 		<result property="aiInptListNm" column="AI_INPT_LIST_NM"/>
+ 		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+ 		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+ 		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+ 		<result property="aiInptCtgrNm" column="AI_INPT_CTGR_NM"/>
+ 		<result property="aiInptCtgrId" column="AI_INPT_CTGR_ID"/>
+	</resultMap>
+	
+	<resultMap id="listRule2Map" type="com.woori.ajs.model.AdminSanctionRule2VO">
+ 		<result property="aiInptSnrl2Id" column="AI_INPT_SNRL2_ID"/>
+ 		<result property="aiInptSnrl2Nm" column="AI_INPT_SNRL2_NM"/>
+ 		<result property="inptSanction1No" column="INPT_SANCTION1_NO"/>
+ 		<result property="aiInptList1Id" column="AI_INPT_LIST1_ID"/>
+ 		<result property="inptSanction2No" column="INPT_SANCTION2_NO"/>
+ 		<result property="aiInptList2Id" column="AI_INPT_LIST2_ID"/>
+ 		<result property="inptSanction3No" column="INPT_SANCTION3_NO"/>
+ 		<result property="aiInptList3Id" column="AI_INPT_LIST3_ID"/>
+ 		<result property="inptSanction4No" column="INPT_SANCTION4_NO"/>
+ 		<result property="aiInptList4Id" column="AI_INPT_LIST4_ID"/>
+ 		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+ 		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+ 		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+	
+	<resultMap id="listRule3Map" type="com.woori.ajs.model.AdminSanctionRule3VO">
+ 		<result property="aiInptSnrl3Id" column="AI_INPT_SNRL3_ID"/>
+ 		<result property="aiInptSnrl3Nm" column="AI_INPT_SNRL3_NM"/>
+ 		<result property="aiInptRsptSqlTxt" column="AI_INPT_RSPT_SQL_TXT"/>
+ 		<result property="aiInptSqlUsgYn" column="AI_INPT_SQL_USG_YN"/>
+ 		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+ 		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+ 		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+	
+	<select id="selectListRule1" parameterType="com.woori.ajs.model.SearchVO" resultMap="listRule1Map">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.selectListRule1 */
+		SELECT	A.AI_INPT_RULE_DSCD
+			   , A.AI_INPT_SNRL1_ID
+			   , A.AI_INPT_SNRL1_NM
+			   , A.INPT_SANCTION_NO
+			   , A.AI_INPT_LIST_ID
+			   , TW.AI_INPT_CTGR_NM
+			   , TW.AI_INPT_CTGR_ID
+			   , (SELECT AI_INPT_CMN_CD_ENG_NM
+				  FROM CSPD112TI
+				  WHERE AI_INPT_GRP_CD = '200'
+				  AND AI_INPT_CMN_CD = TO_CHAR(A.INPT_SANCTION_NO)) AS INPT_SANCTION_NM
+			   , (SELECT AI_INPT_LIST_NM
+				  FROM CSPD103TI
+				  WHERE AI_INPT_LIST_ID = A.AI_INPT_LIST_ID
+				  AND ROWNUM = 1
+				)  AS AI_INPT_LIST_NM
+		FROM CSPD105TI A
+			,CSPD103TI T
+			,CSPD102TI TW
+		WHERE T.AI_INPT_LIST_ID = A.AI_INPT_LIST_ID
+		AND TW.AI_INPT_CTGR_ID = T.AI_INPT_CTGR_ID
+		<if test="schGbn != null and schGbn != ''">
+			AND A.AI_INPT_RULE_DSCD = #{schGbn}
+		</if>
+		
+		<choose>
+			<when test='"aiInptListNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_LIST_NM
+			</when>
+			<when test='"aiInptListNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_LIST_NM DESC
+			</when>
+			<when test='"aiInptCtgrNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CTGR_NM
+			</when>
+			<when test='"aiInptCtgrNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CTGR_NM DESC
+			</when>
+			<otherwise>
+				ORDER BY AI_INPT_CTGR_NM
+				<!-- ORDER BY AI_INPT_SNRL1_ID DESC -->	
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="selectInfoRule1" resultMap="listRule1Map" parameterType="String">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.selectInfoRule1 */
+		SELECT
+			AI_INPT_RULE_DSCD, AI_INPT_SNRL1_ID, AI_INPT_SNRL1_NM, INPT_SANCTION_NO, AI_INPT_LIST_ID
+		FROM CSPD105TI
+		WHERE AI_INPT_SNRL1_ID = #{aiInptSnrl1Id}
+	</select>
+	
+	<select id="selectListRule2" parameterType="com.woori.ajs.model.SearchVO" resultMap="listRule2Map">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.selectListRule2 */
+		SELECT
+			AI_INPT_RULE_DSCD, AI_INPT_SNRL2_ID, AI_INPT_SNRL2_NM,
+			INPT_SANCTION1_NO, AI_INPT_LIST1_ID, INPT_SANCTION2_NO, AI_INPT_LIST2_ID, 
+			INPT_SANCTION3_NO, AI_INPT_LIST3_ID, INPT_SANCTION4_NO, AI_INPT_LIST4_ID
+		FROM CSPD106TI
+		WHERE 1=1
+		<if test="schGbn != null and schGbn != ''">
+			AND AI_INPT_RULE_DSCD = #{schGbn}
+		</if>
+		
+		<choose>
+			<when test='"aiInptSnrl2Nm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_SNRL2_NM
+			</when>
+			<when test='"aiInptSnrl2Nm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_SNRL2_NM DESC
+			</when>
+			<otherwise>
+				ORDER BY AI_INPT_SNRL2_NM
+				<!-- ORDER BY AI_INPT_SNRL2_ID DESC -->			
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="selectInfoRule2" resultMap="listRule2Map" parameterType="String">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.selectInfoRule2 */
+		SELECT
+			AI_INPT_RULE_DSCD, AI_INPT_SNRL2_ID, AI_INPT_SNRL2_NM,
+			INPT_SANCTION1_NO, AI_INPT_LIST1_ID, INPT_SANCTION2_NO, AI_INPT_LIST2_ID, 
+			INPT_SANCTION3_NO, AI_INPT_LIST3ID, INPT_SANCTION4_NO, AI_INPT_LIST4ID
+		FROM CSPD106TI
+		WHERE AI_INPT_SNRL2_ID = #{aiInptSnrl2Id}
+	</select>
+	
+	<select id="selectListRule3" parameterType="com.woori.ajs.model.SearchVO" resultMap="listRule3Map">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.selectListRule3 */
+		SELECT
+			AI_INPT_SNRL3_ID, AI_INPT_SNRL3_NM, AI_INPT_RSPT_SQL_TXT
+		FROM CSPD113TI
+		ORDER BY AI_INPT_SNRL3_ID DESC
+	</select>
+	
+	<select id="selectInfoRule3" resultMap="listRule3Map" parameterType="String">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.selectInfoRule3 */
+		SELECT
+			AI_INPT_SNRL3_ID, AI_INPT_SNRL3_NM, AI_INPT_RSPT_SQL_TXT
+		FROM CSPD113TI
+		WHERE AI_INPT_SNRL3_ID = #{aiInptSnrl3Id}
+	</select>
+	
+	<select id="RequestTable" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.RequestTable */
+		SELECT
+			AI_INPT_RULE_DSCD, AI_INPT_WORD_ACRD_RT, AI_INPT_SNRL2_USG_YN, AI_INPT_SNRL3_USG_YN
+		FROM CSPD116TI
+		WHERE 1=1
+		<if test="schGbn != null and schGbn != ''">
+			AND AI_INPT_RULE_DSCD = #{schGbn}
+		</if>
+	</select>
+	
+	<insert id="insertRequestTable" parameterType="com.woori.ajs.model.AdminSanctionVO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.insertRequestTable */
+		/* 공통정보 저장 - 일치율 적용 */
+		MERGE INTO CSPD116TI A
+		USING DUAL
+			ON (A.AI_INPT_RULE_DSCD = #{aiInptRuleDscd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_WORD_ACRD_RT = #{aiInptWordAcrdRt},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>,
+				A.AI_INPT_SNRL3_USG_YN = 'N'
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_RULE_DSCD, A.AI_INPT_WORD_ACRD_RT, A.AI_INPT_SNRL2_USG_YN, A.AI_INPT_SNRL3_USG_YN,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{aiInptRuleDscd}, #{aiInptWordAcrdRt}, '', '',
+				#{trnLogSrno}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+	<insert id="insertRequestTable2" parameterType="com.woori.ajs.model.AdminSanctionVO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.insertRequestTable2 */
+		/* 공통정보 저장 - Rule2 사용여부 적용 */
+		MERGE INTO CSPD116TI A
+		USING DUAL
+			ON (A.AI_INPT_RULE_DSCD = #{aiInptRuleDscd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_SNRL2_USG_YN = #{aiInptSnrl2UsgYn},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_RULE_DSCD, A.AI_INPT_WORD_ACRD_RT, A.AI_INPT_SNRL2_USG_YN, A.AI_INPT_SNRL3_USG_YN,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{aiInptRuleDscd}, '', #{aiInptSnrl2UsgYn}, '',
+				TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+	<insert id="insertRequestTable3" parameterType="com.woori.ajs.model.AdminSanctionVO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.insertRequestTable3 */
+		/* 공통정보 저장 - Rule3 사용여부 적용 */
+		MERGE INTO CSPD116TI A
+		USING DUAL
+			ON (A.AI_INPT_RULE_DSCD = #{aiInptRuleDscd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_SNRL3_USG_YN = #{aiInptSnrl3UsgYn},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_RULE_DSCD, A.AI_INPT_WORD_ACRD_RT, A.AI_INPT_SNRL2_USG_YN, A.AI_INPT_SNRL3_USG_YN,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{aiInptRuleDscd}, '', '', #{aiInptSnrl3UsgYn},
+				TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+	<select id="selectListCheckRule1" resultMap="listRule1Map">
+			SELECT AI_INPT_SNRL1_ID 
+			FROM CSPD105TI A
+			WHERE 1=1
+			AND AI_INPT_RULE_DSCD = #{aiInptRuleDscd} 
+			AND AI_INPT_LIST_ID = #{aiInptListId} 
+	</select>
+	
+	<insert id="insertRule1" parameterType="com.woori.ajs.model.AdminSanctionRule1VO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.insertRule1 */
+		<selectKey resultType="string" keyProperty="numNew" order="BEFORE">
+			SELECT SUBSTR('00'||(TO_NUMBER(NVL(MAX(AI_INPT_SNRL1_ID),0)) + 1),-2) FROM CSPD105TI
+		</selectKey>
+		MERGE INTO CSPD105TI A
+		USING DUAL
+			ON (A.AI_INPT_SNRL1_ID = #{aiInptSnrl1Id})
+		WHEN MATCHED THEN
+			UPDATE SET
+				<!-- A.INPT_SANCTION_NO = #{inptSanctionNo}, -->
+				A.AI_INPT_LIST_ID = #{aiInptListId},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_SNRL1_ID, A.INPT_SANCTION_NO, A.AI_INPT_LIST_ID, A.AI_INPT_RULE_DSCD,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{numNew}, #{inptSanctionNo}, #{aiInptListId}, #{aiInptRuleDscd},
+				#{trnLogSrno}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+	
+	
+	
+		
+	<select id="selectListCheckRule2" resultMap="listRule2Map">
+		SELECT AI_INPT_SNRL2_ID
+		FROM CSPD106TI
+		WHERE 1=1
+		AND AI_INPT_RULE_DSCD = 'ITM'
+		AND AI_INPT_SNRL2_NM = #{aiInptSnrl2Nm}
+	</select>
+		
+	<insert id="insertRule2" parameterType="com.woori.ajs.model.AdminSanctionRule2VO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.insertRule2 */
+		<selectKey resultType="string" keyProperty="numNew" order="BEFORE">
+			SELECT SUBSTR('00'||(TO_NUMBER(NVL(MAX(AI_INPT_SNRL2_ID),0)) + 1),-2) FROM CSPD106TI
+		</selectKey>
+		MERGE INTO CSPD106TI A
+		USING DUAL
+			ON (A.AI_INPT_SNRL2_ID = #{aiInptSnrl2Id})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_SNRL2_NM = #{aiInptSnrl2Nm},
+				A.INPT_SANCTION1_NO = #{inptSanction1No},
+				A.AI_INPT_LIST1_ID = #{aiInptList1Id},
+				A.INPT_SANCTION2_NO = #{inptSanction2No},
+				A.AI_INPT_LIST2_ID = #{aiInptList2Id},
+				A.INPT_SANCTION3_NO = #{inptSanction3No},
+				A.AI_INPT_LIST3_ID = #{aiInptList3Id},
+				A.INPT_SANCTION4_NO = #{inptSanction4No},
+				A.AI_INPT_LIST4_ID = #{aiInptList4Id},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_SNRL2_ID, A.AI_INPT_RULE_DSCD, A.AI_INPT_SNRL2_NM, 
+				A.INPT_SANCTION1_NO, A.AI_INPT_LIST1_ID, A.INPT_SANCTION2_NO, A.AI_INPT_LIST2_ID, 
+				A.INPT_SANCTION3_NO, A.AI_INPT_LIST3_ID, A.INPT_SANCTION4_NO, A.AI_INPT_LIST4_ID,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (#{numNew}, #{aiInptRuleDscd}, #{aiInptSnrl2Nm}, 
+				#{inptSanction1No}, #{aiInptList1Id}, #{inptSanction2No}, #{aiInptList2Id}, 
+				#{inptSanction3No}, #{aiInptList3Id}, #{inptSanction4No}, #{aiInptList4Id},
+				#{trnLogSrno}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+<!-- 	<insert id="insertRule3" parameterType="com.woori.ajs.model.AdminSanctionRule3VO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.insertRule3 */
+		MERGE INTO CSPD113TI A
+		USING DUAL
+			ON (A.AI_INPT_SNRL3_ID = #{aiInptSnrl3Id})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_SNRL3_NM = #{aiInptSnrl3Nm},
+				A.AI_INPT_RSPT_SQL_TXT = #{aiInptRsptSqlTxt},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_SNRL3_ID, A.AI_INPT_SNRL3_NM, A.AI_INPT_RSPT_SQL_TXT,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (CSPD113TI_SG01.NEXTVAL, #{aiInptSnrl3Nm}, #{aiInptRsptSqlTxt},
+				TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert> -->
+	
+	<delete id="deleteRule1" parameterType="com.woori.ajs.model.AdminSanctionRule1VO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.deleteRule1 */
+		delete from CSPD105TI
+		where AI_INPT_SNRL1_ID = #{aiInptSnrl1Id}
+	</delete>
+	
+	<delete id="deleteRule2" parameterType="com.woori.ajs.model.AdminSanctionRule2VO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.deleteRule2 */
+		delete from CSPD106TI
+		where AI_INPT_SNRL2_ID = #{aiInptSnrl2Id}
+	</delete>
+	
+	<delete id="deleteRule3" parameterType="com.woori.ajs.model.AdminSanctionRule3VO">
+		/* 제재 Rule 등록 (7050) */
+		/* AdminSanctionMapper.deleteRule3 */
+		DELETE FROM CSPD113TI
+		WHERE AI_INPT_SNRL3_ID = #{aiInptSnrl3Id}
+	</delete>
+	
+</mapper>

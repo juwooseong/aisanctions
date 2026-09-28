@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.RevertStatErrorMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.RevertStatErrorVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptRcpDt" column="INPT_RCP_DT" />
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />
+		<result property="ffxRefnoSrno" column="FX_REFNO_SRNO" />
+		<result property="aiInptImgKeyNo" column="AI_INPT_IMG_KEY_NO" />
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD" />
+		<result property="inptAtmcBizDsNm" column="INPT_ATMC_BIZ_NM" />
+		<result property="wrrInfo" column="WRR_INFO" />
+		<result property="inptPrcsCd" column="AI_INPT_PROS_CD" />
+		<result property="inptPrcsNm" column="INPT_PRCSNM" />
+		<result property="inptAtvtCd" column="AI_INPT_ACVT_CD" />
+		<result property="inptAtvtNm" column="INPT_ATVTNM" />
+		<result property="fcCucd" column="FC_CUCD" />
+		<result property="aiInptCmnCd" column="AI_INPT_CMN_CD" />                                         <!-- 업무 구분 코드 -->
+		<result property="fcCuNm" column="FC_CUNM" />
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM" />
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM" />
+		<result property="totaltextAiInptRstCd" column="TOTALTEXT_AI_INPT_RST_CD" />
+		<result property="totaltextAiInptRstNm" column="TOTALTEXT_AI_INPT_RST_NM" />
+		<result property="itmInptAiInptRstCd" column="ITM_INPT_AI_INPT_RST_CD" />
+		<result property="itmInptAiInptRstNm" column="ITM_INPT_AI_INPT_RST_NM" />
+		<result property="safewatchAiInptRstCd" column="SAFEWATCH_AI_INPT_RST_CD" />
+		<result property="safewatchAiInptRstNm" column="SAFEWATCH_AI_INPT_RST_NM" />
+		<result property="filtInptRstSrno" column="FILT_INPT_RST_SRNO" />
+		<result property="filtDtctNo" column="FILT_DTCT_NO" />
+		<result property="inptRcpDtStr" column="INPT_RCP_DT_STR" />
+		<result property="inptBizAlctCrpeFnm" column="INPT_BIZ_ALCT_CRPE_FNM" />
+		<result property="inptBizAlctCrpeEno" column="INPT_BIZ_ALCT_CRPE_ENO" />
+		<result property="errCd" column="ERR_CD" />
+		<result property="errTxt" column="ERR_TXT" />
+		<result property="aiInspeEno" column="AI_INSPE_ENO" />
+		<result property="aiInspeEnm" column="AI_INSPE_ENM" />
+		<result property="aiAppvEno" column="AI_INPT_SNPE_ENO" />
+		<result property="aiAppvEnm" column="AI_APPV_ENM" />
+		<result property="aiInptCusNo" column="CSNO" />
+	</resultMap>
+
+	<sql id="selectView">
+	  WITH VW_TASK AS (
+	  	/* 심사업무 오류건 목록 */
+	 
+	  	SELECT	A.INPT_MST_SRNO
+	  			, A.INPT_RCP_DT 
+			    , A.INPT_ATMC_BIZ_DSCD
+			    , A.ACTL_FX_REFNO
+			    , A.AI_INPT_ACVT_CD
+			    , B.AI_INPT_ACVT_CD AS B_AI_INPT_ACVT_CD 
+			    , A.AI_INSPE_ENO
+			    , A.AI_INPT_SNPE_ENO
+			    , A.INPT_ATMC_BIZ_DSCD AS AI_INPT_CMN_CD                                   
+	  			, RE.AI_INPT_ACVT_STS_CD
+		       	, C.XPBY_COL_CTR_CUCD AS FC_CUNM
+		       	, C.XPBY_COL_AM AS AI_INPT_BUY_AM
+		       	, C.CSNO
+		       	, C.CUS_KORL_NM AS AI_INPT_CUS_NM
+	  		   	, (/* 심사자 직원명 */
+	  				SELECT	AI_INPT_USER_NM
+	  				FROM	CSPD101TI
+	  				WHERE	AI_INPT_USER_ID = A.AI_INSPE_ENO
+	  				AND		ROWNUM = 1
+	  				) AS AI_INSPE_ENM
+	  		   	, (/* 결재자 직원명 */
+	  				SELECT	AI_INPT_USER_NM
+	  				FROM	CSPD101TI
+	  				WHERE	AI_INPT_USER_ID = A.AI_INPT_SNPE_ENO
+	  				AND		ROWNUM = 1
+	  				) AS AI_APPV_ENM
+	  		  	, (/* 공통코드 (업무구분코드,그룹코드 150) */
+	  				SELECT	AI_INPT_CMN_CD_NM
+	  				FROM	CSPD112TI
+	  				WHERE	AI_INPT_GRP_CD = '150'
+	  				AND	AI_INPT_CMN_CD = A.INPT_ATMC_BIZ_DSCD
+	  				AND		ROWNUM = 1
+	  				) AS INPT_ATMC_BIZ_NM
+	  		   	, (/* 공통코드 (액티비티코드,그룹코드 290) */
+	  				SELECT	AI_INPT_CMN_CD_NM
+	  				FROM	CSPD112TI
+	  				WHERE	AI_INPT_GRP_CD = '290'
+	  				AND		AI_INPT_CMN_CD = A.AI_INPT_ACVT_CD
+	  				AND		ROWNUM = 1
+	  				) AS INPT_ATVTNM
+	  	FROM	CSPD001TM A
+				, (/* 상태변경 히스토리 상태변경 코드 */
+					SELECT  INPT_MST_SRNO
+				  	       , AI_INPT_ACVT_CD	
+				  	  FROM CSPD008TH	/* 심사상태 변경이력 */
+				  	 WHERE (AI_INPT_ACVT_CD = '80' OR AI_INPT_ACVT_CD = '40') 
+					 GROUP BY INPT_MST_SRNO, AI_INPT_ACVT_CD	
+							
+				) B
+				, (
+					SELECT  INPT_MST_SRNO
+				  	       , AI_INPT_ACVT_STS_CD
+				  	  FROM CSPD008TH	/* 심사상태 변경이력 */
+				  	 WHERE AI_INPT_ACVT_STS_CD = '60' 
+					 GROUP BY INPT_MST_SRNO, AI_INPT_ACVT_STS_CD
+				)RE
+				, (/* WINI DATA 수출 */
+				  	SELECT FX_ACNO AS ACTL_FX_REFNO
+				          , XPBY_COL_CTR_CUCD AS XPBY_COL_CTR_CUCD
+				          , XPBY_COL_AM AS XPBY_COL_AM
+				          , CUS_KORL_NM
+				          , CSNO
+				          , XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+				   	FROM CSPD201TM
+				   	UNION ALL
+				   	/* WINI DATA 수입 */
+				   	SELECT FX_ACNO AS ACTL_FX_REFNO
+				          , TDOC_RCP_CUCD AS XPBY_COL_CTR_CUCD
+				          , TDOC_RCP_AM AS XPBY_COL_AM
+				          , CUS_KORL_NM
+				          , CSNO
+				          , TDOC_RCP_SRNO AS FX_REFNO_SRNO
+				   	FROM CSPD202TM
+				) C
+		WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO(+)
+		AND A.INPT_MST_SRNO = RE.INPT_MST_SRNO (+)
+		AND A.ACTL_FX_REFNO = C.ACTL_FX_REFNO(+)
+		AND A.FX_REFNO_SRNO = C.FX_REFNO_SRNO(+)
+		
+		AND A.AI_INPT_ACVT_CD IN ('140', '160')	/* 액티비티 코드(290) - 140(Block), 160(승인) */  
+		<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)">
+			AND A.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')
+		</if>
+		<!-- AND EXISTS (
+		  	SELECT Z.INPT_MST_SRNO
+		  	  FROM CSPD008TH Z
+		  	WHERE Z.INPT_MST_SRNO = A.INPT_MST_SRNO
+		  	  AND (NVL(Z.AI_INPT_ACVT_CD, ' ') = '80' OR NVL(Z.AI_INPT_ACVT_CD, ' ') = '40'	/* 액티비티코드(290) - 수기(80) */
+       			OR AI_INPT_ACVT_STS_CD = '60') /* 심사이력상태코드(300) - 60(재스캔), 70(재추출) */
+	  	) -->
+	  	
+		<if test="!(aiInptCmnCd == null or aiInptCmnCd == '')">
+			AND A.INPT_ATMC_BIZ_DSCD = #{aiInptCmnCd}
+		</if>
+		
+		
+		
+		
+		<if test= "!(inptBizAlctCrpeEno == null or inptBizAlctCrpeEno == '')">
+			AND ( AI_INSPE_ENO = #{inptBizAlctCrpeEno} OR  
+				  AI_INPT_SNPE_ENO = #{inptBizAlctCrpeEno} 
+				  <!-- OR QLAS_CRPE_ENO = #{inptBizAlctCrpeEno} --> )
+		</if>
+		
+		
+		
+		
+		
+		<if test="!(actlFxRefno == '' or actlFxRefno == null)">
+		AND A.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+		</if>
+		
+		<if test="!(errCd == null or errCd == '')">
+		  <choose>
+		    <when test="errCd == '02'">  <!-- 재추출 -->
+		  AND B.AI_INPT_ACVT_CD = '40'
+		    </when>
+		    <when test="errCd == '03'">  <!-- 재스캔 -->
+		  AND RE.AI_INPT_ACVT_STS_CD = '60'
+		    </when>
+		    <otherwise> 
+		  AND B.AI_INPT_ACVT_CD = '80'
+		    </otherwise>
+		  </choose>
+		</if>
+	
+		<if test="!(aiInptCusNo == '' or aiInptCusNo == null)">
+			AND C.CSNO = #{aiInptCusNo} 
+		</if>
+	  )
+	  
+	</sql>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 수출수입심사현황 - 오류건 (4040) */
+		/* RevertStatErrorMapper.selectList */
+	    <include refid="selectView" />
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT A.INPT_MST_SRNO
+			   , A.INPT_RCP_DT AS INPT_RCP_DT_STR
+		   
+		       , A.INPT_ATMC_BIZ_DSCD
+		       , CASE WHEN A.AI_INPT_ACVT_STS_CD = '60' THEN '재스캔'
+		              WHEN A.B_AI_INPT_ACVT_CD = '40' THEN '재추출'
+		              ELSE '수기' END AS ERR_TXT
+		       , A.ACTL_FX_REFNO
+		       , A.AI_INPT_ACVT_CD
+		       , A.FC_CUNM
+		       , A.AI_INPT_BUY_AM
+		       , A.CSNO
+		       , A.AI_INPT_CUS_NM
+		       , A.AI_INSPE_ENO
+		       , A.AI_INPT_SNPE_ENO
+		       , A.AI_INSPE_ENM
+		       , A.AI_APPV_ENM
+		       , A.INPT_ATMC_BIZ_NM
+		       , A.INPT_ATVTNM
+		       , A.AI_INPT_CMN_CD
+	      FROM VW_TASK A
+	    <choose>
+			<when test="'inptRcpDtStr'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.INPT_RCP_DT 
+			</when>
+			<when test="'inptRcpDtStr'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.INPT_RCP_DT  DESC
+			</when>
+			<when test="'inptAtmcBizDsNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.INPT_ATMC_BIZ_NM
+			</when>
+			<when test="'inptAtmcBizDsNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.INPT_ATMC_BIZ_NM DESC
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.ACTL_FX_REFNO
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.ACTL_FX_REFNO DESC
+			</when>
+			<when test="'inptAtvtNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.INPT_ATVTNM
+			</when>
+			<when test="'inptAtvtNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.INPT_ATVTNM DESC
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.FC_CUNM
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.FC_CUNM DESC
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.AI_INPT_BUY_AM
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.AI_INPT_BUY_AM DESC
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+			ORDER BY A.AI_INPT_CUS_NM
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+			ORDER BY A.AI_INPT_CUS_NM DESC
+			</when>
+			<otherwise>
+			ORDER BY A.INPT_RCP_DT DESC
+			</otherwise>
+		</choose>
+	    <include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 수출수입심사현황 - 오류건 (4040) */
+		/* RevertStatErrorMapper.selectListTotCnt */
+	    <include refid="selectView" />
+		SELECT COUNT(*) totcnt
+	      FROM VW_TASK A
+	</select>
+ 
+</mapper>

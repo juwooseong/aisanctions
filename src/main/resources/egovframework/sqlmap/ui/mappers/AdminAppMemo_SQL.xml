@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminAppMemoMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminAppMemoVO">
+		<result property="aiInptAppvOpiSrno" column="AI_INPT_APPV_OPI_SRNO"/>
+		<result property="aiInptAppvOpiUsgYn" column="AI_INPT_APPV_OPI_USG_YN"/>
+		<result property="aiInptAppvOpiTxt" column="AI_INPT_APPV_OPI_TXT"/>
+		<result property="aiInptAppvOpiRgsDtm" column="AI_INPT_APPV_OPI_RGS_DTM"/>
+		<result property="aiInptAppvOpiEndDtm" column="AI_INPT_APPV_OPI_END_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 결재의견 관리 (7090) */
+		/* AdminAppMemoMapper.selectList */
+		SELECT
+			AI_INPT_APPV_OPI_SRNO, AI_INPT_APPV_OPI_USG_YN, AI_INPT_APPV_OPI_TXT, 
+			AI_INPT_APPV_OPI_RGS_DTM, AI_INPT_APPV_OPI_END_DTM, 
+			TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM
+		FROM CSPD110TI
+		WHERE 1=1
+		<include refid="selectListCond" />
+		
+		<choose>
+			<when test='"aiInptAppvOpiTxt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_APPV_OPI_TXT
+			</when>
+			<when test='"aiInptAppvOpiTxt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_APPV_OPI_TXT DESC
+			</when>
+			<otherwise>
+				ORDER BY TO_NUMBER(AI_INPT_APPV_OPI_SRNO) DESC	
+			</otherwise>
+		</choose>
+		
+	</select>
+	
+	<sql id="selectListCond">
+		<if test="schGbn != null and schGbn != ''">
+			AND COL1 = #{schGbn}
+		</if>
+		<if test="schRefNo != null and schRefNo != ''">
+			AND COL1 = #{schRefNo}
+		</if>
+		<if test="schUserNo != null and schUserNo != ''">
+			AND COL1 = #{schUserNo}
+		</if>
+		<if test="schTerm != null and schTerm != ''">
+			AND COL1 = #{searchKeyword}
+		</if>
+	</sql>
+	
+	<insert id="insertMemo" parameterType="com.woori.ajs.model.AdminAppMemoVO">
+		/* 결재의견 관리 (7090) */
+		/* AdminAppMemoMapper.insertMemo */
+		MERGE INTO CSPD110TI A
+		USING DUAL
+			ON (A.AI_INPT_APPV_OPI_SRNO = #{aiInptAppvOpiSrno})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_APPV_OPI_TXT = #{aiInptAppvOpiTxt},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_APPV_OPI_SRNO, A.AI_INPT_APPV_OPI_USG_YN, A.AI_INPT_APPV_OPI_TXT,
+				A.AI_INPT_APPV_OPI_RGS_DTM, A.AI_INPT_APPV_OPI_END_DTM,
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM)
+			VALUES (CSPD110TI_SG01.NEXTVAL, 'Y', #{aiInptAppvOpiTxt}, <include refid="com.woori.ajs.common.curdate"/>, NULL,
+				#{trnLogSrno}, #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>)
+	</insert>
+	
+	<delete id="deleteMemo" parameterType="com.woori.ajs.model.AdminAppMemoVO">
+		/* 결재의견 관리 (7090) */
+		/* AdminAppMemoMapper.deleteMemo */
+		DELETE CSPD110TI
+		WHERE AI_INPT_APPV_OPI_SRNO = #{aiInptAppvOpiSrno}
+	</delete>
+	
+</mapper>

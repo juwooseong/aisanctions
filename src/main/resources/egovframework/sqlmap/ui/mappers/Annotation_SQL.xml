@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AnnotationMapper">
+
+	<select id="selectByMst" resultType="com.woori.ajs.model.AnnotationVO">
+		SELECT AI_INPT_ANNO_SRNO AS annoSrno,
+		       INPT_MST_SRNO AS inptMstSrno,
+		       INPT_TASK_ID AS inptTaskId,
+		       INPT_BL_GRP_NO AS inptBlGrpNo,
+		       IMEX_HIS_CD AS imexHisCd,
+		       AI_INPT_ANNO_TYP_CD AS annoTypCd,
+		       AI_INPT_ANNO_ID AS annoId,
+		       AI_INPT_COLOR_VAL AS colorVal,
+		       AI_INPT_LINE_WD AS lineWd,
+		       AI_INPT_POINTS_TXT AS pointsTxt,
+		       AI_INPT_PIN_X AS pinX,
+		       AI_INPT_PIN_Y AS pinY,
+		       AI_INPT_OPINION_TXT AS opinionTxt,
+		       AI_INPT_IMG_WD AS imgWd,
+		       AI_INPT_IMG_HT AS imgHt
+		  FROM CSPD134TA
+		 WHERE INPT_MST_SRNO = #{inptMstSrno}
+		   AND AI_INPT_USG_YN = 'Y'
+		 ORDER BY AI_INPT_ANNO_SRNO
+	</select>
+
+	<select id="nextSrno" resultType="java.lang.Long">
+		SELECT CSPD134TA_SG01.NEXTVAL FROM DUAL
+	</select>
+
+	<update id="disableByPage">
+		UPDATE CSPD134TA
+		   SET AI_INPT_USG_YN = 'N',
+		       LST_DB_CHG_ID = #{loginEno},
+		       LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		 WHERE INPT_MST_SRNO = #{inptMstSrno}
+		   AND INPT_TASK_ID = #{inptTaskId}
+		   AND AI_INPT_USG_YN = 'Y'
+	</update>
+
+	<insert id="insert" parameterType="com.woori.ajs.model.AnnotationVO">
+		INSERT INTO CSPD134TA (
+		    AI_INPT_ANNO_SRNO, INPT_MST_SRNO, INPT_TASK_ID, INPT_BL_GRP_NO, IMEX_HIS_CD,
+		    AI_INPT_ANNO_TYP_CD, AI_INPT_ANNO_ID, AI_INPT_COLOR_VAL, AI_INPT_LINE_WD,
+		    AI_INPT_POINTS_TXT, AI_INPT_PIN_X, AI_INPT_PIN_Y, AI_INPT_OPINION_TXT,
+		    AI_INPT_IMG_WD, AI_INPT_IMG_HT, AI_INPT_USG_YN, TRN_LOG_SRNO,
+		    LST_DB_CHG_ID, LST_DB_CHG_DTM
+		) VALUES (
+		    #{annoSrno}, #{inptMstSrno}, #{inptTaskId}, #{inptBlGrpNo}, #{imexHisCd},
+		    #{annoTypCd}, #{annoId}, #{colorVal}, #{lineWd},
+		    #{pointsTxt}, #{pinX}, #{pinY}, #{opinionTxt},
+		    #{imgWd}, #{imgHt}, 'Y', #{trnLogSrno},
+		    #{lstDbChgId}, <include refid="com.woori.ajs.common.curdate"/>
+		)
+	</insert>
+</mapper>

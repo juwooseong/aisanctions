@@ -1,0 +1,39 @@
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: aisanction-oracle
+    restart: unless-stopped
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: oracle_pw123      # SYS/SYSTEM 계정 비밀번호
+      APP_USER: sanction                 # context-datasource.xml 의 오라클 접속 계정과 일치
+      APP_USER_PASSWORD: sanction
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      # gvenzl 이미지는 APP_USER 생성 이후 /container-entrypoint-initdb.d 의 스크립트를
+      # 해당 계정(sanction)으로 자동 실행한다. sql/ 폴더가 이 프로젝트의 실제 원본
+      # DDL/시퀀스/테스트데이터/마이그레이션이므로 이를 정본으로 사용한다
+      # (db/init/ 은 sql/ 폴더가 발견되기 전 역추정으로 만든 것 - db/README.md 참고,
+      #  더 이상 사용하지 않음). 마운트 파일명 앞자리 숫자로 sql/00_drop.sql 문서에
+      # 명시된 신규설치 순서(00→01→02→03→26→27→28→07→04→05→06→30→31→32→33)를 강제한다.
+      # 29_item_val_seq.sql 은 "신규 설치는 01_ddl.sql 에 이미 반영됨" 이라 명시되어 있어
+      # (기존 운영 DB에 대한 ALTER 전용) 신규 설치인 여기서는 제외한다.
+      - ./sql/00_drop.sql:/container-entrypoint-initdb.d/10_drop.sql
+      - ./sql/01_ddl.sql:/container-entrypoint-initdb.d/11_ddl.sql
+      - ./sql/02_sequence.sql:/container-entrypoint-initdb.d/12_sequence.sql
+      - ./sql/03_test_data.sql:/container-entrypoint-initdb.d/13_test_data.sql
+      - ./sql/26_task_auth_v2.sql:/container-entrypoint-initdb.d/14_task_auth_v2.sql
+      - ./sql/27_qa_integ_v2.sql:/container-entrypoint-initdb.d/15_qa_integ_v2.sql
+      - ./sql/28_annotation.sql:/container-entrypoint-initdb.d/16_annotation.sql
+      - ./sql/07_menu_role_test_data.sql:/container-entrypoint-initdb.d/17_menu_role_test_data.sql
+      - ./sql/04_review01_test_data.sql:/container-entrypoint-initdb.d/18_review01_test_data.sql
+      - ./sql/05_approv01_test_data.sql:/container-entrypoint-initdb.d/19_approv01_test_data.sql
+      - ./sql/06_qauser01_test_data.sql:/container-entrypoint-initdb.d/20_qauser01_test_data.sql
+      - ./sql/30_task_auth_mig.sql:/container-entrypoint-initdb.d/21_task_auth_mig.sql
+      - ./sql/31_dashboard_display_config.sql:/container-entrypoint-initdb.d/22_dashboard_display_config.sql
+      - ./sql/32_urgent_review_mig.sql:/container-entrypoint-initdb.d/23_urgent_review_mig.sql
+      - ./sql/33_home_menu_mig.sql:/container-entrypoint-initdb.d/24_home_menu_mig.sql
+
+volumes:
+  oracle_data:

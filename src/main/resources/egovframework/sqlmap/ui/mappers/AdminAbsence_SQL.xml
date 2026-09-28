@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminAbsenceMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminAbsenceVO">
+		<result property="aiInptUserId" column="AI_INPT_USER_ID"/>
+		<result property="aiInptUserEno" column="AI_INPT_USER_ENO"/>
+		<result property="aiInptUserNm" column="AI_INPT_USER_NM"/>
+		<result property="aiInptUserFaReYn" column="AI_INPT_USER_FA_RE_YN"/>
+		<result property="aiInptUserAutCd" column="AI_INPT_AUT_CD"/>
+		<result property="aiInptUserAutVal" column="AI_INPT_USER_AUT_VAL"/>
+		<result property="aiInptSnpeEno" column="AI_INPT_SNPE_ENO"/>
+		<result property="aiInptSnpeNm" column="AI_INPT_SNPE_NM"/>
+		<result property="aiInptUserYn" column="AI_INPT_USER_YN"/>
+		<result property="aiInptAdminYn" column="AI_INPT_MGPE_YN"/>
+		<result property="aiInptUserRgsDtm" column="AI_INPT_USER_RGS_DTM"/>
+		<result property="aiInptUserEndDtm" column="AI_INPT_USER_END_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	 <select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 부재관리 (7070) */
+		/* AdminAbsenceMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT
+			AI_INPT_USER_ID, AI_INPT_AUT_CD, AI_INPT_USER_FA_RE_YN, AI_INPT_USER_ENO, AI_INPT_USER_NM, 
+			AI_INPT_SNPE_ENO, AI_INPT_USER_YN, AI_INPT_MGPE_YN, AI_INPT_USER_RGS_DTM,
+			AI_INPT_USER_END_DTM, LST_DB_CHG_ID, TRN_LOG_SRNO, LST_DB_CHG_DTM,
+			(SELECT AI_INPT_CMN_CD_NM
+				FROM CSPD112TI
+				WHERE AI_INPT_GRP_CD = '120'
+				AND AI_INPT_CMN_CD = A.AI_INPT_AUT_CD) AS AI_INPT_USER_AUT_VAL,	/* 사용자 권한명 */
+			(SELECT AI_INPT_USER_NM
+				FROM CSPD101TI
+				WHERE AI_INPT_USER_ENO = A.AI_INPT_SNPE_ENO
+				AND ROWNUM = 1
+			) AS AI_INPT_SNPE_NM	/* 담당자명 */
+		FROM CSPD101TI A	/* 사용자 */
+		WHERE 1=1 
+		AND AI_INPT_AUT_CD IN ('01','03')
+		<include refid="selectListCond" />
+		
+		<choose>
+			<!-- 권한정렬 -->
+			<when test='"aiInptUserAutVal".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_AUT_VAL
+			</when>
+			<when test='"aiInptUserAutVal".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_AUT_VAL DESC
+			</when>
+			<!-- 직원번호 -->
+			<when test='"aiInptUserEno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_ENO
+			</when>
+			<when test='"aiInptUserEno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_ENO DESC
+			</when>
+			<!-- 직원명 -->
+			<when test='"aiInptUserNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_NM
+			</when>
+			<when test='"aiInptUserNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_NM DESC
+			</when>
+			<!-- 부재여부 -->
+			<when test='"aiInptUserFaReYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_FA_RE_YN
+			</when>
+			<when test='"aiInptUserFaReYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_FA_RE_YN DESC
+			</when>
+			<otherwise>
+				ORDER BY AI_INPT_USER_ID ASC
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select> 
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 부재관리 (7070) */
+		/* AdminAbsenceMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD101TI
+		WHERE 1=1
+		AND AI_INPT_AUT_CD IN ('01','03')
+		<include refid="selectListCond" />
+	</select>
+	
+	<sql id="selectListCond">
+		AND AI_INPT_USER_YN = 'Y'
+		<if test="schAuth != null and schAuth != ''">
+			AND AI_INPT_AUT_CD = #{schAuth}
+		</if>
+		<if test="schUserNo != null and schUserNo != ''">
+			AND AI_INPT_USER_ENO LIKE '%' || #{schUserNo} || '%'
+		</if>
+		<if test="schUserNm != null and schUserNm != ''">
+			AND AI_INPT_USER_NM LIKE '%' || #{schUserNm} || '%'
+		</if>
+		<if test="aiInptUserFaReYn != null and aiInptUserFaReYn != ''">
+			AND AI_INPT_USER_FA_RE_YN = #{aiInptUserFaReYn}
+		</if>
+	</sql>
+	
+	<update id="existUpdate" parameterType="com.woori.ajs.model.AdminAbsenceVO">
+		/* 부재관리 (7070) */
+		/* AdminAbsenceMapper.existUpdate */
+		/* 부재여부 업데이트 처리 */
+		UPDATE CSPD101TI SET
+			AI_INPT_USER_FA_RE_YN = NVL(#{aiInptUserFaReYn},'N')	/* 부재여부 - 부재중(Y), 부재아님(N) */
+			, LST_DB_CHG_ID = #{lstDbChgId}
+			, LST_DB_CHG_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+			, TRN_LOG_SRNO = #{trnLogSrno}
+		WHERE AI_INPT_USER_ENO = #{aiInptUserEno}
+	</update>
+	
+</mapper>

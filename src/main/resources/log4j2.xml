@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %5p [%c] %m%n"/>
+        </Console>
+        <RollingFile name="file" fileName="/applog/aisanction/applicationLog.log" filePattern="/applog/aisanction/applicationLog.%d{yyyy-MM-dd}.%i.log">
+        	<PatternLayout pattern="%d %5p [%c] %m%n"/>
+        	<Policies>
+        		<SizeBasedTriggeringPolicy size="10MB"/>
+        		<TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+        	</Policies>
+        	<DefaultRolloverStrategy max="500">
+        		<Delete basePath="/applog/aisanction">
+        			<IfFileName glob="applicationLog.*.log"/>
+        			<IfLastModified age="30d"/>
+        		</Delete>
+        	</DefaultRolloverStrategy>
+        </RollingFile> 
+    </Appenders>
+    <Loggers>
+
+        <logger name="jdbc" level="OFF"/>
+        <logger name="jdbc.sqlonly" level="OFF"/>
+        <logger name="jdbc.sqltiming" level="DEBUG"/>
+        <logger name="jdbc.resultsettable" level="info"/>
+        <logger name="jdbc.audit" level="OFF"/>
+        <logger name="jdbc.resultset" level="OFF"/>
+        <logger name="jdbc.connection" level="OFF"/>
+
+		<Logger name="com.woori.ajs" level="DEBUG" additivity="false">
+            <AppenderRef ref="console" />
+<!--            <AppenderRef ref="file" />-->
+        </Logger>
+        <Root level="DEBUG">
+            <AppenderRef ref="console" level="DEBUG" />
+<!--            <AppenderRef ref="file" level="DEBUG" />-->
+        </Root>
+         
+    </Loggers>
+</Configuration>

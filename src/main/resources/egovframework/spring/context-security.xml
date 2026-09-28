@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:egov-security="http://www.egovframe.go.kr/schema/egov-security"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd
+		http://www.egovframe.go.kr/schema/egov-security http://www.egovframe.go.kr/schema/egov-security/egov-security-3.8.xsd">
+
+ 	<security:http pattern="/resources/**" security="none"/>
+ 	<security:http pattern="/" security="none"/>
+ 	<security:http pattern="/error/**" security="none"/>
+ 	<security:http pattern="/login/**" security="none"/>
+ 	<security:http pattern="/logout" security="none"/>
+ 	<security:http pattern="/regist" security="none"/>
+	
+   	<!-- use-expressions : Enables EL-expressions in access attribute -->
+	<security:http auto-config="false" use-expressions="false"
+		authentication-manager-ref="authenticationManager"
+		access-decision-manager-ref="customAccessDecisionManager">
+		<!-- additional security headers -->
+		<security:headers>
+			<security:frame-options policy="SAMEORIGIN" />
+		</security:headers>
+
+		<!-- Cross-Site Request Forgery 크로스 사이트 요청 위조 -->
+		<security:csrf disabled="true" />
+
+		<security:intercept-url pattern="/**" access="ROLE_USER" />
+
+		<security:access-denied-handler error-page="/error/403" />
+		<!-- <logout invalidate-session="true" logout-success-url="/error401"
+			logout-url="/logout" /> -->
+
+		<security:form-login login-page="/login" default-target-url="/"
+			always-use-default-target="false" username-parameter="username"
+			password-parameter="password" />
+
+		<security:session-management invalid-session-url="/login?errorCode=K0002">
+			<security:concurrency-control max-sessions="1" expired-url="/login?errorCode=K0002" />
+		</security:session-management>
+<!-- 		<security:custom-filter after="SESSION_MANAGEMENT_FILTER" ref="ptSessionManagementFilter" /> -->
+		<security:custom-filter after="EXCEPTION_TRANSLATION_FILTER" ref="ajaxSessionTimeoutFilter" />
+
+		<security:request-cache ref="requestCache" />
+	</security:http>
+
+	<bean id="requestCache"
+		class="org.springframework.security.web.savedrequest.HttpSessionRequestCache" />
+	<bean id="webSecurityExpressionHandler"
+		class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler" />
+
+	<bean id="customAccessDecisionManager"
+		class="org.springframework.security.access.vote.AffirmativeBased">
+		<constructor-arg>
+			<list>
+				<bean class="egovframework.ui.cmmn.CustomVoter" />
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="ajaxSessionTimeoutFilter"
+		class="egovframework.ui.cmmn.AjaxSessionTimeoutFilter" />
+
+	<security:authentication-manager alias="authenticationManager">
+		<security:authentication-provider user-service-ref="customUserDetailsService" />
+	</security:authentication-manager>
+</beans>

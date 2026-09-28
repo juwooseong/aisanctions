@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.RevertUngeneratedMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.RevertUngeneratedVO">
+		<result property="actlFxRefno" column="ACTL_FX_REFNO"/>
+		<result property="fxRefnoSrno" column="FX_REFNO_SRNO"/>
+		<result property="inptRcpDt" column="INPT_RCP_DT"/>
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD"/>
+		<result property="aiInptDocScanChrgEno" column="AI_INPT_DOC_SCAN_CHRG_ENO"/>
+		<result property="aiInptDocScanDtm" column="AI_INPT_DOC_SCAN_DTM"/>
+		<result property="aiInptImgKeyNo" column="AI_INPT_IMG_KEY_NO"/>
+		<result property="aiInptAplXtRncd" column="AI_INPT_APL_XT_RNCD"/>
+		<result property="aiInptXtPrcStsDscd" column="AI_INPT_XT_PRC_STS_DSCD"/>
+		<result property="aiInptXtPrcEno" column="AI_INPT_XT_PRC_ENO"/>
+		<result property="aiInptXtPrcDtm" column="AI_INPT_XT_PRC_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptXtSrno" column="AI_INPT_XT_SRNO"/>
+		
+		<result property="trnOprNo" column="TRN_OPR_NO"/>
+		<result property="docScanNm" column="DOC_SCAN_NM"/>
+		<result property="trnOprNm" column="TRN_OPR_NM"/>
+		<result property="procNm" column="PROC_NM"/>
+		
+		<result property="aiInptAplXtRncdNm" column="AI_INPT_APL_XT_RNCD_NM"/>
+		<result property="inptAtmcBizDscdNm" column="INPT_ATMC_BIZ_DSCD_NM"/>
+		<result property="aiInptXtPrcStsDscdNm" column="AI_INPT_XT_PRC_STS_DSCD_NM"/>
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 당일작업목록 - 업무미생성목록 (1030) */
+		/* RevertUngeneratedMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT * FROM (
+			SELECT 	 A.AI_INPT_XT_SRNO 						AS AI_INPT_XT_SRNO 				-- PK
+					,A.ACTL_FX_REFNO 						AS ACTL_FX_REFNO				-- 래포번호
+					,A.FX_REFNO_SRNO 						AS FX_REFNO_SRNO				-- 작성회차
+					,A.INPT_RCP_DT 							AS INPT_RCP_DT					-- 들어온일자
+					,A.INPT_ATMC_BIZ_DSCD 					AS INPT_ATMC_BIZ_DSCD 			-- 수입인지 수출인지
+					,A.AI_INPT_DOC_SCAN_CHRG_ENO 			AS AI_INPT_DOC_SCAN_CHRG_ENO 	-- 스캔담당자
+					,A.AI_INPT_DOC_SCAN_DTM 				AS AI_INPT_DOC_SCAN_DTM 		-- 스캔일시
+					,A.AI_INPT_IMG_KEY_NO 					AS AI_INPT_IMG_KEY_NO 			-- 이미지키
+					,A.AI_INPT_APL_XT_RNCD 					AS AI_INPT_APL_XT_RNCD 			-- 제외사유
+					,NVL(A.AI_INPT_XT_PRC_STS_DSCD, '11') 	AS AI_INPT_XT_PRC_STS_DSCD 		-- 처리상태(11:미확인 12:확인)
+					,A.AI_INPT_XT_PRC_ENO			 		AS AI_INPT_XT_PRC_ENO 			-- 처리자
+					,A.AI_INPT_XT_PRC_DTM 					AS AI_INPT_XT_PRC_DTM 			-- 처리일시
+					,A.TRN_LOG_SRNO 						AS TRN_LOG_SRNO 				-- 로그번호
+					,A.LST_DB_CHG_ID 						AS LST_DB_CHG_ID 				-- 디비아이디
+					,A.LST_DB_CHG_DTM 						AS LST_DB_CHG_DTM 				-- 디비시간
+					,B.TRN_OPR_NO							AS TRN_OPR_NO					-- 조작자 번호
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO) AS DOC_SCAN_NM -- 스캔자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = B.TRN_OPR_NO) AS TRN_OPR_NM				 -- 조작자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_XT_PRC_ENO) AS PROC_NM		   	 -- 처리자 명
+					
+					,CASE WHEN A.AI_INPT_APL_XT_RNCD = '11' THEN '중복 스캔'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '12' THEN 'WINI 외환 거래 정보 없음'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '13' THEN 'WINI 외환 거래 취소'
+						  ELSE '기타'
+					 END AS AI_INPT_APL_XT_RNCD_NM -- 제외사유명
+					,CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN '수입'
+						  WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN '수출'
+					 END AS INPT_ATMC_BIZ_DSCD_NM -- 업무 112      150
+					,CASE WHEN A.AI_INPT_XT_PRC_STS_DSCD IS NULL THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '11'  THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '12'  THEN '확인'
+						  ELSE 'ERROR' 
+					 END AS AI_INPT_XT_PRC_STS_DSCD_NM -- 처리상태 112
+			FROM CSPD011TL A 
+			LEFT OUTER JOIN CSPD201TM B ON A.ACTL_FX_REFNO = B.FX_ACNO AND A.FX_REFNO_SRNO = B.XPO_CVRG_MK_SQ
+			WHERE A.INPT_ATMC_BIZ_DSCD = '2'
+			
+			UNION ALL
+			
+			SELECT 	 A.AI_INPT_XT_SRNO 						AS AI_INPT_XT_SRNO 				-- PK
+					,A.ACTL_FX_REFNO 						AS ACTL_FX_REFNO				-- 래포번호
+					,A.FX_REFNO_SRNO 						AS FX_REFNO_SRNO				-- 작성회차
+					,A.INPT_RCP_DT 							AS INPT_RCP_DT					-- 들어온일자
+					,A.INPT_ATMC_BIZ_DSCD 					AS INPT_ATMC_BIZ_DSCD 			-- 수입인지 수출인지
+					,A.AI_INPT_DOC_SCAN_CHRG_ENO 			AS AI_INPT_DOC_SCAN_CHRG_ENO 	-- 스캔담당자
+					,A.AI_INPT_DOC_SCAN_DTM 				AS AI_INPT_DOC_SCAN_DTM 		-- 스캔일시
+					,A.AI_INPT_IMG_KEY_NO 					AS AI_INPT_IMG_KEY_NO 			-- 이미지키
+					,A.AI_INPT_APL_XT_RNCD 					AS AI_INPT_APL_XT_RNCD 			-- 제외사유
+					,NVL(A.AI_INPT_XT_PRC_STS_DSCD, '11') 	AS AI_INPT_XT_PRC_STS_DSCD 		-- 처리상태(11:미확인 12:확인)
+					,A.AI_INPT_XT_PRC_ENO			 		AS AI_INPT_XT_PRC_ENO 			-- 처리자
+					,A.AI_INPT_XT_PRC_DTM 					AS AI_INPT_XT_PRC_DTM 			-- 처리일시
+					,A.TRN_LOG_SRNO 						AS TRN_LOG_SRNO 				-- 로그번호
+					,A.LST_DB_CHG_ID 						AS LST_DB_CHG_ID 				-- 디비아이디
+					,A.LST_DB_CHG_DTM 						AS LST_DB_CHG_DTM 				-- 디비시간
+					,B.TRN_OPR_NO							AS TRN_OPR_NO					-- 조작자 번호
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO) AS DOC_SCAN_NM -- 스캔자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = B.TRN_OPR_NO) AS TRN_OPR_NM				 -- 조작자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_XT_PRC_ENO) AS PROC_NM		   	 -- 처리자 명
+			
+					,CASE WHEN A.AI_INPT_APL_XT_RNCD = '11' THEN '중복 스캔'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '12' THEN 'WINI 외환 거래 정보 없음'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '13' THEN 'WINI 외환 거래 취소'
+						  ELSE '기타'
+					 END AS AI_INPT_APL_XT_RNCD_NM -- 제외사유명
+					,CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN '수입'
+						  WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN '수출'
+					 END AS INPT_ATMC_BIZ_DSCD_NM -- 업무 112      150
+					,CASE WHEN A.AI_INPT_XT_PRC_STS_DSCD IS NULL THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '11'  THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '12'  THEN '확인'
+						  ELSE 'ERROR' 
+					 END AS AI_INPT_XT_PRC_STS_DSCD_NM -- 처리상태 112
+			FROM CSPD011TL A 
+			LEFT OUTER JOIN CSPD202TM B ON A.ACTL_FX_REFNO = B.FX_ACNO AND A.FX_REFNO_SRNO = B.TDOC_RCP_SRNO
+			WHERE A.INPT_ATMC_BIZ_DSCD = '1'
+		) UT
+		WHERE 1=1
+		 
+		<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)"> 		<!-- 날짜 조회 조건 -->
+				AND UT.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') 
+		</if>
+		<if test="!(aiInptAplXtRncd == '' or aiInptAplXtRncd == null)">                                         <!-- 제외사유 조회 조건 -->
+				AND UT.AI_INPT_APL_XT_RNCD = #{aiInptAplXtRncd}
+		</if>
+		<if test="!(aiInptXtPrcStsDscd == '' or aiInptXtPrcStsDscd == null)">                                   <!-- 처리상태 조회 조건 -->
+				AND UT.AI_INPT_XT_PRC_STS_DSCD = #{aiInptXtPrcStsDscd}
+		</if>
+		
+		<choose>
+			<when test="'inptRcpDt'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 접수일자 기준 올림차순 정렬 처리  -->
+			ORDER BY UT.INPT_RCP_DT 
+			</when>
+			<when test="'inptRcpDt'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 접수일자 날짜 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.INPT_RCP_DT DESC
+			</when>
+			<when test="'aiInptAplXtRncdNm'.equals(sortItem) and 'asc'.equals(sortDir)">                     	 <!-- 제외사유 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_APL_XT_RNCD_NM
+			</when>
+			<when test="'aiInptAplXtRncdNm'.equals(sortItem) and 'desc'.equals(sortDir)">                    	 <!-- 제외사유  기준 내림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_APL_XT_RNCD_NM DESC
+			</when>
+			<when test="'inptAtmcBizDscdNm'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 업무구분 코드 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.INPT_ATMC_BIZ_DSCD_NM
+			</when>
+			<when test="'inptAtmcBizDscdNm'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 업무구분 코드 기준 내림차순 정렬 처리-->
+			ORDER BY UT.INPT_ATMC_BIZ_DSCD_NM DESC
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- Reference Number 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.ACTL_FX_REFNO
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- Reference Number 기준 내림차순 정렬 처리  -->
+			ORDER BY UT.ACTL_FX_REFNO DESC
+			</when>
+			<when test="'fxRefnoSrno'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 회차 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.FX_REFNO_SRNO
+			</when>
+			<when test="'fxRefnoSrno'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 회차 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.FX_REFNO_SRNO DESC
+			</when>			
+			<when test="'docScanNm'.equals(sortItem) and 'asc'.equals(sortDir)">                       	 <!-- 스캔담당자 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.DOC_SCAN_NM
+			</when>
+			<when test="'docScanNm'.equals(sortItem) and 'desc'.equals(sortDir)">                     	 <!-- 스캔담당자 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.DOC_SCAN_NM DESC
+			</when>	
+			<when test="'aiInptDocScanDtm'.equals(sortItem) and 'asc'.equals(sortDir)">                    	     <!-- 스캔일시 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_DOC_SCAN_DTM
+			</when>
+			<when test="'aiInptDocScanDtm'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 스캔일시 기준  내림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_DOC_SCAN_DTM DESC
+			</when>
+			<when test="'aiInptXtPrcStsDscd'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 처리상태 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_XT_PRC_STS_DSCD
+			</when>
+			<when test="'aiInptXtPrcStsDscd'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 처리상태 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_XT_PRC_STS_DSCD DESC
+			</when>
+			<when test="'aiInptXtPrcEno'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 처리자 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_XT_PRC_ENO 
+			</when>
+			<when test="'aiInptXtPrcEno'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 처리자 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_XT_PRC_ENO DESC
+			</when>
+			<when test="'aiInptXtPrcDtm'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 처리일시 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_XT_PRC_DTM 
+			</when>
+			<when test="'aiInptXtPrcDtm'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 처리일시 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.AI_INPT_XT_PRC_DTM DESC
+			</when>
+			<when test="'trnOprNm'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 담당자명 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.TRN_OPR_NM 
+			</when>
+			<when test="'trnOprNm'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 담당자명 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.TRN_OPR_NM DESC
+			</when>
+			<when test="'procNm'.equals(sortItem) and 'asc'.equals(sortDir)">                          <!-- 처리자명 기준 올림차순 정렬 처리 -->
+			ORDER BY UT.PROC_NM 
+			</when>
+			<when test="'procNm'.equals(sortItem) and 'desc'.equals(sortDir)">                         <!-- 처리자명 기준 내림차순 정렬 처리 -->
+			ORDER BY UT.PROC_NM DESC
+			</when>
+			
+			
+			<otherwise>                                                                              <!--  Default 접수일자 내림차순 정렬 처리 -->
+			ORDER BY UT.INPT_RCP_DT DESC
+			</otherwise>
+		</choose>
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 당일작업목록 - 업무미생성목록 (1030) */
+		/* RevertUngeneratedMapper.selectListTotCnt */	
+
+		SELECT COUNT(*) totcnt FROM (
+			SELECT 	 A.AI_INPT_XT_SRNO 						AS AI_INPT_XT_SRNO 				-- PK
+					,A.ACTL_FX_REFNO 						AS ACTL_FX_REFNO				-- 래포번호
+					,A.FX_REFNO_SRNO 						AS FX_REFNO_SRNO				-- 작성회차
+					,A.INPT_RCP_DT 							AS INPT_RCP_DT					-- 들어온일자
+					,A.INPT_ATMC_BIZ_DSCD 					AS INPT_ATMC_BIZ_DSCD 			-- 수입인지 수출인지
+					,A.AI_INPT_DOC_SCAN_CHRG_ENO 			AS AI_INPT_DOC_SCAN_CHRG_ENO 	-- 스캔담당자
+					,A.AI_INPT_DOC_SCAN_DTM 				AS AI_INPT_DOC_SCAN_DTM 		-- 스캔일시
+					,A.AI_INPT_IMG_KEY_NO 					AS AI_INPT_IMG_KEY_NO 			-- 이미지키
+					,A.AI_INPT_APL_XT_RNCD 					AS AI_INPT_APL_XT_RNCD 			-- 제외사유
+					,NVL(A.AI_INPT_XT_PRC_STS_DSCD, '11') 	AS AI_INPT_XT_PRC_STS_DSCD 		-- 처리상태(11:미확인 12:확인)
+					,A.AI_INPT_XT_PRC_ENO			 		AS AI_INPT_XT_PRC_ENO 			-- 처리자
+					,A.AI_INPT_XT_PRC_DTM 					AS AI_INPT_XT_PRC_DTM 			-- 처리일시
+					,A.TRN_LOG_SRNO 						AS TRN_LOG_SRNO 				-- 로그번호
+					,A.LST_DB_CHG_ID 						AS LST_DB_CHG_ID 				-- 디비아이디
+					,A.LST_DB_CHG_DTM 						AS LST_DB_CHG_DTM 				-- 디비시간
+					,B.TRN_OPR_NO							AS TRN_OPR_NO					-- 조작자 번호
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO) AS DOC_SCAN_NM -- 스캔자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = B.TRN_OPR_NO) AS TRN_OPR_NM				 -- 조작자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_XT_PRC_ENO) AS PROC_NM		   	 -- 처리자 명
+					
+					,CASE WHEN A.AI_INPT_APL_XT_RNCD = '11' THEN '중복 스캔'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '12' THEN 'WINI 외환 거래 정보 없음'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '13' THEN 'WINI 외환 거래 취소'
+						  ELSE '기타'
+					 END AS AI_INPT_APL_XT_RNCD_NM -- 제외사유명
+					,CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN '수입'
+						  WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN '수출'
+					 END AS INPT_ATMC_BIZ_DSCD_NM -- 업무 112      150
+					,CASE WHEN A.AI_INPT_XT_PRC_STS_DSCD IS NULL THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '11'  THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '12'  THEN '확인'
+						  ELSE 'ERROR' 
+					 END AS AI_INPT_XT_PRC_STS_DSCD_NM -- 처리상태 112
+			FROM CSPD011TL A 
+			LEFT OUTER JOIN CSPD201TM B ON A.ACTL_FX_REFNO = B.FX_ACNO AND A.FX_REFNO_SRNO = B.XPO_CVRG_MK_SQ
+			WHERE A.INPT_ATMC_BIZ_DSCD = '2'
+			
+			UNION ALL
+			
+			SELECT 	 A.AI_INPT_XT_SRNO 						AS AI_INPT_XT_SRNO 				-- PK
+					,A.ACTL_FX_REFNO 						AS ACTL_FX_REFNO				-- 래포번호
+					,A.FX_REFNO_SRNO 						AS FX_REFNO_SRNO				-- 작성회차
+					,A.INPT_RCP_DT 							AS INPT_RCP_DT					-- 들어온일자
+					,A.INPT_ATMC_BIZ_DSCD 					AS INPT_ATMC_BIZ_DSCD 			-- 수입인지 수출인지
+					,A.AI_INPT_DOC_SCAN_CHRG_ENO 			AS AI_INPT_DOC_SCAN_CHRG_ENO 	-- 스캔담당자
+					,A.AI_INPT_DOC_SCAN_DTM 				AS AI_INPT_DOC_SCAN_DTM 		-- 스캔일시
+					,A.AI_INPT_IMG_KEY_NO 					AS AI_INPT_IMG_KEY_NO 			-- 이미지키
+					,A.AI_INPT_APL_XT_RNCD 					AS AI_INPT_APL_XT_RNCD 			-- 제외사유
+					,NVL(A.AI_INPT_XT_PRC_STS_DSCD, '11') 	AS AI_INPT_XT_PRC_STS_DSCD 		-- 처리상태(11:미확인 12:확인)
+					,A.AI_INPT_XT_PRC_ENO			 		AS AI_INPT_XT_PRC_ENO 			-- 처리자
+					,A.AI_INPT_XT_PRC_DTM 					AS AI_INPT_XT_PRC_DTM 			-- 처리일시
+					,A.TRN_LOG_SRNO 						AS TRN_LOG_SRNO 				-- 로그번호
+					,A.LST_DB_CHG_ID 						AS LST_DB_CHG_ID 				-- 디비아이디
+					,A.LST_DB_CHG_DTM 						AS LST_DB_CHG_DTM 				-- 디비시간
+					,B.TRN_OPR_NO							AS TRN_OPR_NO					-- 조작자 번호
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_DOC_SCAN_CHRG_ENO) AS DOC_SCAN_NM -- 스캔자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = B.TRN_OPR_NO) AS TRN_OPR_NM				 -- 조작자 명
+					,(SELECT AI_INPT_USER_NM FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_XT_PRC_ENO) AS PROC_NM		   	 -- 처리자 명
+			
+					,CASE WHEN A.AI_INPT_APL_XT_RNCD = '11' THEN '중복 스캔'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '12' THEN 'WINI 외환 거래 정보 없음'
+						  WHEN A.AI_INPT_APL_XT_RNCD = '13' THEN 'WINI 외환 거래 취소'
+						  ELSE '기타'
+					 END AS AI_INPT_APL_XT_RNCD_NM -- 제외사유명
+					,CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN '수입'
+						  WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN '수출'
+					 END AS INPT_ATMC_BIZ_DSCD_NM -- 업무 112      150
+					,CASE WHEN A.AI_INPT_XT_PRC_STS_DSCD IS NULL THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '11'  THEN '미확인'
+						  WHEN A.AI_INPT_XT_PRC_STS_DSCD = '12'  THEN '확인'
+						  ELSE 'ERROR' 
+					 END AS AI_INPT_XT_PRC_STS_DSCD_NM -- 처리상태 112
+			FROM CSPD011TL A 
+			LEFT OUTER JOIN CSPD202TM B ON A.ACTL_FX_REFNO = B.FX_ACNO AND A.FX_REFNO_SRNO = B.TDOC_RCP_SRNO
+			WHERE A.INPT_ATMC_BIZ_DSCD = '1'
+		) UT
+		WHERE 1=1
+		 
+		<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)"> 		<!-- 날짜 조회 조건 -->
+				AND UT.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') 
+		</if>
+		<if test="!(aiInptAplXtRncd == '' or aiInptAplXtRncd == null)">                                         <!-- 제외사유 조회 조건 -->
+				AND UT.AI_INPT_APL_XT_RNCD = #{aiInptAplXtRncd}
+		</if>
+		<if test="!(aiInptXtPrcStsDscd == '' or aiInptXtPrcStsDscd == null)">                                   <!-- 처리상태 조회 조건 -->
+				AND UT.AI_INPT_XT_PRC_STS_DSCD = #{aiInptXtPrcStsDscd}
+		</if>
+
+	</select>
+	
+	<update id="statusUpdate" parameterType="com.woori.ajs.model.RevertUngeneratedVO">
+		/* 당일작업목록 - 업무미생성목록 (1030) (7070) */
+		/* RevertUngeneratedMapper.statusUpdate */
+		/* 확인완료 여부 업데이트 */
+		UPDATE CSPD011TL SET
+			AI_INPT_XT_PRC_STS_DSCD = #{aiInptXtPrcStsDscd},	/* 미확인 - 11 (|| null), 확인 - 12 */
+			AI_INPT_XT_PRC_DTM = TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS'),
+			AI_INPT_XT_PRC_ENO = #{aiInptXtPrcEno},
+			TRN_LOG_SRNO = #{trnLogSrno},
+			LST_DB_CHG_ID = #{lstDbChgId}
+		WHERE ACTL_FX_REFNO = #{actlFxRefno}
+		  AND AI_INPT_XT_SRNO = #{aiInptXtSrno}
+	</update>
+</mapper>

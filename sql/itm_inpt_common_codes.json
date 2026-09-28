@@ -1,0 +1,1278 @@
+{
+  "source": "06_항목별 추출 요건.md",
+  "groups": {
+    "export": "240",
+    "import": "230"
+  },
+  "exportItems": [
+    {
+      "sanctionNo": "1",
+      "nameKr": "거래일자",
+      "nameEn": "Transaction Date",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "2",
+      "nameKr": "신용장개설일",
+      "nameEn": "L/C Issuing Date",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "3",
+      "nameKr": "신용장번호",
+      "nameEn": "L/C No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "4",
+      "nameKr": "참조번호",
+      "nameEn": "Reference No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "5",
+      "nameKr": "일련번호",
+      "nameEn": "Serial No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "6",
+      "nameKr": "고객명",
+      "nameEn": "Customer Name",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "7",
+      "nameKr": "고객번호",
+      "nameEn": "Customer No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "8",
+      "nameKr": "통화",
+      "nameEn": "Currency",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "9",
+      "nameKr": "금액",
+      "nameEn": "Amount",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "10",
+      "nameKr": "수출상대국가코드",
+      "nameEn": "Counterparty Country Code",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "11",
+      "nameKr": "HS코드",
+      "nameEn": "HS Code",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "12",
+      "nameKr": "영업점명",
+      "nameEn": "Branch Name",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "13",
+      "nameKr": "영업점코드",
+      "nameEn": "Branch Code",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "14",
+      "nameKr": "조작자번호",
+      "nameEn": "Operator No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "15",
+      "nameKr": "수출자명",
+      "nameEn": "Exporter Name",
+      "priorityDoc": "Invoice",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "16",
+      "nameKr": "수출자주소",
+      "nameEn": "Exporter Address",
+      "priorityDoc": "Invoice",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "17",
+      "nameKr": "수출자국가",
+      "nameEn": "Exporter Country",
+      "priorityDoc": "Invoice",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "18",
+      "nameKr": "수출자국가코드",
+      "nameEn": "Exporter Country Code",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "19",
+      "nameKr": "수입자명",
+      "nameEn": "Importer Name",
+      "priorityDoc": "Invoice",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "20",
+      "nameKr": "수입자주소",
+      "nameEn": "Importer Address",
+      "priorityDoc": "Invoice",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "21",
+      "nameKr": "수입자국가",
+      "nameEn": "Importer Country",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "22",
+      "nameKr": "수입자국가코드",
+      "nameEn": "Importer Country Code",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "23",
+      "nameKr": "개설은행명",
+      "nameEn": "Issuing Bank Name",
+      "priorityDoc": "C/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "24",
+      "nameKr": "개설은행주소",
+      "nameEn": "Issuing Bank Address",
+      "priorityDoc": "C/L",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "25",
+      "nameKr": "개설은행국가",
+      "nameEn": "Issuing Bank Country",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "26",
+      "nameKr": "개설은행국가코드",
+      "nameEn": "Issuing Bank Country Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "27",
+      "nameKr": "개설은행BIC",
+      "nameEn": "Issuing Bank BIC Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "33",
+      "nameKr": "우편은행명",
+      "nameEn": "Mail Bank Name",
+      "priorityDoc": "C/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "34",
+      "nameKr": "우편은행주소",
+      "nameEn": "Mail Bank Address",
+      "priorityDoc": "C/L",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "35",
+      "nameKr": "우편은행국가",
+      "nameEn": "Mail Bank Country",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "36",
+      "nameKr": "우편은행국가코드",
+      "nameEn": "Mail Bank Country Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "37",
+      "nameKr": "우편은행BIC",
+      "nameEn": "Mail Bank BIC Code",
+      "priorityDoc": "C/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "43",
+      "nameKr": "상환은행명",
+      "nameEn": "Reim Bank Name",
+      "priorityDoc": "C/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "44",
+      "nameKr": "상환은행주소",
+      "nameEn": "Reim Bank Address",
+      "priorityDoc": "C/L",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "45",
+      "nameKr": "상환은행국가",
+      "nameEn": "Reim Bank Country",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "46",
+      "nameKr": "상환은행국가코드",
+      "nameEn": "Reim Bank Country Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "47",
+      "nameKr": "상환은행BIC",
+      "nameEn": "Reim Bank BIC Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "48",
+      "nameKr": "원산지",
+      "nameEn": "Country of Origin",
+      "priorityDoc": "C/O",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "49",
+      "nameKr": "원산지국가코드",
+      "nameEn": "Country Code of Origin",
+      "priorityDoc": "C/O",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "50",
+      "nameKr": "선하증권번호",
+      "nameEn": "Bill of lading No.",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "51",
+      "nameKr": "선박명",
+      "nameEn": "Vessel Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "VESSEL"
+    },
+    {
+      "sanctionNo": "52",
+      "nameKr": "항공기명",
+      "nameEn": "Aircraft Name",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "53",
+      "nameKr": "품명",
+      "nameEn": "Commodity Name",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "54",
+      "nameKr": "인수지",
+      "nameEn": "Place of Receipt",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "55",
+      "nameKr": "인수지국가",
+      "nameEn": "Country of Place of Receipt",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "56",
+      "nameKr": "인수지국가코드",
+      "nameEn": "Country Code of Place of Receipt",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "57",
+      "nameKr": "선적항",
+      "nameEn": "Port of Loading",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "58",
+      "nameKr": "선적항국가",
+      "nameEn": "Country of Port of Loading",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "59",
+      "nameKr": "선적항국가코드",
+      "nameEn": "Country Code of Port of Loading",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "60",
+      "nameKr": "양하항",
+      "nameEn": "Port of Discharging",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "61",
+      "nameKr": "양하항국가",
+      "nameEn": "Country of Port of Discharging",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "62",
+      "nameKr": "양하항국가코드",
+      "nameEn": "Country Code of Port of Discharging",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "63",
+      "nameKr": "최종목적지",
+      "nameEn": "Final Destination",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "64",
+      "nameKr": "최종목적지국가",
+      "nameEn": "Country of Final Destination",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "65",
+      "nameKr": "최종목적지국가코드",
+      "nameEn": "Country Code of Final Destination",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "66",
+      "nameKr": "송하인명",
+      "nameEn": "Shipper Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "67",
+      "nameKr": "송하인주소",
+      "nameEn": "Shipper Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "68",
+      "nameKr": "송하인국가",
+      "nameEn": "Shipper Country",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "69",
+      "nameKr": "송하인국가코드",
+      "nameEn": "Shipper Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "70",
+      "nameKr": "수하인명",
+      "nameEn": "Consignee Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "71",
+      "nameKr": "수하인주소",
+      "nameEn": "Consignee Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "72",
+      "nameKr": "수하인국가",
+      "nameEn": "Consignee Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "73",
+      "nameKr": "수하인국가코드",
+      "nameEn": "Consignee Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "74",
+      "nameKr": "통지처명",
+      "nameEn": "Notify Party Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "75",
+      "nameKr": "통지처주소",
+      "nameEn": "Notify Party Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "76",
+      "nameKr": "통지처국가",
+      "nameEn": "Notify Party Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "77",
+      "nameKr": "통지처국가코드",
+      "nameEn": "Notify Party Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "174",
+      "nameKr": "2차통지처명",
+      "nameEn": "2nd Notify Party Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "175",
+      "nameKr": "2차통지처주소",
+      "nameEn": "2nd Notify Party Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "78",
+      "nameKr": "포워더명",
+      "nameEn": "Forwarder Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "79",
+      "nameKr": "포워더주소",
+      "nameEn": "Forwarder Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "80",
+      "nameKr": "포워더국가",
+      "nameEn": "Forwarder Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "81",
+      "nameKr": "포워더국가코드",
+      "nameEn": "Forwarder Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "178",
+      "nameKr": "2차포워더명",
+      "nameEn": "2nd Forwarder Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "179",
+      "nameKr": "2차포워더주소",
+      "nameEn": "2nd Forwarder Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "82",
+      "nameKr": "선사명",
+      "nameEn": "Shipping Company Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "83",
+      "nameKr": "선사주소",
+      "nameEn": "Shipping Company Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "84",
+      "nameKr": "선사국가",
+      "nameEn": "Shipping Company Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "85",
+      "nameKr": "선사국가코드",
+      "nameEn": "Shipping Company Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "86",
+      "nameKr": "운송사명",
+      "nameEn": "Carrier Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "87",
+      "nameKr": "선박대리점명",
+      "nameEn": "Shipping Agent Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "88",
+      "nameKr": "선장명",
+      "nameEn": "Master Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "INDIVIDUAL"
+    },
+    {
+      "sanctionNo": "89",
+      "nameKr": "보험회사명",
+      "nameEn": "Insurance Company Name",
+      "priorityDoc": "Insurance",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "90",
+      "nameKr": "보험회사주소",
+      "nameEn": "Insurance Company Address",
+      "priorityDoc": "Insurance",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "91",
+      "nameKr": "보험회사국가",
+      "nameEn": "Insurance Company Country",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "92",
+      "nameKr": "보험회사국가코드",
+      "nameEn": "Insurance Company Country Code",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "93",
+      "nameKr": "보험대리점명",
+      "nameEn": "Insurance Agent Name",
+      "priorityDoc": "Insurance",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "94",
+      "nameKr": "보험대리점주소",
+      "nameEn": "Insurance Agent Address",
+      "priorityDoc": "Insurance",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "95",
+      "nameKr": "보험대리점국가",
+      "nameEn": "Insurance Agent Country",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "96",
+      "nameKr": "보험대리점국가코드",
+      "nameEn": "Insurance Agent Country Code",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "193",
+      "nameKr": "2차보험대리점명",
+      "nameEn": "2nd Insurance Agent Name",
+      "priorityDoc": "Insurance",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "194",
+      "nameKr": "2차보험대리점주소",
+      "nameEn": "2nd Insurance Agent Address",
+      "priorityDoc": "Insurance",
+      "watchAttr": "COUNTRY"
+    }
+  ],
+  "importItems": [
+    {
+      "sanctionNo": "1",
+      "nameKr": "거래일자",
+      "nameEn": "Transaction Date",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "2",
+      "nameKr": "신용장개설일",
+      "nameEn": "L/C Issuing Date",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "4",
+      "nameKr": "참조번호",
+      "nameEn": "Reference No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "5",
+      "nameKr": "일련번호",
+      "nameEn": "Serial No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "6",
+      "nameKr": "고객명",
+      "nameEn": "Customer Name",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "7",
+      "nameKr": "고객번호",
+      "nameEn": "Customer No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "8",
+      "nameKr": "통화",
+      "nameEn": "Currency",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "9",
+      "nameKr": "금액",
+      "nameEn": "Amount",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "11",
+      "nameKr": "HS코드",
+      "nameEn": "HS Code",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "12",
+      "nameKr": "영업점명",
+      "nameEn": "Branch Name",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "13",
+      "nameKr": "영업점코드",
+      "nameEn": "Branch Code",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "14",
+      "nameKr": "조작자번호",
+      "nameEn": "Operator No.",
+      "priorityDoc": "WINI",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "15",
+      "nameKr": "수출자명",
+      "nameEn": "Exporter Name",
+      "priorityDoc": "Invoice",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "16",
+      "nameKr": "수출자주소",
+      "nameEn": "Exporter Address",
+      "priorityDoc": "Invoice",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "17",
+      "nameKr": "수출자국가",
+      "nameEn": "Exporter Country",
+      "priorityDoc": "Invoice",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "18",
+      "nameKr": "수출자국가코드",
+      "nameEn": "Exporter Country Code",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "19",
+      "nameKr": "수입자명",
+      "nameEn": "Importer Name",
+      "priorityDoc": "Invoice",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "20",
+      "nameKr": "수입자주소",
+      "nameEn": "Importer Address",
+      "priorityDoc": "Invoice",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "21",
+      "nameKr": "수입자국가",
+      "nameEn": "Importer Country",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "22",
+      "nameKr": "수입자국가코드",
+      "nameEn": "Importer Country Code",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "28",
+      "nameKr": "네고은행명",
+      "nameEn": "Nego Bank Name",
+      "priorityDoc": "C/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "29",
+      "nameKr": "네고은행주소",
+      "nameEn": "Nego Bank Address",
+      "priorityDoc": "C/L",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "30",
+      "nameKr": "네고은행국가",
+      "nameEn": "Nego Bank Country",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "31",
+      "nameKr": "네고은행BIC",
+      "nameEn": "Nego Bank BIC Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "32",
+      "nameKr": "네고은행국가코드",
+      "nameEn": "Nego Bank Country Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "38",
+      "nameKr": "입금은행명",
+      "nameEn": "Account with Bank Name",
+      "priorityDoc": "C/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "39",
+      "nameKr": "입금은행주소",
+      "nameEn": "Account with Bank Address",
+      "priorityDoc": "C/L",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "40",
+      "nameKr": "입금은행국가",
+      "nameEn": "Account with Bank Country",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "41",
+      "nameKr": "입금은행국가코드",
+      "nameEn": "Account with Bank Country Code",
+      "priorityDoc": "C/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "42",
+      "nameKr": "입금은행BIC",
+      "nameEn": "Account with Bank BIC Code",
+      "priorityDoc": "C/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "48",
+      "nameKr": "원산지",
+      "nameEn": "Country of Origin",
+      "priorityDoc": "C/O",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "49",
+      "nameKr": "원산지국가코드",
+      "nameEn": "Country Code of Origin",
+      "priorityDoc": "C/O",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "50",
+      "nameKr": "선하증권번호",
+      "nameEn": "Bill of lading No.",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "51",
+      "nameKr": "선박명",
+      "nameEn": "Vessel Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "VESSEL"
+    },
+    {
+      "sanctionNo": "52",
+      "nameKr": "항공기명",
+      "nameEn": "Aircraft Name",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "53",
+      "nameKr": "품명",
+      "nameEn": "Commodity Name",
+      "priorityDoc": "Invoice",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "54",
+      "nameKr": "인수지",
+      "nameEn": "Place of Receipt",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "55",
+      "nameKr": "인수지국가",
+      "nameEn": "Country of Place of Receipt",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "56",
+      "nameKr": "인수지국가코드",
+      "nameEn": "Country Code of Place of Receipt",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "57",
+      "nameKr": "선적항",
+      "nameEn": "Port of Loading",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "58",
+      "nameKr": "선적항국가",
+      "nameEn": "Country of Port of Loading",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "59",
+      "nameKr": "선적항국가코드",
+      "nameEn": "Country Code of Port of Loading",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "60",
+      "nameKr": "양하항",
+      "nameEn": "Port of Discharging",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "61",
+      "nameKr": "양하항국가",
+      "nameEn": "Country of Port of Discharging",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "62",
+      "nameKr": "양하항국가코드",
+      "nameEn": "Country Code of Port of Discharging",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "63",
+      "nameKr": "최종목적지",
+      "nameEn": "Final Destination",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "64",
+      "nameKr": "최종목적지국가",
+      "nameEn": "Country of Final Destination",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "65",
+      "nameKr": "최종목적지국가코드",
+      "nameEn": "Country Code of Final Destination",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "66",
+      "nameKr": "송하인명",
+      "nameEn": "Shipper Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "67",
+      "nameKr": "송하인주소",
+      "nameEn": "Shipper Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "68",
+      "nameKr": "송하인국가",
+      "nameEn": "Shipper Country",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "69",
+      "nameKr": "송하인국가코드",
+      "nameEn": "Shipper Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "70",
+      "nameKr": "수하인명",
+      "nameEn": "Consignee Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "71",
+      "nameKr": "수하인주소",
+      "nameEn": "Consignee Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "72",
+      "nameKr": "수하인국가",
+      "nameEn": "Consignee Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "73",
+      "nameKr": "수하인국가코드",
+      "nameEn": "Consignee Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "74",
+      "nameKr": "통지처명",
+      "nameEn": "Notify Party Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "75",
+      "nameKr": "통지처주소",
+      "nameEn": "Notify Party Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "76",
+      "nameKr": "통지처국가",
+      "nameEn": "Notify Party Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "77",
+      "nameKr": "통지처국가코드",
+      "nameEn": "Notify Party Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "174",
+      "nameKr": "2차통지처명",
+      "nameEn": "2nd Notify Party Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "175",
+      "nameKr": "2차통지처주소",
+      "nameEn": "2nd Notify Party Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "78",
+      "nameKr": "포워더명",
+      "nameEn": "Forwarder Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "79",
+      "nameKr": "포워더주소",
+      "nameEn": "Forwarder Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "80",
+      "nameKr": "포워더국가",
+      "nameEn": "Forwarder Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "81",
+      "nameKr": "포워더국가코드",
+      "nameEn": "Forwarder Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "178",
+      "nameKr": "2차포워더명",
+      "nameEn": "2nd Forwarder Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "179",
+      "nameKr": "2차포워더주소",
+      "nameEn": "2nd Forwarder Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "82",
+      "nameKr": "선사명",
+      "nameEn": "Shipping Company Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "83",
+      "nameKr": "선사주소",
+      "nameEn": "Shipping Company Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "ALL"
+    },
+    {
+      "sanctionNo": "84",
+      "nameKr": "선사국가",
+      "nameEn": "Shipping Company Country",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "85",
+      "nameKr": "선사국가코드",
+      "nameEn": "Shipping Company Country Code",
+      "priorityDoc": "B/L",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "86",
+      "nameKr": "운송사명",
+      "nameEn": "Carrier Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "87",
+      "nameKr": "선박대리점명",
+      "nameEn": "Shipping Agent Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "88",
+      "nameKr": "선장명",
+      "nameEn": "Master Name",
+      "priorityDoc": "B/L",
+      "watchAttr": "INDIVIDUAL"
+    },
+    {
+      "sanctionNo": "89",
+      "nameKr": "보험회사명",
+      "nameEn": "Insurance Company Name",
+      "priorityDoc": "Insurance",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "90",
+      "nameKr": "보험회사주소",
+      "nameEn": "Insurance Company Address",
+      "priorityDoc": "Insurance",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "91",
+      "nameKr": "보험회사국가",
+      "nameEn": "Insurance Company Country",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "92",
+      "nameKr": "보험회사국가코드",
+      "nameEn": "Insurance Company Country Code",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "93",
+      "nameKr": "보험대리점명",
+      "nameEn": "Insurance Agent Name",
+      "priorityDoc": "Insurance",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "94",
+      "nameKr": "보험대리점주소",
+      "nameEn": "Insurance Agent Address",
+      "priorityDoc": "Insurance",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "95",
+      "nameKr": "보험대리점국가",
+      "nameEn": "Insurance Agent Country",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "96",
+      "nameKr": "보험대리점국가코드",
+      "nameEn": "Insurance Agent Country Code",
+      "priorityDoc": "Insurance",
+      "watchAttr": null
+    },
+    {
+      "sanctionNo": "193",
+      "nameKr": "2차보험대리점명",
+      "nameEn": "2nd Insurance Agent Name",
+      "priorityDoc": "Insurance",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "194",
+      "nameKr": "2차보험대리점주소",
+      "nameEn": "2nd Insurance Agent Address",
+      "priorityDoc": "Insurance",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "197",
+      "nameKr": "제조사명",
+      "nameEn": "Manufacturer",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "198",
+      "nameKr": "제조사주소",
+      "nameEn": "Manufacturer Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "COUNTRY"
+    },
+    {
+      "sanctionNo": "199",
+      "nameKr": "검사기관명",
+      "nameEn": "Inspection agency",
+      "priorityDoc": "B/L",
+      "watchAttr": "GROUP"
+    },
+    {
+      "sanctionNo": "200",
+      "nameKr": "검사기관주소",
+      "nameEn": "Inspection agency Address",
+      "priorityDoc": "B/L",
+      "watchAttr": "COUNTRY"
+    }
+  ]
+}

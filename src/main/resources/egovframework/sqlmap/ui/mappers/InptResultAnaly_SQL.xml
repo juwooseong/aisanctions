@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.InptResultAnalyMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.InptResultAnalyVO">
+		<result property="refNO" column="refNO" />                                     
+		<result property="refCnt" column="refCnt" />                                         
+		<result property="totCnt" column="TOT_CNT" />                                  
+		<result property="chuchulCnt" column="CHUCHUL_CNT" />                                   
+		<result property="sugiCnt" column="SUGI_CNT" />                                     
+		<result property="ohDap" column="OH_DAP" />													
+		<result property="nopChuchul" column="NOP_CHUCHUL" />                              
+		<result property="kwaTam" column="KWA_TAM" />                                             
+		<result property="missSugi" column="MISS_SUGI" />
+		
+		<result property="name" column="name" />
+		
+		<result property="inpt_mst_srno" column="INPT_MST_SRNO" />                                                
+		<result property="actl_fx_refno" column="ACTL_FX_REFNO" />                                    
+		<result property="fx_refno_srno" column="FX_REFNO_SRNO" />                          
+		<result property="img_pg" column="IMG_PG" />                                          
+		<result property="scan_tm" column="SCAN_TM" />                                        
+		<result property="ta_tm" column="TA_TM" />                                       
+		<result property="rst_min" column="RST_MIN" />                                  
+		<result property="rst_sec" column="RST_SEC" />        
+		
+		<result property="inptBlGrpNo" column="INPT_BL_GRP_NO" />
+		<result property="itmNm" column="ITM_NM" />
+		<result property="extVal" column="EXT_VAL" />
+		<result property="sugiVal" column="SUGI_VAL" />
+		<result property="confNm" column="CONF_NM" />
+		<result property="extTa" column="EXT_TA" />
+		<result property="extAicr" column="EXT_AICR" />
+		<result property="aiInspeEno" column="AI_INSPE_ENO" />
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM" />
+		<result property="aiInptAcvtCd" column="AI_INPT_ACVT_CD" />
+		
+		<result property="schDate" column="SCH_DATE" />
+		<result property="bizName" column="BIZ_NAME" />
+		<result property="hName" column="H_NAME" />
+		<result property="nopChuchulCnt" column="NOP_CHUCHUL_CNT" />
+		<result property="sugiErrCnt" column="SUGI_ERR_CNT" />
+		<result property="extRt" column="EXT_RT" />
+	</resultMap>
+
+
+	<select id="selectRefList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* InptResultAnalyMapper.selectRefList */
+		
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+			SELECT refNO, 
+			      refCnt,
+			COUNT(*) AS TOT_CNT,
+			SUM(CASE WHEN  ext != '미추출' THEN 1 ELSE 0 END) AS CHUCHUL_CNT,
+			      SUM(CASE WHEN hand != ' ' THEN 1 ELSE 0 END) AS SUGI_CNT,
+			      SUM(CASE WHEN hand != ' ' THEN 1 ELSE 0 END)
+			      	- SUM(CASE WHEN (ext != '미추출'  AND (hand  = '.' OR hand = '-'))  THEN 1 ELSE 0 END)
+			     	- SUM(CASE WHEN (ext = hand OR (ext='++' AND hand != ' ')) THEN 1 ELSE 0 END) AS OH_DAP,
+			      SUM(CASE WHEN (ext  = '미추출' AND hand != ' ')  THEN 1 ELSE 0 END) AS NOP_CHUCHUL,
+			      SUM(CASE WHEN (ext != '미추출' AND (hand  = '.' OR hand = '-'))  THEN 1 ELSE 0 END) AS KWA_TAM,            
+			      SUM(CASE WHEN (ext = hand OR (ext='++' AND hand != ' ')) THEN 1 ELSE 0 END) AS MISS_SUGI 
+			FROM(
+			SELECT T1.ACTL_FX_REFNO AS refNO , 
+			       T1.FX_REFNO_SRNO AS refCnt ,
+			       T2.INPT_BL_GRP_NO AS 그룹 , 
+			       T1.AI_INSPE_ENO AS 심사자 ,
+			       (
+		              SELECT AI_INPT_CMN_CD_ENG_NM 
+		              FROM CSPD112TI 
+		              WHERE AI_INPT_GRP_CD = DECODE(T1.INPT_ATMC_BIZ_DSCD, '1', '240', '230') 
+		              AND AI_INPT_CMN_CD = TO_CHAR(T3.INPT_SANCTION_NO)
+			        ) AS 항목명, 
+			       NVL(DECODE(T3.ITM_INPT_RVSN_YN, 'U', NULL, T3.INPT_SANCTION_DAT_TXT),'미추출') AS ext,  --수정
+			       NVL(T3.ITM_INPT_HNDG_INP_DAT_TXT,' ') AS hand,
+			       T3.LST_DB_CHG_DTM AS 변경시간,
+			       T1.AI_INPT_ACVT_CD AS 상태         
+			FROM CSPD001TM T1, CSPD002TG T2, CSPD004TF T3 
+			WHERE SUBSTR(T1.INPT_RCP_DT,0,8) = #{schSdate}
+			           AND   T2.INPT_MST_SRNO    = T1.INPT_MST_SRNO 
+			           AND   T3.INPT_MST_SRNO    = T2.INPT_MST_SRNO 
+			           AND   T3.INPT_TASK_ID     = T2.INPT_TASK_ID  
+			           AND   T3.SAFEWATCH_ITM_YN = 'Y' 
+			           AND   TO_NUMBER(T1.AI_INPT_ACVT_CD) >= 140
+			           AND   T3.INPT_SANCTION_NO != '88'
+			ORDER BY T1.INPT_MST_SRNO, T2.INPT_BL_GRP_NO, T3.INPT_SANCTION_NO
+			) T4
+			GROUP BY refNO, refCnt
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<select id="selectCategoryList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* InptResultAnalyMapper.selectCategoryList */
+		
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+			SELECT name, 
+			       count(*) AS TOT_CNT,
+			       SUM(CASE WHEN  ext != '미추출' THEN 1 ELSE 0 END) AS CHUCHUL_CNT,
+			          SUM(CASE WHEN hand != ' '   THEN 1 ELSE 0 END) AS SUGI_CNT,
+			          SUM(CASE WHEN hand != ' ' THEN 1 ELSE 0 END)
+			         	 -SUM(CASE WHEN (ext != '미추출'  AND (hand  = '.' OR hand = '-'))  THEN 1 ELSE 0 END)
+			          	-SUM(CASE WHEN (ext = hand OR (ext='++' AND hand != ' ')) THEN 1 ELSE 0 END) AS OH_DAP,
+			          SUM(CASE WHEN (ext  = '미추출'  AND hand != ' ')  THEN 1 ELSE 0 END) AS NOP_CHUCHUL,
+			          SUM(CASE WHEN (ext != '미추출'  AND (hand  = '.' OR hand = '-'))  THEN 1 ELSE 0 END) AS KWA_TAM,            
+			          SUM(CASE WHEN (ext = hand OR (ext='++' AND hand != ' ')) THEN 1 ELSE 0 END) AS MISS_SUGI
+			FROM(
+			SELECT T1.ACTL_FX_REFNO AS refNO, 
+			       T1.FX_REFNO_SRNO AS 회차,
+			       T2.INPT_BL_GRP_NO AS 그룹, 
+			       T1.AI_INSPE_ENO AS 심사자,
+			       (
+			             SELECT AI_INPT_CMN_CD_ENG_NM 
+			             FROM CSPD112TI 
+			             WHERE AI_INPT_GRP_CD = DECODE(T1.INPT_ATMC_BIZ_DSCD, '1', '240', '230') 
+			             AND AI_INPT_CMN_CD = TO_CHAR(T3.INPT_SANCTION_NO)
+			          ) AS name, 
+			
+			       NVL(DECODE(T3.ITM_INPT_RVSN_YN, 'U', NULL, T3.INPT_SANCTION_DAT_TXT),'미추출') AS ext,  --수정
+			       NVL(T3.ITM_INPT_HNDG_INP_DAT_TXT,' ') AS hand,
+			       T3.LST_DB_CHG_DTM AS 변경시간,
+			       T1.AI_INPT_ACVT_CD AS 상태         
+			FROM CSPD001TM T1
+				, CSPD002TG T2
+				, CSPD004TF T3 
+			WHERE SUBSTR(T1.INPT_RCP_DT,0,8) = #{schSdate}
+			           AND T2.INPT_MST_SRNO = T1.INPT_MST_SRNO 
+			           AND T3.INPT_MST_SRNO = T2.INPT_MST_SRNO 
+			           AND T3.INPT_TASK_ID = T2.INPT_TASK_ID  
+			           AND T3.SAFEWATCH_ITM_YN = 'Y' 
+			           AND TO_NUMBER(T1.AI_INPT_ACVT_CD) >= 140
+			           AND T3.INPT_SANCTION_NO != '88'
+			ORDER BY T1.INPT_MST_SRNO, T2.INPT_BL_GRP_NO, T3.INPT_SANCTION_NO
+			) T4
+			
+			GROUP BY name
+
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<select id="selectPerformanceList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* InptResultAnalyMapper.selectPerformanceList */
+		
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+			SELECT A.INPT_MST_SRNO AS INPT_MST_SRNO
+					, A.ACTL_FX_REFNO AS ACTL_FX_REFNO
+					, A.FX_REFNO_SRNO AS FX_REFNO_SRNO
+					, A.IMG_PG AS IMG_PG
+					, A.SCAN_TM AS SCAN_TM
+					, A.TA_TM AS TA_TM
+					,  ROUND((TO_DATE(SUBSTR(A.TA_TM,1,14),'YYYYMMDDHH24MISS') 
+					 - TO_DATE(SUBSTR(A.SCAN_TM,1,14),'YYYYMMDDHH24MISS')) * 24 * 60 ,0) AS RST_MIN
+					,  ROUND((TO_DATE(SUBSTR(A.TA_TM,1,14),'YYYYMMDDHH24MISS') 
+					 - TO_DATE(SUBSTR(A.SCAN_TM,1,14),'YYYYMMDDHH24MISS')) * 24 * 60 * 60,0) AS RST_SEC
+			FROM (
+			       SELECT M.INPT_MST_SRNO 
+			            , M.ACTL_FX_REFNO 
+			            , M.FX_REFNO_SRNO
+			            , (SELECT MIN(LST_DB_CHG_DTM)
+				             FROM CSPD008TH
+				             WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+				             AND AI_INPT_ACVT_CD  in ( '20','21')
+				          ) AS SCAN_TM
+			            , (SELECT MIN(LST_DB_CHG_DTM)
+				             FROM CSPD008TH
+				             WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+				             AND AI_INPT_ACVT_STS_CD = '40'
+				             AND AI_INPT_PRC_OPI_TXT = '항목_심사'
+				         ) AS TA_TM   
+			            , (SELECT COUNT(*)
+					             FROM CSPD002TG
+					             WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+					      ) AS IMG_PG
+			       FROM  CSPD001TM M 
+			       WHERE M.INPT_RCP_DT = #{schSdate}
+			       AND   M.PAPS_RE_SCAN_NED_YN  IS NULL
+			       AND   M.AI_INPT_ACVT_CD IN ('160','140')
+			) A
+			ORDER BY A.INPT_MST_SRNO
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>	
+	
+	<select id="selectSugiList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* InptResultAnalyMapper.selectSugiList */
+		
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+						
+		SELECT T1.INPT_MST_SRNO  AS INPT_MST_SRNO,	-- INPT_MST_SRNO 마스터번호
+		       T1.ACTL_FX_REFNO  AS ACTL_FX_REFNO, 	-- ACTL_FX_REFNO ref번호
+		       T1.FX_REFNO_SRNO  AS FX_REFNO_SRNO,	-- FX_REFNO_SRNO 회차
+		       T2.INPT_BL_GRP_NO AS INPT_BL_GRP_NO,	-- INPT_BL_GRP_NO BL그룹
+		       (							
+				   	 	SELECT AI_INPT_CMN_CD_ENG_NM 			
+				   	 	FROM CSPD112TI 			
+				   	 	WHERE AI_INPT_GRP_CD = DECODE(T1.INPT_ATMC_BIZ_DSCD, '1', '240', '230') 			
+				   	 	AND AI_INPT_CMN_CD = TO_CHAR(T3.INPT_SANCTION_NO)			
+			   ) AS ITM_NM, -- ITM_NM 항목명
+		       CASE WHEN DECODE(ITM_INPT_RVSN_YN, 'U', NULL, INPT_SANCTION_DAT_TXT) IS NULL THEN '미추출' ELSE T3.INPT_SANCTION_DAT_TXT END AS EXT_VAL, -- EXT_VAL 추출값
+		       NVL(T3.ITM_INPT_HNDG_INP_DAT_TXT,' ') AS SUGI_VAL, -- SUGI_VAL 수기값
+		       CASE WHEN DECODE(ITM_INPT_RVSN_YN, 'U', NULL, INPT_SANCTION_DAT_TXT) = ITM_INPT_HNDG_INP_DAT_TXT  THEN '오수정(동일)' 							
+		            WHEN ITM_INPT_HNDG_INP_DAT_TXT = '.' OR	ITM_INPT_HNDG_INP_DAT_TXT = '-' 	THEN '과탐' 						
+		            WHEN DECODE(ITM_INPT_RVSN_YN, 'U', NULL, INPT_SANCTION_DAT_TXT) IS NULL		THEN '미추출'		
+		            WHEN DECODE(ITM_INPT_RVSN_YN, 'U', NULL, INPT_SANCTION_DAT_TXT) = '++' AND ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL THEN '오수정(++)'							
+		            ELSE '오답'							
+		            END AS CONF_NM,  -- CONF_NM 확인
+					
+			   NVL(CASE WHEN AFRS_TA_EXTC_TXT IS NOT NULL THEN AFRS_TA_EXTC_TXT ELSE BFRS_TA_EXTC_TXT END,'미추출') AS EXT_TA, -- EXT_TA TA추출
+			   NVL(CASE WHEN AFRS_AICR_EXTC_TXT IS NOT NULL THEN AFRS_AICR_EXTC_TXT ELSE BFRS_AICR_EXTC_TXT END,'미추출') AS EXT_AICR, -- EXT_AICR AICR추출
+			   T1.AI_INSPE_ENO   AS AI_INSPE_ENO, -- AI_INSPE_ENO 심사자
+			   T3.LST_DB_CHG_DTM AS LST_DB_CHG_DTM, -- LST_DB_CHG_DTM 변경시간
+		       CASE WHEN T1.AI_INPT_ACVT_CD = '140' THEN 'BLOCK' 
+					WHEN T1.AI_INPT_ACVT_CD = '160' THEN '승인' 
+			   END AS AI_INPT_ACVT_CD	 -- AI_INPT_ACVT_CD 상태
+		FROM CSPD001TM T1, CSPD002TG T2, CSPD004TF T3 							
+		WHERE 	  T1.INPT_RCP_DT = #{schSdate}
+			AND   T2.INPT_MST_SRNO    = T1.INPT_MST_SRNO 						
+			AND   T3.INPT_MST_SRNO    = T2.INPT_MST_SRNO 						
+			AND   T3.INPT_TASK_ID     = T2.INPT_TASK_ID  						
+			AND   T3.SAFEWATCH_ITM_YN = 'Y' 						
+			AND   T1.AI_INPT_ACVT_CD IN ('140','160')
+			AND   T3.ITM_INPT_HNDG_INP_DAT_TXT IS NOT NULL						
+		ORDER BY T1.LST_DB_CHG_DTM, T1.INPT_MST_SRNO, T2.INPT_BL_GRP_NO, T3.INPT_SANCTION_NO														
+				
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>	
+	
+	<select id="selectDailyPerformList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* InptResultAnalyMapper."selectDailyPerformList" */
+		
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT x.*, 
+		--추출정확도 = ROUND(추출항목수 - 수기입력수 + 미추출건수 + 수기건오류수 ) / (추출항목수 + 미추출건수) * 100, 1)
+				   CASE WHEN (CHUCHUL_CNT + NOP_CHUCHUL_CNT) = 0 THEN 0
+				   ELSE 
+			       ROUND((CHUCHUL_CNT - SUGI_CNT +  NOP_CHUCHUL_CNT + SUGI_ERR_CNT) / (CHUCHUL_CNT + NOP_CHUCHUL_CNT) * 100, 1) 
+			       END 
+			       AS EXT_RT --추출정확도(%)
+			FROM (
+					 SELECT REPLACE(#{schSdate},'-','') AS SCH_DATE,
+					 		biz_nm AS BIZ_NAME, -- 구분
+					 		name AS H_NAME, 	-- 항목명
+					 		sort_seq,
+							count(*) AS TOT_CNT,	 
+							SUM(CASE WHEN ext_value != '미추출' THEN 1 ELSE 0 END) AS CHUCHUL_CNT,  --추출항목수
+							SUM(CASE WHEN hnd_value != ' '   THEN 1 ELSE 0 END)	 AS SUGI_CNT,	  --수기입력수
+							SUM(CASE WHEN hnd_value != ' ' THEN 1 ELSE 0 END)
+								-SUM(CASE WHEN (ext_value != '미추출'  AND (hnd_value  = '.' OR hnd_value = '-'))  THEN 1 ELSE 0 END)
+								-SUM(CASE WHEN (ext_value = hnd_value OR (ext_value='++' AND hnd_value != ' ')) THEN 1 ELSE 0 END) AS OH_DAP,  --오답
+							SUM(CASE WHEN (ext_value  = '미추출'  AND hnd_value != ' ')  THEN 1 ELSE 0 END) AS NOP_CHUCHUL_CNT, --미추출
+							SUM(CASE WHEN (ext_value != '미추출'  AND (hnd_value  = '.' OR hnd_value = '-'))  THEN 1 ELSE 0 END) AS KWA_TAM, --과탐
+							SUM(CASE WHEN (ext_value = hnd_value OR (ext_value='++' AND hnd_value != ' ')) THEN 1 ELSE 0 END) AS SUGI_ERR_CNT  --수기오류				
+						FROM(
+							SELECT T1.ACTL_FX_REFNO, 	
+								   T1.FX_REFNO_SRNO, 	
+								   CASE WHEN T1.INPT_ATMC_BIZ_DSCD = '1' THEN '수입' ELSE '수출' END  AS biz_nm,
+								   T2.INPT_BL_GRP_NO, 		 
+								   T4.AI_INPT_CMN_CD_ENG_NM  				AS name,	
+								   T4.AI_INPT_SORT_SEQ   				    AS sort_seq,	
+								   NVL(T3.INPT_SANCTION_DAT_TXT,'미추출') 		AS ext_value,
+								   NVL(T3.ITM_INPT_HNDG_INP_DAT_TXT,' ') 	AS hnd_value     					   
+							FROM  CSPD001TM T1
+								, CSPD002TG T2
+								, CSPD004TF T3 
+								, CSPD112TI T4
+							WHERE  T1.INPT_RCP_DT = #{schSdate}
+							   AND T1.AI_INPT_ACVT_CD IN ('140','160')						
+							   AND T2.INPT_MST_SRNO = T1.INPT_MST_SRNO 
+							   AND T3.INPT_MST_SRNO = T2.INPT_MST_SRNO 
+							   AND T3.INPT_TASK_ID  = T2.INPT_TASK_ID  
+							   AND T3.SAFEWATCH_ITM_YN = 'Y' 				   
+							   AND T4.AI_INPT_GRP_CD =  DECODE(T1.INPT_ATMC_BIZ_DSCD, '1', '904' ,'2', '903')
+							   AND T4.AI_INPT_CMN_CD = TO_CHAR(T3.INPT_SANCTION_NO)			
+							   AND T4.AI_INPT_CMN_USG_YN   = 'Y'
+						 	   AND T4.AI_INPT_INTF_ITM_NM  = 'IN'		   
+						) 			 			
+						GROUP BY biz_nm, sort_seq,  name
+			 )  X
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+</mapper>

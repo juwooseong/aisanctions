@@ -1,0 +1,50 @@
+-- ============================================================
+-- AI 심사 시스템 SEQUENCE (Tibero/Oracle)
+-- Source: MyBatis Mapper NEXTVAL 분석
+-- 실행 순서: 00_drop → 01_ddl → 02_sequence → 03_test_data
+-- 포함: CSPD005TH/008TH/102TI/103TI/107TI/110TI/113TI
+-- 사용자 권한 시퀀스(CSPD120~123)는 26_task_auth_v2.sql
+-- DROP 은 00_drop.sql 에서 처리. 여기는 CREATE 만.
+-- ============================================================
+
+CREATE SEQUENCE CSPD005TH_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE CSPD008TH_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE CSPD102TI_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE CSPD103TI_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE CSPD107TI_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE CSPD110TI_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE SEQUENCE CSPD113TI_SG01
+    START WITH 1000
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;

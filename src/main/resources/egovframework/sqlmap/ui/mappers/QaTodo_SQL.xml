@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.QaTodoMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.QaTodoVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptRcpDt" column="INPT_RCP_DT" />
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />
+		<result property="ffxRefnoSrno" column="FX_REFNO_SRNO" />
+		<result property="aiInptImgKeyNo" column="AI_INPT_IMG_KEY_NO" />
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD" />
+		<result property="inptAtmcBizDsNm" column="INPT_ATMC_BIZ_NM" />
+		<result property="wrrInfo" column="WRR_INFO" />
+		<result property="inptPrcsCd" column="AI_INPT_QLAS_PROS_CD" />
+		<result property="inptPrcsNm" column="INPT_PRCSNM" />
+		<result property="inptAtvtCd" column="AI_INPT_QLAS_ACVT_CD" />
+		<result property="inptAtvtNm" column="INPT_ATVTNM" />
+		<result property="fcCucd" column="FC_CUCD" />
+		<result property="fcCuNm" column="FC_CUNM" />
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM" />
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM" />
+		<result property="totaltextAiInptRstCd" column="TOTALTEXT_AI_INPT_RST_CD" />
+		<result property="totaltextAiInptRstNm" column="TOTALTEXT_AI_INPT_RST_NM" />
+		<result property="itmInptAiInptRstCd" column="ITM_INPT_AI_INPT_RST_CD" />
+		<result property="itmInptAiInptRstNm" column="ITM_INPT_AI_INPT_RST_NM" />
+		<result property="safewatchAiInptRstCd" column="SAFEWATCH_AI_INPT_RST_CD" />
+		<result property="safewatchAiInptRstNm" column="SAFEWATCH_AI_INPT_RST_NM" />
+		<result property="filtInptRstSrno" column="FILT_INPT_RST_SRNO" />
+		<result property="filtDtctNo" column="FILT_DTCT_NO" />
+		<result property="aiInptCsno" column="AI_INPT_CSNO" />
+		<result property="save" column="SAVE" />
+		<result property="started" column="STARTED" />
+		<result property="bliv" column="BLIV" />
+	</resultMap>
+	
+	<sql id="selectBody">
+		FROM CSPD001TM A
+			, CSPD201TM E -- 수출테이블
+			, CSPD202TM I -- 수입테이블
+		WHERE A.QLAS_CRPE_ENO = #{userId} 
+		AND A.AI_INPT_QLAS_ACVT_CD = '110' 
+		AND A.AI_INPT_ACVT_CD IN ('140', '160')
+		AND A.ACTL_FX_REFNO = E.FX_ACNO(+)						
+		AND A.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ(+)
+		AND A.ACTL_FX_REFNO = I.FX_ACNO(+)
+		AND A.FX_REFNO_SRNO = I.TDOC_RCP_SRNO(+)
+		
+		<if test="!(inptPrcsCd == '' or inptPrcsCd == null)">
+     	AND A.AI_INPT_QLAS_PROS_CD = #{inptPrcsCd}
+      </if>
+      <if test="!(actlFxRefno == '' or actlFxRefno == null)">
+     	 AND A.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+      </if>
+    
+      <if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)">
+	  	AND A.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') <!-- 날짜 조회 조건 -->
+      </if>
+      
+	)AA		
+	, CSPD112TI E 
+	, CSPD112TI F 
+	, CSPD112TI G 
+	, CSPD112TI H 
+	, CSPD112TI I 
+	, CSPD112TI J
+
+	WHERE E.AI_INPT_GRP_CD (+)= '150' AND E.AI_INPT_CMN_CD (+)= '3'
+	AND F.AI_INPT_GRP_CD (+)= '280' AND F.AI_INPT_CMN_CD (+) = AA.AI_INPT_QLAS_PROS_CD
+	AND G.AI_INPT_GRP_CD (+)= '290' AND G.AI_INPT_CMN_CD (+)= AA.AI_INPT_QLAS_ACVT_CD
+	AND H.AI_INPT_GRP_CD (+)= '170' AND H.AI_INPT_CMN_CD (+)= AA.TOTALTEXT_AI_INPT_RST_CD
+	AND I.AI_INPT_GRP_CD (+)= '170' AND I.AI_INPT_CMN_CD (+)= AA.ITM_INPT_AI_INPT_RST_CD
+	AND J.AI_INPT_GRP_CD (+)= '170' AND J.AI_INPT_CMN_CD (+)= AA.SAFEWATCH_AI_INPT_RST_CD
+
+     <if test="!(aiInptCsno == '' or aiInptCsno == null)">
+      	AND AA.AI_INPT_CSNO = #{aiInptCsno} 
+      </if>
+	</sql>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* RevertTodoMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT AA.*
+			, CASE WHEN AA.SAVE_FLAG  = '00000000000000000000' THEN '' ELSE  '저장' END AS SAVE
+			, CASE WHEN AA.SAVE_CHG_DTM  = '00000000000000000000' THEN '' ELSE  'start' END AS STARTED 
+			, E.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM
+			, F.AI_INPT_CMN_CD_NM AS INPT_PRCSNM
+			, G.AI_INPT_CMN_CD_NM AS INPT_ATVTNM
+			, H.AI_INPT_CMN_CD_ENG_NM AS TOTALTEXT_AI_INPT_RST_NM
+			, I.AI_INPT_CMN_CD_ENG_NM AS ITM_INPT_AI_INPT_RST_NM
+			, J.AI_INPT_CMN_CD_ENG_NM AS SAFEWATCH_AI_INPT_RST_NM
+			, CASE WHEN AA.BL IS NULL OR AA.IVOC IS NULL THEN 'NO_BLIV' ELSE 'BLIV' END AS BLIV
+		FROM (
+			SELECT '3' AS INPT_ATMC_BIZ_DSCD
+			
+				, (-- 저장 플래그
+	  		 	  	 SELECT NVL(MAX(LST_DB_CHG_DTM),'00000000000000000000')  
+	  		 	  	 FROM
+		  		 	   (
+						    SELECT LST_DB_CHG_DTM  AS LST_DB_CHG_DTM --심사처리시작시각
+							FROM  CSPD005TH 
+							WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+							AND AI_INPT_TPY_SAVE_YN = 'Y'		  
+							AND AI_INPT_BIZ_DSCD = '3'
+						)
+ 			       )   AS SAVE_FLAG
+ 			               
+				, (--임시저장최종일시
+					SELECT 
+						NVL(MAX(LST_DB_CHG_DTM),'00000000000000000000')  
+					FROM(
+						SELECT LST_DB_CHG_DTM  AS LST_DB_CHG_DTM --심사처리시작시각
+						FROM  CSPD005TH 
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND AI_INPT_TPY_SAVE_YN = 'Y'		  
+						AND AI_INPT_BIZ_DSCD = '3'
+						
+						UNION ALL
+						
+						SELECT LST_DB_CHG_DTM AS LST_DB_CHG_DTM --심사처리시작시각
+						FROM CSPD008TH 
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND INPT_MST_SRNO IN 
+						    (SELECT INPT_MST_SRNO 
+							 FROM CSPD008TH
+							 WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+							 AND AI_INPT_BIZ_DSCD = '3'
+							 AND AI_INPT_ACVT_STS_CD = '51')
+					)
+				) AS SAVE_CHG_DTM		      
+				, A.AI_INPT_QLAS_PROS_CD
+				, A.AI_INPT_QLAS_ACVT_CD		       
+				, NVL(E.XPBY_COL_CTR_CUCD, I.TDOC_RCP_CUCD) AS FC_CUNM
+				, NVL(E.XPBY_COL_AM,I.TDOC_RCP_AM) AS AI_INPT_BUY_AM
+				, NVL(E.CUS_KORL_NM,I.CUS_KORL_NM) AS AI_INPT_CUS_NM
+				, NVL(E.CSNO, I.CSNO) AS AI_INPT_CSNO
+				, A.TOTALTEXT_AI_INPT_RST_CD		
+				, A.ITM_INPT_AI_INPT_RST_CD		
+				, A.SAFEWATCH_AI_INPT_RST_CD		
+				, A.INPT_MST_SRNO
+				, A.INPT_RCP_DT AS INPT_RCP_DT
+				, A.ACTL_FX_REFNO
+				, A.FX_REFNO_SRNO
+				, A.AI_INPT_IMG_KEY_NO
+				,( 
+	          	  SELECT MAX(FILT_DTCT_NO) KEEP(
+					                        DENSE_RANK FIRST  
+					                        ORDER BY AI_INPT_PRG_SRNO DESC
+					                        ) AS FILT_DTCT_NO
+				   FROM CSPD007TL 
+				   WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+		        ) AS FILT_DTCT_NO
+				, (SELECT MAX(X.AI_INPT_CMN_CD_NM)  
+						  KEEP( DENSE_RANK FIRST  ORDER BY H.AI_INPT_PRG_SRNO DESC)
+						  AS AI_INPT_CMN_CD_NM
+				   FROM  CSPD008TH H
+					  ,  CSPD112TI X
+				   WHERE H.INPT_MST_SRNO = A.INPT_MST_SRNO
+				   AND H.AI_INPT_ACVT_STS_CD = '120'
+				   AND H.AI_INPT_BIZ_DSCD = '3'
+				   AND X.AI_INPT_GRP_CD(+) = '300' 
+				   AND X.AI_INPT_CMN_CD(+) = H.AI_INPT_ACVT_STS_CD				
+				) AS WRR_INFO 
+				, A.LST_DB_CHG_DTM AS MST_CHG_DTM
+				,(
+		         	SELECT 
+						INPT_MST_SRNO 
+					FROM CSPD002TG WHERE IMEX_HIS_CD = '01'
+					AND INPT_MST_SRNO = A.INPT_MST_SRNO 
+					AND ROWNUM = 1
+		         ) AS BL
+		         ,(
+		         	SELECT 
+						INPT_MST_SRNO 
+					FROM CSPD002TG WHERE IMEX_HIS_CD = '02'
+					AND INPT_MST_SRNO = A.INPT_MST_SRNO 
+					AND ROWNUM = 1
+		         ) AS IVOC
+		 	<include refid="selectBody"/>
+		<choose>
+			<when test='"save".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY SAVE
+			</when>
+			<when test='"save".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY SAVE DESC
+			</when>
+			<when test="'inptAtmcBizDsNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY E.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptAtmcBizDsNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY E.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'aiInptCsno'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.AI_INPT_CSNO
+			</when>
+			<when test="'aiInptCsno'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.AI_INPT_CSNO DESC
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.ACTL_FX_REFNO
+			</when>
+			<when test="'actlFxRefno'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.ACTL_FX_REFNO DESC
+			</when>
+			<when test="'inptPrcsNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY F.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptPrcsNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY F.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'inptAtvtNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY G.AI_INPT_CMN_CD_NM
+			</when>
+			<when test="'inptAtvtNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY G.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.FC_CUNM
+			</when>
+			<when test="'fcCuNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.FC_CUNM DESC
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.AI_INPT_BUY_AM
+			</when>
+			<when test="'aiInptBuyAm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.AI_INPT_BUY_AM DESC
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.AI_INPT_CUS_NM
+			</when>
+			<when test="'aiInptCusNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.AI_INPT_CUS_NM DESC
+			</when>
+			<when test="'totaltextAiInptRstNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY H.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test="'totaltextAiInptRstNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY H.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test="'itmInptAiInptRstNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY I.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test="'itmInptAiInptRstNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY I.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test="'safewatchAiInptRstNm'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY J.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test="'safewatchAiInptRstNm'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY J.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test="'inptRcpDt'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.INPT_RCP_DT
+			</when>
+			<when test="'inptRcpDt'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.INPT_RCP_DT DESC
+			</when>
+			<when test="'filtDtctNo'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY AA.SAFEWATCH_AI_INPT_RST_CD
+			</when>
+			<when test="'filtDtctNo'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY AA.SAFEWATCH_AI_INPT_RST_CD DESC
+			</when>
+			<when test="'wrrInfo'.equals(sortItem) and 'asc'.equals(sortDir)">
+				ORDER BY WRR_INFO
+			</when>
+			<when test="'wrrInfo'.equals(sortItem) and 'desc'.equals(sortDir)">
+				ORDER BY WRR_INFO DESC
+			</when>
+			<otherwise>
+				ORDER BY AA.SAVE_CHG_DTM DESC , AA.MST_CHG_DTM
+			</otherwise>
+		</choose>
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* RevertTodoMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM (
+			SELECT '3' AS INPT_ATMC_BIZ_DSCD
+				, (--임시저장최종일시
+					SELECT 
+						NVL(MAX(LST_DB_CHG_DTM),'00000000000000000000')  
+					FROM(
+						SELECT LST_DB_CHG_DTM  AS LST_DB_CHG_DTM --심사처리시작시각
+						FROM  CSPD005TH 
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND AI_INPT_TPY_SAVE_YN = 'Y'		  
+						AND AI_INPT_BIZ_DSCD = '3'
+						
+						UNION ALL
+						
+						SELECT LST_DB_CHG_DTM AS LST_DB_CHG_DTM --심사처리시작시각
+						FROM CSPD008TH 
+						WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+						AND INPT_MST_SRNO IN 
+						    (SELECT INPT_MST_SRNO 
+							 FROM CSPD008TH
+							 WHERE INPT_MST_SRNO = A.INPT_MST_SRNO
+							 AND AI_INPT_BIZ_DSCD = '3'
+							 AND AI_INPT_ACVT_STS_CD = '51')
+					)
+				) AS SAVE_CHG_DTM		      
+				, A.AI_INPT_QLAS_PROS_CD
+				, A.AI_INPT_QLAS_ACVT_CD		       
+				, NVL(E.XPBY_COL_CTR_CUCD, I.TDOC_RCP_CUCD) AS FC_CUNM
+				, NVL(E.XPBY_COL_AM,I.TDOC_RCP_AM) AS AI_INPT_BUY_AM
+				, NVL(E.CUS_KORL_NM,I.CUS_KORL_NM) AS AI_INPT_CUS_NM
+				, NVL(E.CSNO, I.CSNO) AS AI_INPT_CSNO
+				, A.TOTALTEXT_AI_INPT_RST_CD		
+				, A.ITM_INPT_AI_INPT_RST_CD		
+				, A.SAFEWATCH_AI_INPT_RST_CD		
+				, A.INPT_MST_SRNO
+				, A.INPT_RCP_DT AS INPT_RCP_DT
+				, A.ACTL_FX_REFNO
+				, A.FX_REFNO_SRNO
+				, A.AI_INPT_IMG_KEY_NO
+				,( 
+	          	  SELECT MAX(FILT_DTCT_NO) KEEP(
+					                        DENSE_RANK FIRST  
+					                        ORDER BY AI_INPT_PRG_SRNO DESC
+					                        ) AS FILT_DTCT_NO
+				   FROM CSPD007TL 
+				   WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+		        ) AS FILT_DTCT_NO
+				, (SELECT MAX(X.AI_INPT_CMN_CD_NM)  
+						  KEEP( DENSE_RANK FIRST  ORDER BY H.AI_INPT_PRG_SRNO DESC)
+						  AS AI_INPT_CMN_CD_NM
+				   FROM  CSPD008TH H
+					  ,  CSPD112TI X
+				   WHERE H.INPT_MST_SRNO = A.INPT_MST_SRNO
+				   AND H.AI_INPT_ACVT_STS_CD = '120'
+				   AND H.AI_INPT_BIZ_DSCD = '3'
+				   AND X.AI_INPT_GRP_CD(+) = '300' 
+				   AND X.AI_INPT_CMN_CD(+) = H.AI_INPT_ACVT_STS_CD				
+				) AS WRR_INFO 
+				, A.LST_DB_CHG_DTM AS MST_CHG_DTM
+		 <include refid="selectBody"/>
+	</select>
+</mapper>

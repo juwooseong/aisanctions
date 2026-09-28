@@ -1,0 +1,199 @@
+{
+  "source": "참조자료/20260624_회의자료 모음/AISYSTEM 고도화 상세요건/12_문서분류내용.md",
+  "groupCode": "100",
+  "groupName": "수출입명세코드",
+  "taskIdRule": {
+    "description": "CSPD002TG.INPT_TASK_ID = {INPT_MST_SRNO}{IMEX_HIS_CD}{PAGE_NO}",
+    "pattern": "^\\d{5}(0[1-9]|1[0-3]|99)\\d+$",
+    "examples": [
+      { "taskId": "10001011", "mst": 10001, "imexHisCd": "01", "page": 1, "label": "B/L 1페이지" },
+      { "taskId": "10001012", "mst": 10001, "imexHisCd": "01", "page": 2, "label": "B/L 2페이지" },
+      { "taskId": "10001021", "mst": 10001, "imexHisCd": "02", "page": 1, "label": "Invoice 1페이지" },
+      { "taskId": "10001041", "mst": 10001, "imexHisCd": "04", "page": 1, "label": "Certificate 1페이지" },
+      { "taskId": "10001061", "mst": 10001, "imexHisCd": "06", "page": 1, "label": "C/O 1페이지" }
+    ]
+  },
+  "categories": [
+    {
+      "imexHisCd": "01",
+      "seq": 1,
+      "nameEn": "B/L",
+      "nameKr": "선하증권",
+      "abbr": "BL",
+      "groupKr": "운송",
+      "intfItmNm": "B/L",
+      "ocrTitles": [
+        "Bill Of Lading", "Ocean Bill Of Lading", "Bill of Lading For Ocean Transport",
+        "Multimodal Transport Bill Of Lading", "House Bill Of Lading", "Combined Transport Bill Of Lading",
+        "Charter Party Bill Of Lading", "Negotiable Flata Multimodal Transport Bill",
+        "Negotiable Klffa Multimodal Transport Bill", "Surrender Bill Of Lading", "Tanker Bill Of Lading",
+        "Multimodal Transport Document", "Air Waybill", "House Air Waybill", "Air Consignment Note",
+        "Sea Waybill", "Truck Waybill", "Rail Waybill", "Attached Rider", "Bill Of Lading Attached Rider"
+      ]
+    },
+    {
+      "imexHisCd": "02",
+      "seq": 2,
+      "nameEn": "Invoice",
+      "nameKr": "송장",
+      "abbr": "INV",
+      "groupKr": "송장",
+      "intfItmNm": "Invoice",
+      "ocrTitles": [
+        "Proforma Invoice", "Provisional Invoice", "Commercial Invoice", "Invoice",
+        "Detailed Commercial Invoice", "Final Invoice", "Vendor Commercial Invoice",
+        "Consular Invoice", "Customs Invoice", "Tax Invoice", "Freight Invoice"
+      ]
+    },
+    {
+      "imexHisCd": "03",
+      "seq": 3,
+      "nameEn": "P/L",
+      "nameKr": "포장명세서",
+      "abbr": "PAC",
+      "groupKr": "명세서",
+      "intfItmNm": "Packing List",
+      "ocrTitles": [
+        "Packing List", "Packages/Description of Goods", "Packing Note",
+        "Weight Note", "Measurement List", "Weight List"
+      ]
+    },
+    {
+      "imexHisCd": "04",
+      "seq": 4,
+      "nameEn": "Certificate",
+      "nameKr": "증명서",
+      "abbr": "CERT",
+      "groupKr": "증명서",
+      "intfItmNm": "Certificate",
+      "ocrTitles": [
+        "Certificate", "Certification", "Inspection Certificate",
+        "Certificate For Pre-Shipment Inspection", "Beneficiary's Certificate", "Analysis Certificate",
+        "Certificate Of Quailty", "Declaration(필증)", "Report", "Beneficiary's Statement",
+        "Export Declaration certificate (before loading)", "Certification of Non-Hazardous Materials",
+        "Mill Test Certificate", "Non-Wooden Packing Material Declartion",
+        "Certificate of Quantity/Weight", "Certificate of Quality and Quantity"
+      ]
+    },
+    {
+      "imexHisCd": "05",
+      "seq": 5,
+      "nameEn": "Insurance",
+      "nameKr": "보험서류",
+      "abbr": "INSU",
+      "groupKr": "보험서류",
+      "intfItmNm": "Insurance",
+      "ocrTitles": [
+        "Insurance Policy", "Insurance Certificate", "Cargo Insurance",
+        "Marine Cargo Policy", "Insurance Declaration"
+      ]
+    },
+    {
+      "imexHisCd": "06",
+      "seq": 6,
+      "nameEn": "C/O",
+      "nameKr": "원산지증명서",
+      "abbr": "C/O",
+      "groupKr": "증명서",
+      "intfItmNm": "C/O",
+      "ocrTitles": ["Certificate Of Origin"]
+    },
+    {
+      "imexHisCd": "07",
+      "seq": 7,
+      "nameEn": "Nego",
+      "nameKr": "커버",
+      "abbr": "COV",
+      "groupKr": "커버",
+      "intfItmNm": "Nego",
+      "ocrTitles": ["Covering schedule", "Cover Note", "Documentary Remittance"]
+    },
+    {
+      "imexHisCd": "08",
+      "seq": 8,
+      "nameEn": "B/E",
+      "nameKr": "환어음",
+      "abbr": "BE",
+      "groupKr": "기타_환어음",
+      "intfItmNm": "B/E",
+      "ocrTitles": ["Bill Of Exchange"]
+    },
+    {
+      "imexHisCd": "09",
+      "seq": 9,
+      "nameEn": "Contract",
+      "nameKr": "계약서",
+      "abbr": "CONT",
+      "groupKr": "계약서",
+      "intfItmNm": "Contract",
+      "ocrTitles": ["Sales Contract", "D/A Agreement", "Contract Note", "Offer Sheet", "Purchase Order"]
+    },
+    {
+      "imexHisCd": "10",
+      "seq": 10,
+      "nameEn": "L/C",
+      "nameKr": "신용장",
+      "abbr": "L/C",
+      "groupKr": "신용장",
+      "intfItmNm": "L/C",
+      "note": "외환센터 요청(2020.01): 최종 분류는 ETC(12)로 처리",
+      "ocrTitles": [
+        "Letter Of Credit", "Advice of irrevocable Documentary Credit", "Export Documentary Credit",
+        "Advice of Partial Transfer", "수출신용장 통지서", "Attached Rider", "Attached",
+        "수출신용장 변경통지서"
+      ]
+    },
+    {
+      "imexHisCd": "11",
+      "seq": 11,
+      "nameEn": "Shipment",
+      "nameKr": "운송기타",
+      "abbr": "CRT",
+      "groupKr": "운송_기타",
+      "intfItmNm": "Shipment",
+      "ocrTitles": [
+        "Cargo Receipt", "Forwarder's Cargo Receipt", "Marine Cargo Receipt", "Shipment Receipt",
+        "Courier Receipt", "Message confirmation", "Mate's Receipt", "Cargo Release",
+        "Certificate Of Posting", "Forwarder's Certificate Of Receipt/Shipment/Transport",
+        "Port to Port Shipment", "Cmr International Consignment Notes", "Shipment Advice",
+        "Shipment Acknowledgement", "Details Of Shipment", "Item Specifications", "Fax transmission",
+        "Production Date Report", "Tanker time sheet", "수입선적서류접수등록표"
+      ]
+    },
+    {
+      "imexHisCd": "12",
+      "seq": 12,
+      "nameEn": "ETC",
+      "nameKr": "기타",
+      "abbr": "ETC",
+      "groupKr": "기타_거래약관",
+      "intfItmNm": "ETC",
+      "note": "OCR 비대상",
+      "ocrTitles": [
+        "Terms And Conditions", "뒷면", "서명", "Overleaf Instruction", "Overleaf Notes",
+        "CONDITIONS OF CONTRACT", "외환문서 인도완료 명세표", "설계도면"
+      ]
+    },
+    {
+      "imexHisCd": "13",
+      "seq": 13,
+      "nameEn": "Swift/Declaration",
+      "nameKr": "전문/필증",
+      "abbr": "SWIFT",
+      "groupKr": "전문",
+      "intfItmNm": "Swift",
+      "ocrTitles": ["전문", "수출신고필증/수입신고필증"]
+    },
+    {
+      "imexHisCd": "99",
+      "seq": 99,
+      "nameEn": "Other",
+      "nameKr": "기타",
+      "abbr": "ETC",
+      "groupKr": "기타",
+      "intfItmNm": "Other",
+      "note": "시스템 예비·미분류",
+      "ocrTitles": []
+    }
+  ]
+}

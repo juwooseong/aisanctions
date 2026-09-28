@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.TaskLogEndMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.TaskLogEndVO">
+		<result property="aiInptClsDt" column="AI_INPT_CLS_DT"/>
+		<result property="col1" column="COL1"/>
+		<result property="col2" column="COL2"/>
+		<result property="col3" column="COL3"/>
+		<result property="col4" column="COL4"/>
+		<result property="col5" column="COL5"/>
+		<result property="col6" column="COL6"/>
+		<result property="col7" column="COL7"/>
+		<result property="col8" column="COL8"/>
+		<result property="col9" column="COL9"/>
+		<result property="col10" column="COL10"/>
+		<result property="col11" column="COL11"/>
+		<result property="memo1" column="MEMO1"/>
+		<result property="memo2" column="MEMO2"/>
+		<result property="memo3" column="MEMO3"/>
+		<result property="memo4" column="MEMO4"/>
+		<result property="memo5" column="MEMO5"/>
+		<result property="memo6" column="MEMO6"/>
+		<result property="memo7" column="MEMO7"/>
+		<result property="memo8" column="MEMO8"/>
+		<result property="memo9" column="MEMO9"/>
+		<result property="memo10" column="MEMO10"/>
+		<result property="memo11" column="MEMO11"/>
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.selectList */
+		/* 통계건수 메모 목록 - 당일 Saction 심사 (Total), 당일 Saction 심사 (수출), 당일 Saction 심사 (수입) */
+		SELECT
+			MAX(A.AI_INPT_CLS_DT) AS AI_INPT_CLS_DT, 
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '01' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL1,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '02' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL2,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '03' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL3,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '04' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL4,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '05' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL5,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '06' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL6,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '13' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL11,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '07' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL7,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '08' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL8,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '09' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL9,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '10' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL10,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '01' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO1,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '02' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO2,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '03' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO3,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '04' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO4,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '05' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO5,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '06' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO6,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '13' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO11,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '07' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO7,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '08' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO8,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '09' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO9,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '10' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO10
+		FROM (
+			SELECT A.*
+			FROM CSPD009TA A
+			<include refid="selectListCond" />
+		) A
+	</select>
+
+	<select id="select2List" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.select2List */
+		/* 통계건수 메모 목록 - 전일자 QA (Total), 전일자 QA (수출), 전일자 QA (수입) */
+		SELECT
+			MAX(A.AI_INPT_CLS_DT) AS AI_INPT_CLS_DT, 
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '01' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL1,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '11' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL2,
+			NVL(MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '12' THEN A.AI_INPT_CLS_CNT ELSE 0 END),0) AS COL3,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '01' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO1,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '11' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO2,
+			MAX(CASE WHEN A.AI_INPT_CLS_ITCD = '12' THEN A.AI_INPT_RMRK_TXT ELSE NULL END) AS MEMO3
+		FROM (
+			SELECT A.*
+			FROM CSPD009TA A
+			<include refid="selectListCond" />
+		) A
+	</select>
+
+	<sql id="selectListCond">
+		/* 
+		-- aiInptClsDscd 파라미터 --
+		(상단 3개 테이블 목록 데이터 구분 - selectList) 01 - 당일 Saction 심사 (Total), 02 - 당일 Saction 심사 (수출), 03 - 당일 Saction 심사 (수입) 
+		(하단 3개 테이블 목록 데이터 구분 - selectList2) 04 - 전일자 QA (Total), 05 - 전일자 QA (수출), 06 - 전일자 QA (수입) 
+		*/
+		WHERE A.AI_INPT_CLS_DT = REPLACE(#{aiInptClsDt},'-','')
+		AND A.AI_INPT_CLS_DSCD = #{aiInptClsDscd}
+	</sql>
+
+	<select id="checkDate" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.checkDate */
+		SELECT COUNT(*) totcnt
+		FROM CSPD009TA
+		WHERE AI_INPT_CLS_DT = REPLACE(#{aiInptClsDt},'-','')
+	</select>
+	
+	<update id="updateStatList" parameterType="com.woori.ajs.model.TaskLogEndVO">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.updateStatList */
+		/* 업무마감 비고저장 */
+		MERGE INTO CSPD009TA A
+		USING DUAL
+			ON (A.AI_INPT_CLS_DT = #{aiInptClsDt} AND A.AI_INPT_CLS_DSCD = #{aiInptClsDscd} AND A.AI_INPT_CLS_ITCD = #{aiInptClsItcd})
+		WHEN MATCHED THEN
+			UPDATE SET
+				A.AI_INPT_RMRK_TXT = #{aiInptRmrk}
+				, A.LST_DB_CHG_ID = #{lstDbChgId}
+				, A.TRN_LOG_SRNO = #{trnLogSrno} <!-- 거래로그일련번호 -->
+				, A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (A.AI_INPT_CLS_DT,A.AI_INPT_CLS_DSCD,A.AI_INPT_CLS_ITCD,A.AI_INPT_SNPE_ENO,
+				A.AI_INPT_CLS_CNT,A.AI_INPT_RMRK_TXT,A.TRN_LOG_SRNO,A.LST_DB_CHG_ID,A.LST_DB_CHG_DTM)
+			VALUES (#{aiInptClsDt},#{aiInptClsDscd},#{aiInptClsItcd},#{lstDbChgId},
+				0,#{aiInptRmrk},#{trnLogSrno},#{lstDbChgId},<include refid="com.woori.ajs.common.curdate"/>)
+	</update>
+	
+	<update id="updateStatCntList" parameterType="com.woori.ajs.model.TaskLogEndVO">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.updateStatCntList */
+		/* 업무마감 건수저장 타입1 - CSPD009TA 테이블 AI_INPT_CLS_DSCD 컬럼값이 01,02,03 인경우 */
+		/* 파라미터 - aiInptClsDt (필수), inptAtmcBizDscd (선택), aiInptClsDscd (필수), lstDbChgId (필수) */
+		MERGE INTO CSPD009TA S
+		USING (
+			WITH VW_TASK AS (
+				SELECT A.*
+					, (A.CNT08 + A.CNT09 + A.CNT10) AS CNT07													/* 경보발생합계 건수 */
+					, #{taskDatesCnt} AS CNT01																	/* 당일목록 건수 */
+				FROM (
+					SELECT DISTINCT
+						NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD IN (10,20,30,40,50,60,70,80,90,100,110,120) THEN 1 
+							ELSE 0 END),0) AS CNT02																/* 심사진행 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD = '160' THEN 1 ELSE 0 END),0) AS CNT03			/* 승인 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD = '130' THEN 1 ELSE 0 END),0) AS CNT04			/* Pending처리 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD = '140' THEN 1 ELSE 0 END),0) AS CNT05			/* Block처리 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_ACVT_CD = '150' THEN 1 ELSE 0 END),0) AS CNT13			/* Holding처리 건수 */
+						, SUM(0) AS CNT06																		/* 취소내역 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_QLAS_PROS_CD = '3' THEN 1 ELSE 0 END),0) AS CNT08			/* TotalText 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_QLAS_PROS_CD = '4' THEN 1 ELSE 0 END),0) AS CNT09			/* 항목심사 건수 */
+						, NVL(SUM(CASE WHEN A.AI_INPT_QLAS_PROS_CD = '5' THEN 1 ELSE 0 END),0) AS CNT10			/* SafeWatch 건수 */
+					FROM (
+						SELECT INPT_MST_SRNO, AI_INPT_QLAS_PROS_CD, AI_INPT_PROS_CD, AI_INPT_ACVT_CD
+						FROM CSPD001TM
+						WHERE INPT_RCP_DT = #{aiInptClsDt}
+						<if test="!(inptAtmcBizDscd == null or inptAtmcBizDscd == '')">
+						AND INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}		/* 전체-조건없음 / 수출-2 / 수입-1 */
+						</if>
+					) A
+				) A
+			)
+			SELECT '01' AS AI_INPT_CLS_ITCD, A.CNT01 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '02' AS AI_INPT_CLS_ITCD, A.CNT02 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '03' AS AI_INPT_CLS_ITCD, A.CNT03 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '04' AS AI_INPT_CLS_ITCD, A.CNT04 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '05' AS AI_INPT_CLS_ITCD, A.CNT05 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '06' AS AI_INPT_CLS_ITCD, A.CNT06 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '07' AS AI_INPT_CLS_ITCD, A.CNT07 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '08' AS AI_INPT_CLS_ITCD, A.CNT08 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '09' AS AI_INPT_CLS_ITCD, A.CNT09 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '10' AS AI_INPT_CLS_ITCD, A.CNT10 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '13' AS AI_INPT_CLS_ITCD, A.CNT13 AS AI_INPT_CLS_CNT FROM VW_TASK A
+		) T
+			ON (S.AI_INPT_CLS_DT = #{aiInptClsDt} AND S.AI_INPT_CLS_DSCD = #{aiInptClsDscd} 
+				AND S.AI_INPT_CLS_ITCD = T.AI_INPT_CLS_ITCD)
+		WHEN MATCHED THEN
+			UPDATE SET S.AI_INPT_CLS_CNT = T.AI_INPT_CLS_CNT
+			, S.LST_DB_CHG_ID = #{lstDbChgId}
+			, S.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (S.AI_INPT_CLS_DT,S.AI_INPT_CLS_DSCD,S.AI_INPT_CLS_ITCD,S.AI_INPT_SNPE_ENO,
+				S.AI_INPT_CLS_CNT,S.AI_INPT_RMRK_TXT,S.TRN_LOG_SRNO,S.LST_DB_CHG_ID,S.LST_DB_CHG_DTM)
+			VALUES (#{aiInptClsDt},#{aiInptClsDscd},T.AI_INPT_CLS_ITCD,#{lstDbChgId},
+				T.AI_INPT_CLS_CNT,NULL,TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId},#{lstDbChgId},<include refid="com.woori.ajs.common.curdate"/>)
+	</update>
+	
+	<update id="updateStatCntList_rvs" parameterType="com.woori.ajs.model.TaskLogEndVO">
+
+		MERGE INTO CSPD009TA S
+	     USING(
+	     
+	     WITH VM_TABLE AS(
+		SELECT 
+		A2.RESULT AS NEW_THING,
+		A1.TOTAL AS TOTAL,
+		A1.PENDING AS PENDING,
+		A1.BLOCK AS BLOCK,
+		A1.OK AS OK,
+		A1.BAN AS BAN,
+		A2.RESULT - A1.TOTAL AS HOLDING,
+		A3.TOTALTEXT AS TOTALTEXT,
+		A3.FRCNN AS FRCNN,
+		A3.SAFEWATCH AS SAFEWATCH,
+		A3.TOTALTEXT + A3.FRCNN + A3.SAFEWATCH AS ALERT_TOTAL
+		  FROM(
+		SELECT 
+			NVL(SUM(CASE WHEN A.A_ACVT IN ('130', '140', '160') AND A.ORDERR = '1' THEN 1 ELSE 0 END), 0) AS TOTAL, <!-- PENDING  BLOCK  OK TOTAL -->
+			NVL(SUM(CASE WHEN A.A_ACVT IN ('130') AND A.ORDERR = '1' THEN 1 ELSE 0 END), 0) AS PENDING, <!-- PENDING 건수 -->
+			NVL(SUM(CASE WHEN A.A_ACVT IN ('140') AND A.ORDERR = '1' THEN 1 ELSE 0 END), 0) AS BLOCK, <!-- BLOCK 건수 -->
+			NVL(SUM(CASE WHEN A.A_ACVT IN ('160') AND A.ORDERR = '1' THEN 1 ELSE 0 END), 0) AS OK, <!-- 승인건수 -->
+			NVL(SUM(CASE WHEN A.B_STS IN ('120') THEN 1 ELSE 0 END), 0) AS BAN, <!-- 반려이력 -->
+			NVL(SUM(CASE WHEN A.B_STS IN ('10','20','30','40','50','60','70','80','90','100') AND A.ORDERR = '1'  THEN 1 ELSE 0 END), 0) AS TEST50
+	  FROM(
+			 SELECT
+			 ROW_NUMBER() OVER(PARTITION BY A.INPT_MST_SRNO ORDER BY B.LST_DB_CHG_DTM DESC) AS ORDERR,
+			 A.INPT_MST_SRNO AS A_MASTER,
+			 A.AI_INPT_ACVT_CD AS A_ACVT,
+			 A.AI_INPT_QLAS_PROS_CD AS PROCESS,
+			 B.AI_INPT_APPV_STCD AS B_STS,
+			 B.LST_DB_CHG_DTM AS B_LST_DB,
+			 A.INPT_ATMC_BIZ_DSCD AS A_BIZ
+			 FROM CSPD001TM A,
+			      CSPD005TH B
+			 WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO
+			   AND A.INPT_RCP_DT = #{aiInptClsDt} 
+			   <if test="!(inptAtmcBizDscd == null or inptAtmcBizDscd == '')">
+				 AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}		/* 전체-조건없음 / 수출-2 / 수입-1 */
+			   </if>
+			 ORDER BY A.INPT_MST_SRNO
+			) A
+			) A1,
+			(					
+			
+				SELECT
+				<choose>
+					<when test='inptAtmcBizDscd == null'>
+						A.A_COUNT + B.B_COUNT AS RESULT
+					</when>
+					<when test='inptAtmcBizDscd.equals("2")'>
+						A.A_COUNT AS RESULT
+					</when>
+					<when test='inptAtmcBizDscd.equals("1")'>
+						B.B_COUNT AS RESULT
+					</when>
+				</choose>
+				 FROM 
+				
+				(SELECT COUNT(*) AS A_COUNT 
+				FROM CSPD201TM A
+				WHERE 1=1
+				  AND A.XPO_CVRG_MTBR_MK_DT = #{aiInptClsDt}
+				  AND ((( A.FX_ACNO, A.XPO_CVRG_MK_SQ ) IN ( SELECT ACTL_FX_REFNO, FX_REFNO_SRNO 
+				  											 FROM CSPD001TM 
+				  											 WHERE ACTL_FX_REFNO = A.FX_ACNO 
+				  											 AND FX_REFNO_SRNO = A.XPO_CVRG_MK_SQ ) AND A.INPT_ATMC_REQ_DSCD = '3') 
+																									OR (A.INPT_ATMC_REQ_DSCD != '3'))
+				) A,
+				(SELECT COUNT(*) AS B_COUNT 
+				FROM CSPD202TM A
+				WHERE 1=1
+				  AND A.TDOC_RCP_DT = #{aiInptClsDt}
+				  AND ((( A.FX_ACNO, A.TDOC_RCP_SRNO ) IN ( SELECT ACTL_FX_REFNO, FX_REFNO_SRNO 
+				  											 FROM CSPD001TM 
+				  											 WHERE ACTL_FX_REFNO = A.FX_ACNO 
+				  											 AND FX_REFNO_SRNO = A.TDOC_RCP_SRNO ) AND A.INPT_ATMC_REQ_DSCD = '3') 
+																									OR (A.INPT_ATMC_REQ_DSCD != '3'))
+				) B
+				
+			) A2, /* 전체-조건없음 / 수출-2 / 수입-1 */
+			(
+								
+				SELECT
+					NVL(SUM(CASE WHEN TOTALTEXT_AI_INPT_RST_CD IN ('30', '40') AND AI_INPT_ACVT_CD IN ('160','140','130') THEN 1 ELSE 0 END), 0) AS TOTALTEXT, /*10 CLEAN 30 ALERT 40 RELEASE*/
+					NVL(SUM(CASE WHEN ITM_INPT_AI_INPT_RST_CD IN ('30', '40') AND AI_INPT_ACVT_CD IN ('160','140','130')  THEN 1 ELSE 0 END), 0) AS FRCNN,
+					NVL(SUM(CASE WHEN SAFEWATCH_AI_INPT_RST_CD IN ('30', '40') AND AI_INPT_ACVT_CD IN ('160','140','130')  THEN 1 ELSE 0 END), 0) AS SAFEWATCH
+				FROM CSPD001TM
+				WHERE INPT_RCP_DT = #{aiInptClsDt}
+				<if test="aiInptClsDscd == '02'">
+				 AND INPT_ATMC_BIZ_DSCD = '2'		
+			    </if>
+			    <if test="aiInptClsDscd == '03'">
+				 AND INPT_ATMC_BIZ_DSCD = '1'		
+			    </if>
+			    
+
+			) A3
+		)
+				  SELECT '01' AS AI_INPT_CLS_ITCD, A.NEW_THING AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '02' AS AI_INPT_CLS_ITCD, A.TOTAL AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '03' AS AI_INPT_CLS_ITCD, A.OK AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '04' AS AI_INPT_CLS_ITCD, A.PENDING AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '05' AS AI_INPT_CLS_ITCD, A.BLOCK AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '06' AS AI_INPT_CLS_ITCD, A.BAN AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '07' AS AI_INPT_CLS_ITCD, A.ALERT_TOTAL AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '08' AS AI_INPT_CLS_ITCD, A.TOTALTEXT AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '09' AS AI_INPT_CLS_ITCD, A.FRCNN AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '10' AS AI_INPT_CLS_ITCD, A.SAFEWATCH AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		UNION ALL SELECT '13' AS AI_INPT_CLS_ITCD, A.HOLDING AS AI_INPT_CLS_CNT FROM VM_TABLE A
+		     
+     ) T
+     ON (S.AI_INPT_CLS_DT = #{aiInptClsDt} 
+     AND S.AI_INPT_CLS_DSCD = #{aiInptClsDscd} <!-- 심사마감항목코드 -->
+     AND S.AI_INPT_CLS_ITCD = T.AI_INPT_CLS_ITCD )
+     
+     WHEN MATCHED THEN
+     	UPDATE SET
+     				S.AI_INPT_CLS_CNT = T.AI_INPT_CLS_CNT,
+     				S.LST_DB_CHG_ID = #{lstDbChgId}, <!-- 최종변경자ID -->
+     				S.TRN_LOG_SRNO = #{trnLogSrno}, <!-- 거래로그일련번호 -->
+     				S.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+     WHEN NOT MATCHED THEN
+     	INSERT (S.AI_INPT_CLS_DT,
+     			S.AI_INPT_CLS_DSCD,
+     			S.AI_INPT_CLS_ITCD,
+     			S.AI_INPT_SNPE_ENO,
+     			S.AI_INPT_CLS_CNT,
+     			S.AI_INPT_RMRK_TXT,
+     			S.TRN_LOG_SRNO,
+     			S.LST_DB_CHG_ID,
+     			S.LST_DB_CHG_DTM)
+        VALUES (#{aiInptClsDt}, <!-- 심사마감일자 -->
+        		#{aiInptClsDscd}, <!-- 심사마감구분코드 -->
+        		T.AI_INPT_CLS_ITCD, 
+        		#{lstDbChgId}, <!-- 심사결재자직원번호 -->
+        		T.AI_INPT_CLS_CNT,
+        		NULL,
+        		#{trnLogSrno}, <!-- 거래로그일련번호 -->
+        		#{lstDbChgId}, <!-- 최종변경자ID -->
+        		TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF6'))
+        		
+        		
+	</update>
+	
+	<update id="updateStatCntList_qa" parameterType="com.woori.ajs.model.TaskLogEndVO">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.updateStatCntList2 */
+		/* 업무마감 건수저장 타입2 - CSPD009TA 테이블 AI_INPT_CLS_DSCD 컬럼값이 04,05,06 인경우 */
+		/* 파라미터 - aiInptClsDt (필수), inptAtmcBizDscd (선택), aiInptClsDscd (필수), lstDbChgId (필수) */
+		 /* 전체-조건없음 / 수출-2 / 수입-1 */
+		MERGE INTO CSPD009TA S
+		USING (
+			WITH VW_TASK AS (
+					SELECT
+						COUNT(*) AS CNT01,
+						NVL(SUM(CASE WHEN A.M_RST_CD IN ('10') AND A.M_QA_ACVT_CD IN ('160', '140') AND A.S_APPV IN ('160', '140') THEN 1 ELSE 0 END) , 0) AS CNT11,
+						NVL(SUM(CASE WHEN A.M_RST_CD IN ('20') AND A.M_QA_ACVT_CD IN ('160', '140') AND A.S_APPV IN ('160', '140') THEN 1 ELSE 0 END) , 0) AS CNT12
+						FROM (
+					SELECT 
+						ROW_NUMBER() OVER(PARTITION BY A.INPT_MST_SRNO ORDER BY B.LST_DB_CHG_DTM DESC) AS ORDERR,
+						A.INPT_MST_SRNO AS M_MASTER,
+						A.QLAS_PRG_YN AS M_QLAS_PRG_YN,
+						A.INPT_RCP_DT AS M_DT,
+						A.QLT_GRN_AI_INPT_RST_CD AS M_RST_CD,
+						A.INPT_ATMC_BIZ_DSCD AS M_BIZ,
+						A.AI_INPT_QLAS_ACVT_CD AS M_QA_ACVT_CD,
+						'JOIN' AS JOIN,
+						B.AI_INPT_BIZ_DSCD AS S_BIZ,
+						B.AI_INPT_APPV_STCD AS S_APPV
+					FROM CSPD001TM A JOIN CSPD005TH B
+					ON A.INPT_MST_SRNO = B.INPT_MST_SRNO
+					WHERE A.QLAS_PRG_YN = 'Y'
+					AND A.QLAS_ALOC_DT = TO_CHAR(TO_DATE(#{aiInptClsDt}, 'YYYY-MM-DD'), 'YYYYMMDD')) A -- Mybatis파라미터로 변환
+					WHERE A.ORDERR = '1'
+					<if test='inptAtmcBizDscd == "2"'>
+					 AND A.M_BIZ = '2'	
+				    </if>
+				    <if test='inptAtmcBizDscd == "1"'>
+					 AND A.M_BIZ = '1'
+				    </if>
+			)
+			
+			SELECT '01' AS AI_INPT_CLS_ITCD, A.CNT01 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '11' AS AI_INPT_CLS_ITCD, A.CNT11 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '12' AS AI_INPT_CLS_ITCD, A.CNT12 AS AI_INPT_CLS_CNT FROM VW_TASK A
+		) T
+			ON (S.AI_INPT_CLS_DT = #{aiInptClsDt} AND S.AI_INPT_CLS_DSCD = #{aiInptClsDscd} 
+				AND S.AI_INPT_CLS_ITCD = T.AI_INPT_CLS_ITCD)
+		WHEN MATCHED THEN
+			UPDATE SET S.AI_INPT_CLS_CNT = T.AI_INPT_CLS_CNT
+			, S.LST_DB_CHG_ID = #{lstDbChgId}
+			, S.TRN_LOG_SRNO = #{trnLogSrno} <!-- 거래로그일련번호 -->
+			, S.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (S.AI_INPT_CLS_DT,S.AI_INPT_CLS_DSCD,S.AI_INPT_CLS_ITCD,S.AI_INPT_SNPE_ENO,
+				S.AI_INPT_CLS_CNT,S.AI_INPT_RMRK_TXT,S.TRN_LOG_SRNO,S.LST_DB_CHG_ID,S.LST_DB_CHG_DTM)
+			VALUES (#{aiInptClsDt},#{aiInptClsDscd},T.AI_INPT_CLS_ITCD,#{lstDbChgId},
+				T.AI_INPT_CLS_CNT,NULL,#{trnLogSrno},#{lstDbChgId},<include refid="com.woori.ajs.common.curdate"/>)
+	</update>
+	<update id="updateStatCntList2" parameterType="com.woori.ajs.model.TaskLogEndVO">
+		/* 업무일지 - 업무마감 (5010) */
+		/* TaskLogEndMapper.updateStatCntList2 */
+		/* 업무마감 건수저장 타입2 - CSPD009TA 테이블 AI_INPT_CLS_DSCD 컬럼값이 04,05,06 인경우 */
+		/* 파라미터 - aiInptClsDt (필수), inptAtmcBizDscd (선택), aiInptClsDscd (필수), lstDbChgId (필수) */
+		MERGE INTO CSPD009TA S
+		USING (
+			WITH VW_TASK AS (
+				SELECT DISTINCT
+					COUNT(*) AS CNT01																				/* 당일목록 건수 */
+					, NVL(SUM(CASE WHEN A.QLT_GRN_AI_INPT_RST_CD = '10' THEN 1 ELSE 0 END),0) AS CNT11				/* 적정 건수 */
+					, NVL(SUM(CASE WHEN A.QLT_GRN_AI_INPT_RST_CD = '20' THEN 1 ELSE 0 END),0) AS CNT12				/* 비적정 건수 */
+				FROM (
+					SELECT INPT_MST_SRNO, QLT_GRN_AI_INPT_RST_CD, AI_INPT_QLAS_ACVT_CD
+					FROM CSPD001TM
+					WHERE INPT_RCP_DT = #{aiInptClsDt}
+					AND AI_INPT_QLAS_ACVT_CD IN (110,120,130,140,150)
+					<if test="!(inptAtmcBizDscd == null or inptAtmcBizDscd == '')">
+					AND INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}		/* 전체-조건없음 / 수출-2 / 수입-1 */
+					</if>
+				) A
+			)
+			SELECT '01' AS AI_INPT_CLS_ITCD, A.CNT01 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '11' AS AI_INPT_CLS_ITCD, A.CNT11 AS AI_INPT_CLS_CNT FROM VW_TASK A
+			UNION ALL SELECT '12' AS AI_INPT_CLS_ITCD, A.CNT12 AS AI_INPT_CLS_CNT FROM VW_TASK A
+		) T
+			ON (S.AI_INPT_CLS_DT = #{aiInptClsDt} AND S.AI_INPT_CLS_DSCD = #{aiInptClsDscd} 
+				AND S.AI_INPT_CLS_ITCD = T.AI_INPT_CLS_ITCD)
+		WHEN MATCHED THEN
+			UPDATE SET S.AI_INPT_CLS_CNT = T.AI_INPT_CLS_CNT
+			, S.LST_DB_CHG_ID = #{lstDbChgId}
+			, S.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHEN NOT MATCHED THEN
+			INSERT (S.AI_INPT_CLS_DT,S.AI_INPT_CLS_DSCD,S.AI_INPT_CLS_ITCD,S.AI_INPT_SNPE_ENO,
+				S.AI_INPT_CLS_CNT,S.AI_INPT_RMRK_TXT,S.TRN_LOG_SRNO,S.LST_DB_CHG_ID,S.LST_DB_CHG_DTM)
+			VALUES (#{aiInptClsDt},#{aiInptClsDscd},T.AI_INPT_CLS_ITCD,#{lstDbChgId},
+				T.AI_INPT_CLS_CNT,NULL,TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId},#{lstDbChgId},<include refid="com.woori.ajs.common.curdate"/>)
+				
+				
+	</update>
+	
+	<select id="getTaskDatesCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 업무일지 - 업무마감 (5010) - 당일목록 건수 */
+		/* 업무일지 - 업무일지 등록 (5020) - 제재심사 건수 */
+		/* TaskLogEndMapper.getTaskDatesCnt */
+		/* 업무생성(4010) 목록의 건수와 동일 */
+		SELECT COUNT(*) totcnt
+		FROM (
+			SELECT *
+			FROM (
+				SELECT ROW_NUMBER( ) OVER (PARTITION BY A.FX_ACNO
+					ORDER BY A.XPO_CVRG_MK_SQ DESC ) AS ORDERR,
+		              A.FX_ACNO AS FX,
+		              A.XPO_CVRG_MTBR_MK_DT AS DT,
+		              A.XPBY_COL_CTR_CUCD AS CUCD,
+		              /*A.TRN_OPR_NO AS OPR,*/
+		              A.CUS_ENG_NM AS CUS,
+		              '수출' AS BIZ_DSCD,
+		              '신규' AS REQ_DSCD,
+		              A.KRBR_NM AS BZBR_NM,
+		              A.XPBY_COL_AM AS AM,
+		              A.CSNO AS CSNO
+		         FROM CSPD201TM A JOIN CSPD112TI CU ON CU.AI_INPT_GRP_CD = '270'
+		          AND CU.AI_INPT_CMN_CD = A.XPBY_COL_CTR_CUCD
+		        WHERE NOT EXISTS ( SELECT B.FX
+		             FROM ( SELECT ACTL_FX_REFNO AS FX
+		                              FROM CSPD001TM) B
+		                    WHERE B.FX = A.FX_ACNO) ) C
+					WHERE C.ORDERR = '1'
+	            AND DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','')
+	            
+				UNION ALL
+				
+				SELECT *
+				FROM ( SELECT ROW_NUMBER( ) OVER (PARTITION BY A.FX_ACNO
+					ORDER BY A.TDOC_RCP_SRNO DESC ) AS ORDERR,
+	                  A.FX_ACNO AS FX,
+	                  A.TDOC_RCP_DT AS DT,
+	                  CU.AI_INPT_CMN_CD_ENG_NM AS CUCD,
+	                  /*A.TDOC_RCP_OPR_NO AS OPR,*/
+	                  A.CUS_ENG_NM AS CUS,
+	                  '수입' AS BIZ_DSCD,
+	                  '신규' AS REQ_DSCD,
+	                  A.KRBR_NM AS BZBR_NM,
+	                  A.TDOC_RCP_AM AS AM,
+	                  A.CSNO AS CSNO
+	             FROM CSPD202TM A JOIN CSPD112TI CU ON CU.AI_INPT_GRP_CD = '270'
+	              AND CU.AI_INPT_CMN_CD = A.TDOC_RCP_CUCD
+	            WHERE NOT EXISTS ( SELECT B.FX
+	                 FROM ( SELECT ACTL_FX_REFNO AS FX
+	                          FROM CSPD001TM) B
+	                WHERE B.FX = A.FX_ACNO) ) C
+	           WHERE C.ORDERR = '1'
+	             AND DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','')
+	    ) A
+	    WHERE A.BIZ_DSCD = CASE WHEN #{inptAtmcBizDscd} = '1' THEN '수입' 
+	    	WHEN #{inptAtmcBizDscd} = '2' THEN '수출'
+	    	ELSE A.BIZ_DSCD END
+	</select>
+	
+</mapper>

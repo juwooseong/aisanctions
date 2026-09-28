@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+                http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+	<mvc:resources mapping="/resources/report/**" location="/report/" />
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+	<mvc:resources mapping="/index.html" location="/dashboard/dashboard" />
+	
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>application/json</value>
+						<value>application/vnd.api+json</value>
+					</list>
+				</property>
+			</bean>
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html; charset=UTF-8</value>
+						<value>text/html; charset=utf-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	
+	<!-- 인터셉터 설정 -->
+	<mvc:interceptors>
+		<!-- 로그인 인터셉터 -->
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<mvc:exclude-mapping path="/index.html"/>
+			<mvc:exclude-mapping path="/api/sancRst"/>
+			<mvc:exclude-mapping path="/api/sancAnswer"/>
+			<mvc:exclude-mapping path="/login"/>
+			<mvc:exclude-mapping path="/index"/>
+			<mvc:exclude-mapping path="/sso/prx"/>
+			<mvc:exclude-mapping path="/logout"/>
+			<mvc:exclude-mapping path="/sso/index"/>
+			<mvc:exclude-mapping path="/login/sso/nst"/>
+			<mvc:exclude-mapping path="/login/sso/prx"/>
+			<mvc:exclude-mapping path="/login/sso/prx2"/>
+			<mvc:exclude-mapping path="/api/common/login"/>
+			<mvc:exclude-mapping path="/api/common/login/check"/>
+			<mvc:exclude-mapping path="/api/common/getMyInfo"/>
+			<mvc:exclude-mapping path="/api/common/logout"/>
+			<mvc:exclude-mapping path="/api/common/login/forbidden"/>
+			<mvc:exclude-mapping path="/error/**"/>
+			<mvc:exclude-mapping path="/resources/**"/>
+			<mvc:exclude-mapping path="/batch/qa/target"/>
+			<mvc:exclude-mapping path="/batch/task/log/end"/>
+			<bean class="com.woori.ajs.filters.AuthenticationInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<task:annotation-driven/>
+	
+	<context:component-scan base-package="com.woori.ajs">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service" />
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+	</context:component-scan>
+	<context:component-scan base-package="egovframework">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service" />
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+	</context:component-scan>
+	
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver" p:order="0">
+	</bean>
+	<bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" id="jsonView">
+		<property name="contentType" value="application/json;charset=UTF-8" />
+	</bean>
+	<bean class="egovframework.ui.cmmn.DownView" id="downView">
+	</bean>
+
+	<!-- Layout f/w -->
+	<bean class="org.springframework.web.servlet.view.tiles3.TilesViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView" />
+		<property name="order" value="1" />
+	</bean>
+
+	<bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+		<property name="definitions" value="/WEB-INF/tiles/tiles-def.xml" />
+	</bean>
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="20971520" />
+		<property name="maxInMemorySize" value="4194304" />
+	</bean>
+
+	<bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="2"
+		p:viewClass="org.springframework.web.servlet.view.JstlView" p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" />
+
+	<mvc:view-controller path="/cmmn/validator.do" view-name="cmmn/validator" />
+</beans>

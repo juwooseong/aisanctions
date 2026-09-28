@@ -1,0 +1,337 @@
+-- =====================================================================
+-- 04_schema_business.sql - sanction 계정
+-- 업무(원장/심사/결재/QA/이력) 테이블. FK 의존 순서: 원장(201/202) ->
+-- 마스터(001TM) -> 상세/이력(002TG,003TF,004TF,005TH,006TL,007TL,008TH,900TI)
+-- 원본 운영 DB에 명시적 FK 제약이 있었는지 확인할 방법이 없어(DDL 부재),
+-- 과도한 제약으로 배치/재처리 시나리오(부모 없는 임시행)가 막히지 않도록
+-- 업무 이력성 테이블은 FK를 걸지 않고 주석으로 논리적 관계만 표기한다.
+-- =====================================================================
+
+-- 수출 원장
+CREATE TABLE CSPD201TM (
+    FX_ACNO             VARCHAR2(20) NOT NULL,
+    XPO_CVRG_MK_SQ      NUMBER NOT NULL,
+    XPO_CVRG_MTBR_MK_DT VARCHAR2(8),
+    XPBY_COL_CTR_CUCD   VARCHAR2(4),
+    XPBY_COL_AM         NUMBER(18,2),
+    CUS_KORL_NM         VARCHAR2(200),
+    CUS_ENG_NM          VARCHAR2(200),
+    CSNO                VARCHAR2(20),
+    KRBR_NM             VARCHAR2(100),
+    DACC_BRCD           VARCHAR2(10),
+    HS_CD               VARCHAR2(20),
+    XPO_PTN_NACD        VARCHAR2(4),
+    XPO_NACD            VARCHAR2(4),
+    TRN_OPR_NO          VARCHAR2(20),
+    INPT_ATMC_BIZ_DSCD  CHAR(1),
+    INPT_ATMC_REQ_DSCD  CHAR(1),
+    INPT_FAXC_AM        NUMBER(18,2),
+    CONSTRAINT PK_CSPD201TM PRIMARY KEY (FX_ACNO, XPO_CVRG_MK_SQ)
+);
+COMMENT ON TABLE CSPD201TM IS '수출 원장 (WINI 접수 소스, INPT_ATMC_BIZ_DSCD=2 수출)';
+
+-- 수입 원장
+CREATE TABLE CSPD202TM (
+    FX_ACNO             VARCHAR2(20) NOT NULL,
+    TDOC_RCP_SRNO       NUMBER NOT NULL,
+    TDOC_RCP_DT         VARCHAR2(8),
+    TDOC_RCP_CUCD       VARCHAR2(4),
+    TDOC_RCP_AM         NUMBER(18,2),
+    CUS_KORL_NM         VARCHAR2(200),
+    CUS_ENG_NM          VARCHAR2(200),
+    CSNO                VARCHAR2(20),
+    KRBR_NM             VARCHAR2(100),
+    DACC_BRCD           VARCHAR2(10),
+    HS_CD               VARCHAR2(20),
+    XPO_NACD             VARCHAR2(4),
+    TRN_OPR_NO          VARCHAR2(20),
+    INPT_ATMC_BIZ_DSCD  CHAR(1),
+    INPT_ATMC_REQ_DSCD  CHAR(1),
+    INPT_FAXC_AM        NUMBER(18,2),
+    CONSTRAINT PK_CSPD202TM PRIMARY KEY (FX_ACNO, TDOC_RCP_SRNO)
+);
+COMMENT ON TABLE CSPD202TM IS '수입 원장 (WINI 접수 소스, INPT_ATMC_BIZ_DSCD=1 수입)';
+
+-- 심사 마스터 (업무 1건 = 1행) - End-to-End 흐름의 중심 테이블
+CREATE TABLE CSPD001TM (
+    INPT_MST_SRNO             NUMBER NOT NULL,
+    INPT_RCP_DT                VARCHAR2(8),
+    ACTL_FX_REFNO               VARCHAR2(20),
+    FX_REFNO_SRNO               NUMBER,
+    INPT_ATMC_BIZ_DSCD          CHAR(1),
+    INPT_ATMC_REQ_DSCD          CHAR(1),
+    AI_INSPE_ENO                 VARCHAR2(20),
+    AI_INPT_SNPE_ENO             VARCHAR2(20),
+    AI_INPT_PROS_CD              VARCHAR2(4),
+    AI_INPT_ACVT_CD              VARCHAR2(4),
+    AI_INPT_APPV_STCD            VARCHAR2(4),
+    TOTALTEXT_AI_INPT_RST_CD     VARCHAR2(4),
+    ITM_INPT_AI_INPT_RST_CD      VARCHAR2(4),
+    SAFEWATCH_AI_INPT_RST_CD     VARCHAR2(4),
+    AI_INPT_IMG_KEY_NO           VARCHAR2(50),
+    AI_INPT_DOC_SCAN_CHRG_ENO    VARCHAR2(20),
+    AI_INPT_DOC_SCAN_DTM         VARCHAR2(20),
+    -- 아래 4개 컬럼은 DEFAULT 'N'을 주지 않는다: AppTodo/Dashboard 등 다수 매퍼가
+    -- "IS NULL"을 정상(미해당) 상태로 조회 조건에 사용함(실측 확인) - 'N'을 기본값으로
+    -- 주면 정상 건이 전부 필터링되어 ToDo 목록이 비어버리는 버그가 발생한다.
+    PAPS_RE_SCAN_NED_YN          CHAR(1),
+    PAPS_RE_SCAN_CMPL_YN         CHAR(1),
+    PAPS_CLF_ERR_YN              CHAR(1),
+    QLAS_PRG_YN                  CHAR(1),
+    QLAS_CRPE_ENO                VARCHAR2(20),
+    QLAS_SNPE_ENO                VARCHAR2(20),
+    QLAS_ALOC_DT                 VARCHAR2(8),
+    AI_INPT_QLAS_PROS_CD         VARCHAR2(4),
+    AI_INPT_QLAS_ACVT_CD         VARCHAR2(4),
+    AI_INPT_QLAS_APPV_STCD       VARCHAR2(4),
+    QLT_GRN_AI_INPT_RST_CD       VARCHAR2(4),
+    TRN_OPR_NO                   VARCHAR2(20),
+    TRN_LOG_SRNO                 VARCHAR2(20),
+    LST_DB_CHG_ID                VARCHAR2(30),
+    LST_DB_CHG_DTM                VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD001TM PRIMARY KEY (INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD001TM IS '심사 마스터. AI_INPT_ACVT_CD=업무 진행 액티비티, AI_INPT_APPV_STCD=결재상태, QLAS_*=QA 관련';
+
+CREATE INDEX IX_CSPD001TM_SNPE ON CSPD001TM(AI_INPT_SNPE_ENO);
+CREATE INDEX IX_CSPD001TM_QLAS_SNPE ON CSPD001TM(QLAS_SNPE_ENO);
+CREATE INDEX IX_CSPD001TM_ACVT ON CSPD001TM(AI_INPT_ACVT_CD);
+CREATE INDEX IX_CSPD001TM_RCPDT ON CSPD001TM(INPT_RCP_DT);
+
+-- 업무-문서/이미지 상세
+CREATE TABLE CSPD002TG (
+    INPT_MST_SRNO           NUMBER NOT NULL,
+    INPT_TASK_ID             VARCHAR2(20) NOT NULL,
+    INPT_BL_GRP_NO           VARCHAR2(20),
+    IMEX_HIS_CD              VARCHAR2(4),
+    IMEX_HIS_SRNO            NUMBER,
+    INPT_ELMT_ID             VARCHAR2(20),
+    AI_INPT_PAPS_QLT_SCRE    NUMBER(5,2),
+    TRN_LOG_SRNO             VARCHAR2(20),
+    LST_DB_CHG_ID            VARCHAR2(30),
+    LST_DB_CHG_DTM           VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD002TG PRIMARY KEY (INPT_MST_SRNO, INPT_TASK_ID),
+    CONSTRAINT FK_CSPD002TG_MST FOREIGN KEY (INPT_MST_SRNO) REFERENCES CSPD001TM(INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD002TG IS '업무-문서/이미지(TASK) 상세';
+
+-- TotalText 심사결과
+CREATE TABLE CSPD003TF (
+    INPT_MST_SRNO              NUMBER NOT NULL,
+    INPT_TASK_ID                VARCHAR2(20) NOT NULL,
+    AI_INPT_TOTALTEXT_SRNO      NUMBER NOT NULL,
+    AI_INPT_ALT_YN               CHAR(1) DEFAULT 'N',
+    ITM_INPT_XAXIS_STA_CRDN_CN  NUMBER,
+    ITM_INPT_XAXIS_END_CRDN_CN  NUMBER,
+    ITM_INPT_YAXIS_STA_CRDN_CN  NUMBER,
+    ITM_INPT_YAXIS_END_CRDN_CN  NUMBER,
+    INPT_SANCTION_DAT_TXT        VARCHAR2(1000),
+    CONSTRAINT PK_CSPD003TF PRIMARY KEY (INPT_MST_SRNO, INPT_TASK_ID, AI_INPT_TOTALTEXT_SRNO),
+    CONSTRAINT FK_CSPD003TF_TG FOREIGN KEY (INPT_MST_SRNO, INPT_TASK_ID) REFERENCES CSPD002TG(INPT_MST_SRNO, INPT_TASK_ID)
+);
+COMMENT ON TABLE CSPD003TF IS 'TotalText(전문 텍스트) 심사결과';
+
+-- 항목심사결과상세 (제재/AI 추출 핵심 테이블)
+CREATE TABLE CSPD004TF (
+    INPT_MST_SRNO                NUMBER NOT NULL,
+    INPT_TASK_ID                  VARCHAR2(20) NOT NULL,
+    INPT_SANCTION_NO               NUMBER NOT NULL,
+    SAFEWATCH_ITM_YN                CHAR(1) DEFAULT 'N',
+    ITM_INPT_RVSN_YN                 CHAR(1) DEFAULT 'N',
+    ITM_INPT_HNDG_INP_DAT_TXT        CLOB,
+    INPT_SANCTION_DAT_TXT             VARCHAR2(1000),
+    AI_INPT_SANCTION_RULE_TXT         VARCHAR2(1000),
+    BFRS_AICR_EXTC_TXT                 CLOB,
+    AFRS_AICR_EXTC_TXT                 CLOB,
+    BFRS_TA_EXTC_TXT                    CLOB,
+    AFRS_TA_EXTC_TXT                    CLOB,
+    AI_INPT_EXTC_SNTN_TXT               VARCHAR2(1000),
+    ITM_INPT_XAXIS_STA_CRDN_CN          NUMBER,
+    ITM_INPT_XAXIS_END_CRDN_CN          NUMBER,
+    ITM_INPT_YAXIS_STA_CRDN_CN          NUMBER,
+    ITM_INPT_YAXIS_END_CRDN_CN          NUMBER,
+    ITM_INPT_NACRD_YN                    CHAR(1) DEFAULT 'N',
+    TRN_LOG_SRNO                         VARCHAR2(20),
+    LST_DB_CHG_ID                        VARCHAR2(30),
+    LST_DB_CHG_DTM                       VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD004TF PRIMARY KEY (INPT_MST_SRNO, INPT_TASK_ID, INPT_SANCTION_NO),
+    CONSTRAINT FK_CSPD004TF_TG FOREIGN KEY (INPT_MST_SRNO, INPT_TASK_ID) REFERENCES CSPD002TG(INPT_MST_SRNO, INPT_TASK_ID)
+);
+COMMENT ON TABLE CSPD004TF IS '항목심사결과상세 - AI 자동심사/제재 추출/사람 검수(1011 화면 핵심)';
+
+-- 결재 이력
+CREATE TABLE CSPD005TH (
+    AI_INPT_APPV_SRNO         NUMBER NOT NULL,
+    INPT_MST_SRNO               NUMBER NOT NULL,
+    AI_INPT_BIZ_DSCD              CHAR(1),
+    AI_INPT_CRPE_ENO                VARCHAR2(20),
+    AI_INPT_PRC_OPI_TXT               VARCHAR2(1000),
+    AI_INPT_TPY_SAVE_YN                CHAR(1) DEFAULT 'N',
+    AI_INPT_APPV_STCD                    VARCHAR2(4),
+    AI_INPT_TOTALTEXT_RST_CD              VARCHAR2(4),
+    AI_INPT_ITM_RST_CD                      VARCHAR2(4),
+    AI_INPT_QLAS_PRC_STS_CD                 VARCHAR2(4),
+    AI_INPT_PRC_DTM                          VARCHAR2(20),
+    LST_DB_CHG_ID                            VARCHAR2(30),
+    LST_DB_CHG_DTM                           VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    TRN_LOG_SRNO                             VARCHAR2(20),
+    CONSTRAINT PK_CSPD005TH PRIMARY KEY (AI_INPT_APPV_SRNO),
+    CONSTRAINT FK_CSPD005TH_MST FOREIGN KEY (INPT_MST_SRNO) REFERENCES CSPD001TM(INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD005TH IS '결재(2010) 이력 - 승인/반려/Block 기록';
+CREATE INDEX IX_CSPD005TH_MST ON CSPD005TH(INPT_MST_SRNO);
+
+-- 첨부파일
+CREATE TABLE CSPD006TL (
+    INPT_MST_SRNO           NUMBER NOT NULL,
+    AI_INPT_ATFL_SRNO        NUMBER NOT NULL,
+    AI_INPT_ATFL_NM           VARCHAR2(300),
+    AI_INPT_ATFL_PATH_TXT      VARCHAR2(1000),
+    AI_INPT_BIZ_DSCD             CHAR(1),
+    TRN_LOG_SRNO                 VARCHAR2(20),
+    LST_DB_CHG_ID                VARCHAR2(30),
+    LST_DB_CHG_DTM               VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD006TL PRIMARY KEY (INPT_MST_SRNO, AI_INPT_ATFL_SRNO),
+    CONSTRAINT FK_CSPD006TL_MST FOREIGN KEY (INPT_MST_SRNO) REFERENCES CSPD001TM(INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD006TL IS '첨부파일';
+
+-- SafeWatch 필터 결과
+CREATE TABLE CSPD007TL (
+    INPT_MST_SRNO              NUMBER NOT NULL,
+    AI_INPT_PRG_SRNO             NUMBER NOT NULL,
+    INPT_BL_GRP_NO                VARCHAR2(20),
+    FILT_DTCT_NO                    VARCHAR2(20),
+    FILT_INPT_RST_SRNO                NUMBER,
+    FILT_INPT_RST_RECP_DTM             VARCHAR2(20),
+    AI_INPT_BL_NO_NCNT                   NUMBER,
+    BL_NO                                 VARCHAR2(20),
+    LST_DB_CHG_DTM                        VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD007TL PRIMARY KEY (INPT_MST_SRNO, AI_INPT_PRG_SRNO),
+    CONSTRAINT FK_CSPD007TL_MST FOREIGN KEY (INPT_MST_SRNO) REFERENCES CSPD001TM(INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD007TL IS 'SafeWatch(WatchList) AI 필터링 결과';
+
+-- 심사 진행 이력 (상태변경 로그) - 8xxx/현황/통계 화면의 근간
+CREATE TABLE CSPD008TH (
+    AI_INPT_PRG_SRNO        NUMBER NOT NULL,
+    INPT_MST_SRNO             NUMBER NOT NULL,
+    AI_INPT_BIZ_DSCD            CHAR(1),
+    AI_INPT_ACVT_CD               VARCHAR2(4),
+    AI_INPT_ACVT_STS_CD             VARCHAR2(4),
+    AI_INPT_CRPE_ENO                  VARCHAR2(20),
+    AI_INPT_PROS_STA_DTM                VARCHAR2(20),
+    AI_INPT_PRC_OPI_TXT                   VARCHAR2(1000),
+    TRN_LOG_SRNO                          VARCHAR2(20),
+    LST_DB_CHG_ID                         VARCHAR2(30),
+    LST_DB_CHG_DTM                        VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD008TH PRIMARY KEY (AI_INPT_PRG_SRNO),
+    CONSTRAINT FK_CSPD008TH_MST FOREIGN KEY (INPT_MST_SRNO) REFERENCES CSPD001TM(INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD008TH IS '심사 진행/상태변경 이력 (업무일지, 현황, 통계의 근간)';
+CREATE INDEX IX_CSPD008TH_MST ON CSPD008TH(INPT_MST_SRNO);
+CREATE INDEX IX_CSPD008TH_DT ON CSPD008TH(AI_INPT_PROS_STA_DTM);
+
+-- 업무마감 통계
+CREATE TABLE CSPD009TA (
+    AI_INPT_CLS_DT       VARCHAR2(8) NOT NULL,
+    AI_INPT_CLS_DSCD      VARCHAR2(4) NOT NULL,
+    AI_INPT_CLS_ITCD       VARCHAR2(4) NOT NULL,
+    AI_INPT_SNPE_ENO         VARCHAR2(20),
+    AI_INPT_CLS_CNT            NUMBER,
+    AI_INPT_RMRK_TXT             VARCHAR2(1000),
+    TRN_LOG_SRNO                 VARCHAR2(20),
+    LST_DB_CHG_ID                VARCHAR2(30),
+    LST_DB_CHG_DTM               VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD009TA PRIMARY KEY (AI_INPT_CLS_DT, AI_INPT_CLS_DSCD, AI_INPT_CLS_ITCD)
+);
+COMMENT ON TABLE CSPD009TA IS '업무마감 통계';
+
+-- 업무일지 등록 통계
+CREATE TABLE CSPD010TA (
+    AI_INPT_APDR_DT        VARCHAR2(8) NOT NULL,
+    AI_INPT_APDR_DSCD        VARCHAR2(4) NOT NULL,
+    AI_INPT_APDR_ITCD          VARCHAR2(4) NOT NULL,
+    AI_INPT_SNPE_ENO              VARCHAR2(20),
+    AI_INPT_XPO_REL_CNT              NUMBER,
+    AI_INPT_IMP_REL_CNT                NUMBER,
+    AI_INPT_TBK_ISSU_CNT                 NUMBER,
+    AI_INPT_OBK_ISSU_CNT                   NUMBER,
+    AI_INPT_ETC_ITM_CNT                      NUMBER,
+    AI_INPT_RMSG_CNT                           NUMBER,
+    AI_INPT_SMSG_CNT                             NUMBER,
+    AI_INPT_ETC_OPI_TXT                            VARCHAR2(1000),
+    TRN_LOG_SRNO                                   VARCHAR2(20),
+    LST_DB_CHG_ID                                  VARCHAR2(30),
+    LST_DB_CHG_DTM                                 VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD010TA PRIMARY KEY (AI_INPT_APDR_DT, AI_INPT_APDR_DSCD, AI_INPT_APDR_ITCD)
+);
+COMMENT ON TABLE CSPD010TA IS '업무일지 등록 통계';
+
+-- 미생성 업무(XT, 재처리 대상)
+CREATE TABLE CSPD011TL (
+    AI_INPT_XT_SRNO           NUMBER NOT NULL,
+    ACTL_FX_REFNO               VARCHAR2(20),
+    FX_REFNO_SRNO                 NUMBER,
+    INPT_RCP_DT                     VARCHAR2(8),
+    INPT_ATMC_BIZ_DSCD                CHAR(1),
+    AI_INPT_DOC_SCAN_CHRG_ENO           VARCHAR2(20),
+    AI_INPT_DOC_SCAN_DTM                  VARCHAR2(20),
+    AI_INPT_IMG_KEY_NO                      VARCHAR2(50),
+    AI_INPT_APL_XT_RNCD                       VARCHAR2(4),
+    AI_INPT_XT_PRC_STS_DSCD                     VARCHAR2(4),
+    AI_INPT_XT_PRC_ENO                            VARCHAR2(20),
+    AI_INPT_XT_PRC_DTM                              VARCHAR2(20),
+    TRN_LOG_SRNO                                    VARCHAR2(20),
+    LST_DB_CHG_ID                                   VARCHAR2(30),
+    LST_DB_CHG_DTM                                  VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD011TL PRIMARY KEY (AI_INPT_XT_SRNO)
+);
+COMMENT ON TABLE CSPD011TL IS '미생성 업무 (원장에는 있으나 CSPD001TM 미생성/재처리 대상)';
+
+-- 심사 진행 큐/재처리
+CREATE TABLE CSPD900TI (
+    INPT_MST_SRNO           NUMBER NOT NULL,
+    AI_SYS_INPT_PRG_STCD      VARCHAR2(4),
+    AI_INPT_PRC_DSCD             VARCHAR2(4),
+    RPROC_TCN                       NUMBER,
+    AI_INPT_SVR_INF_TXT                VARCHAR2(500),
+    LST_DB_CHG_ID                        VARCHAR2(30),
+    LST_DB_CHG_DTM                       VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    TRN_LOG_SRNO                         VARCHAR2(20),
+    CONSTRAINT PK_CSPD900TI PRIMARY KEY (INPT_MST_SRNO)
+);
+COMMENT ON TABLE CSPD900TI IS 'AI 심사 진행 큐/재처리 상태';
+
+-- 로그인 이력
+CREATE TABLE CSPD810TH (
+    AI_INPT_LGIN_HST_NO         VARCHAR2(20) NOT NULL,
+    AI_INPT_LGIN_USER_NO           VARCHAR2(20),
+    AI_INPT_LGIN_DTM                  VARCHAR2(20),
+    AI_INPT_LGIN_USG_IPAD                VARCHAR2(50),
+    AI_INPT_LGIN_USER_MCHR_NM              VARCHAR2(200),
+    AI_INPT_LGIN_YN                          CHAR(1) DEFAULT 'Y',
+    TRN_LOG_SRNO                             VARCHAR2(20),
+    LST_DB_CHG_ID                            VARCHAR2(30),
+    LST_DB_CHG_DTM                           VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD810TH PRIMARY KEY (AI_INPT_LGIN_HST_NO)
+);
+COMMENT ON TABLE CSPD810TH IS '로그인 이력';
+
+-- 프로그램 사용 이력
+CREATE TABLE CSPD811TH (
+    AI_INPT_PGM_USG_HST_NO       NUMBER NOT NULL,
+    AI_INPT_CNCT_USER_NO            VARCHAR2(20),
+    AI_INPT_CNCT_URL_NM                VARCHAR2(500),
+    AI_INPT_CNCT_IPAD                     VARCHAR2(50),
+    AI_INPT_CNCT_MCHR_NM                     VARCHAR2(200),
+    AI_INPT_CNCT_SCRN_NO                        VARCHAR2(20),
+    AI_INPT_CNCT_FLD_CD                            VARCHAR2(10),
+    AI_INPT_CNCT_ACTI_CD                              VARCHAR2(10),
+    AI_INPT_CNCT_PARM_TXT                                VARCHAR2(1000),
+    TRN_LOG_SRNO                                         VARCHAR2(20),
+    LST_DB_CHG_ID                                        VARCHAR2(30),
+    LST_DB_CHG_DTM                                       VARCHAR2(20) DEFAULT TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+    CONSTRAINT PK_CSPD811TH PRIMARY KEY (AI_INPT_PGM_USG_HST_NO)
+);
+COMMENT ON TABLE CSPD811TH IS '프로그램(화면/API) 사용 이력';

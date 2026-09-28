@@ -1,0 +1,1345 @@
+/**
+ * 목업 공통 테마 오버레이 — 우리은행 CI 색상표
+ * WOORI DEEP BLUE #0067AC (R0 G103 B172, Pantone 7462 C)
+ * WOORI BLUE      #0083CA (R0 G131 B202, Pantone 3015 CP)
+ * WOORI LIGHT BLUE #20C4F4 (R32 G196 B244, Pantone 2915 CP)
+ * WOORI WHITE     #FFFFFF
+ */
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../font/wooridaum/WooridaumL.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../font/wooridaum/WooridaumR.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../font/wooridaum/WooridaumB.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../font/wooridaum/WooridaumR.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Wooridaum";
+  src: url("../font/wooridaum/WooridaumB.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --woori-deep-blue: #0067ac;
+  --woori-blue: #0083ca;
+  --woori-light-blue: #20c4f4;
+  --woori-white: #ffffff;
+  --ta-primary: var(--woori-deep-blue);
+  --ta-primary-mid: var(--woori-blue);
+  --ta-primary-light: var(--woori-light-blue);
+  --ta-primary-dark: var(--woori-deep-blue);
+  --ta-bg: #f4fbfe;
+  --ta-surface: var(--woori-white);
+  --ta-border: #b8d4e8;
+  --ta-border-dark: #7aa8c9;
+  --ta-text: #1e293b;
+  --ta-muted: #64748b;
+  --ta-accent-light: #e5f8fe;
+  --ta-hover: #f3fbfe;
+  --ta-selected: #cce9f7;
+  --ta-selected-hover: #b3dff5;
+  --ta-danger: #ef4444;
+  --ta-danger-dark: #dc2626;
+  --ta-success: #10b981;
+  --ta-success-dark: #059669;
+  --ta-warning: #d69e2e;
+  --ta-radius: 6px;
+  --ta-radius-sm: 4px;
+  --primary: var(--woori-deep-blue);
+  --blue: var(--woori-deep-blue);
+  --ta-lnb-width: 220px;
+  --ta-font: "Wooridaum", "Malgun Gothic", "맑은 고딕", sans-serif;
+}
+
+body,
+body.leftOpen {
+  background: var(--ta-bg);
+  color: var(--ta-text);
+  font-family: var(--ta-font);
+}
+html,
+body *:not(.fa):not([class^="fa-"]):not([class*=" fa-"]):not([class^="cui-"]):not([class*=" cui-"]):not([class^="icon-"]):not([class*=" icon-"]) {
+  font-family: var(--ta-font);
+}
+.tooltip,
+.popover,
+.ui-widget,
+.modal,
+.dropdown-menu,
+.form-control,
+.btn,
+input,
+select,
+textarea,
+button,
+table {
+  font-family: var(--ta-font);
+}
+body.leftOpen {
+  padding-left: var(--ta-lnb-width);
+}
+
+/* ===== GNB ===== */
+.wrap .gnbWrap {
+  background: linear-gradient(to bottom, var(--woori-white), var(--ta-accent-light));
+  border-bottom: 2px solid var(--ta-primary);
+  height: 42px;
+}
+.wrap .gnbWrap .gnb li a {
+  color: #4a5568;
+  line-height: 42px;
+  font-weight: 500;
+}
+.wrap .gnbWrap .gnb li a:hover {
+  background: var(--ta-accent-light);
+  color: var(--ta-primary);
+}
+.wrap .gnbWrap .gnb li a.active {
+  background: var(--ta-primary);
+  color: #fff;
+  font-weight: 700;
+}
+.logout,
+.login-info {
+  color: var(--ta-muted) !important;
+}
+.absenceInfoWrapper {
+  background-color: var(--ta-accent-light) !important;
+}
+.foldIcon::before,
+.tab-menu-lock-icon:before,
+.tab-menu-cls-icon {
+  color: var(--ta-primary) !important;
+}
+
+/* ===== LNB ===== */
+.leftWrap {
+  width: var(--ta-lnb-width);
+  background: #fff;
+  border-right: 1px solid var(--ta-border);
+  box-shadow: 4px 0 16px rgba(15, 23, 42, 0.06);
+}
+.leftWrap h1,
+.leftWrap h1.logo-img {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 10px;
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--ta-border);
+  background: var(--ta-hover);
+  cursor: pointer;
+  font-family: var(--ta-font);
+}
+.leftWrap .brand-symbol {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: block;
+  object-fit: contain;
+}
+.leftWrap .brand-name {
+  font-family: var(--ta-font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ta-primary);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.leftWrap .brand-divider {
+  width: 1px;
+  height: 34px;
+  margin: 0 1px;
+  background: #c5d0dc;
+  flex-shrink: 0;
+}
+.leftWrap .brand-system {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.2;
+  gap: 3px;
+  font-family: var(--ta-font);
+}
+.leftWrap .brand-system strong {
+  display: block;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ta-primary-dark);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.leftWrap .brand-system small {
+  display: block;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ta-primary-dark);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  padding: 2px 0 1px;
+}
+.leftWrap .lnbWrap {
+  padding: 8px 10px 12px;
+}
+.leftWrap .lnbWrap h2 {
+  height: auto;
+  line-height: 1.3;
+  margin: 4px 4px 10px;
+  padding: 8px 6px 10px;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  color: var(--ta-primary-dark);
+  border-bottom: 2px solid var(--ta-primary);
+}
+.leftWrap .lnbWrap ul {
+  padding: 0 2px;
+}
+.leftWrap .lnbWrap ul li {
+  padding: 0 !important;
+  margin: 0 0 2px;
+}
+.leftWrap .lnbWrap ul li > a,
+.leftWrap .lnbWrap ul li > p > a {
+  display: block;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  line-height: 1.35;
+  text-decoration: none;
+  color: var(--ta-text);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.leftWrap .lnbWrap ul li > p > a {
+  padding-left: 18px;
+}
+.leftWrap .lnbWrap ul li > a,
+.leftWrap .lnbWrap ul li > p > a span {
+  color: var(--ta-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+.leftWrap .lnbWrap ul li > a.active,
+.leftWrap .lnbWrap ul li > p > a.active {
+  background: var(--ta-accent-light);
+  border-left: 3px solid var(--ta-primary);
+}
+.leftWrap .lnbWrap ul li > a.active,
+.leftWrap .lnbWrap ul li > p > a.active span {
+  color: var(--ta-primary-dark);
+  font-weight: 700;
+}
+.leftWrap .lnbWrap ul li > a:hover,
+.leftWrap .lnbWrap ul li > p > a:hover {
+  background: var(--ta-hover);
+  text-decoration: none;
+}
+.leftWrap .lnbWrap ul li > p > a span:hover {
+  color: var(--ta-primary);
+}
+.leftWrap .lnbWrap ul li > p > a:before {
+  display: none;
+}
+#asideFoldBtn {
+  top: 46px;
+  background: #fff;
+  border: 1px solid var(--ta-border);
+  border-left: 0;
+  box-shadow: 2px 2px 8px rgba(15, 23, 42, 0.08);
+  border-radius: 0 8px 8px 0;
+}
+.foldIcon::before {
+  color: var(--ta-primary) !important;
+}
+
+/* 당일심사현황 카드 */
+.asideStatusWrapper {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  background: transparent;
+}
+.asideStatusCard {
+  background: #fff;
+  border: 1px solid var(--ta-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.asideStatusCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #edf2f7;
+}
+.asideStatusTitle {
+  margin-left: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ta-text);
+  height: auto;
+  line-height: 1.3;
+}
+.autoAsideRefreshBtn {
+  margin-left: auto !important;
+  float: none !important;
+  color: var(--ta-primary);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 12px;
+}
+.autoAsideIconTrue::before {
+  color: var(--ta-primary) !important;
+}
+.asideStatusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 11px;
+}
+.asideStatusLabel {
+  color: #64748b;
+  flex-shrink: 0;
+}
+.asideStatusVal {
+  font-weight: 700;
+  color: var(--ta-text);
+  text-align: right;
+}
+.asideStatusValInline {
+  font-weight: 600;
+}
+.asideStatusSlash {
+  color: #94a3b8;
+  margin: 0 2px;
+  font-weight: 400;
+}
+.asideRed { color: red !important; font-weight: 600; }
+.asideYellow { color: orange !important; font-weight: 600; }
+.asideGreen { color: green !important; font-weight: 600; }
+#updateMoment,
+.asideStatusTime {
+  display: block;
+  text-align: right;
+  color: var(--ta-muted) !important;
+  font-size: 10px !important;
+  margin-top: 6px !important;
+  margin-right: 2px;
+}
+
+.manualDownloadWrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px 16px;
+  margin-bottom: 0;
+  border-top: 1px solid var(--ta-border);
+  background: #fff;
+}
+.manualDownloadTitle {
+  color: var(--ta-primary) !important;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+.manualDownloadTitle:hover {
+  text-decoration: none;
+  color: var(--ta-primary-dark) !important;
+}
+.manualFileDownIcon::before {
+  color: var(--ta-primary) !important;
+}
+
+/* ===== 컨텐츠 탭 ===== */
+.wrap .contentsTabWrap {
+  background: var(--ta-accent-light);
+  border-bottom: 1px solid var(--ta-border);
+}
+.wrap .contentsTabWrap li a {
+  background: #e2e8f0;
+  color: var(--ta-muted);
+  border-radius: 6px 6px 0 0;
+}
+.wrap .contentsTabWrap li a:hover {
+  background: var(--ta-hover);
+  color: var(--ta-primary);
+}
+.wrap .contentsTabWrap li a.active {
+  background: #fff;
+  color: var(--ta-primary);
+}
+
+/* ===== 페이지 타이틀 ===== */
+.container h2 {
+  border-bottom: 2px solid var(--ta-primary);
+}
+.container h2 strong,
+.layout_container h2 strong,
+.modal-title {
+  color: var(--ta-primary) !important;
+}
+.container h2 .location span {
+  color: var(--ta-muted);
+}
+
+/* ===== 버튼 ===== */
+.btType1,
+.btType5,
+.searchBtnType1,
+.retryLogEndBtn,
+.delete,
+a.btType1,
+button.btType1 {
+  background: var(--ta-primary) !important;
+  border-color: var(--ta-primary-dark) !important;
+  color: #fff !important;
+  border-radius: var(--ta-radius-sm);
+}
+.btType1:hover,
+.btType5:hover,
+.searchBtnType1:hover,
+.retryLogEndBtn:hover,
+.delete:hover,
+.xlsDownloadBtn:hover,
+.reportPrintBtn:hover {
+  background: var(--ta-primary-mid) !important;
+  color: #fff !important;
+  cursor: pointer;
+}
+.btType2,
+a.btType2,
+button.btType2 {
+  background: #fff !important;
+  border: 1px solid var(--ta-border) !important;
+  color: var(--ta-text) !important;
+  border-radius: var(--ta-radius-sm);
+}
+.btType2:hover {
+  background: var(--ta-accent-light) !important;
+  border-color: var(--ta-primary) !important;
+  color: var(--ta-primary) !important;
+}
+.btType3 {
+  background: var(--ta-muted) !important;
+  border-color: var(--ta-muted) !important;
+  color: #fff !important;
+  border-radius: var(--ta-radius-sm);
+}
+/* 검색박스/일반 폼 내 돋보기 아이콘: 배경 없음, 아이콘만 검정 */
+.btType4,
+button.btType4,
+.searchBox form button.btType4,
+form button.btType4 {
+  background: transparent !important;
+  border: 0 !important;
+  color: #111 !important;
+  box-shadow: none !important;
+}
+.btType4:hover,
+button.btType4:hover,
+.searchBox form button.btType4:hover,
+form button.btType4:hover {
+  background: transparent !important;
+  color: #000 !important;
+  cursor: pointer;
+}
+.btType4 .fa-search,
+.btType4 .fa-search:before,
+.btType4 .fa-search:after {
+  color: #111 !important;
+}
+.btn-primary,
+.btn.btn-primary {
+  background-color: var(--ta-primary) !important;
+  border-color: var(--ta-primary-dark) !important;
+  color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled):active {
+  background-color: var(--ta-primary-mid) !important;
+  border-color: var(--ta-primary-mid) !important;
+}
+.btn-success {
+  background-color: var(--ta-success) !important;
+  border-color: var(--ta-success-dark) !important;
+}
+.btn-danger {
+  background-color: var(--ta-danger) !important;
+  border-color: var(--ta-danger-dark) !important;
+}
+.btn-outline-primary {
+  color: var(--ta-primary) !important;
+  border-color: var(--ta-primary) !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--ta-primary) !important;
+  color: #fff !important;
+}
+.viewDetailBtn,
+.btn.btn-primary.viewDetailBtn,
+.tbWrap table td .btn.p-1,
+table.dataTable td .btn.p-1,
+table.dataTable td .btn.btn-primary.m-1 {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #111 !important;
+}
+.viewDetailBtn:hover,
+.btn.btn-primary.viewDetailBtn:hover,
+.tbWrap table td .btn.p-1:hover,
+table.dataTable td .btn.p-1:hover,
+table.dataTable td .btn.btn-primary.m-1:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--ta-primary) !important;
+}
+.viewDetailBtn .fa,
+.viewDetailBtn .fa:before,
+.viewDetailBtn .fa:after,
+.tbWrap table td .fa,
+.tbWrap table td .fa:before,
+.tbWrap table td .fa:after,
+table.dataTable td .fa,
+table.dataTable td .fa:before,
+table.dataTable td .fa:after {
+  background: none !important;
+  color: #111 !important;
+}
+.viewDetailBtn:hover .fa,
+.viewDetailBtn:hover .fa:before,
+.tbWrap table td .btn:hover .fa:before,
+table.dataTable td .btn:hover .fa:before {
+  color: var(--ta-primary) !important;
+}
+
+/* ===== 검색 영역 ===== */
+.searchBox,
+.searchBoxMenuReg,
+.searchToggle {
+  border-color: var(--ta-border) !important;
+  background: #f7fafc !important;
+}
+.searchToggle {
+  border: 1px solid var(--ta-border);
+  margin-bottom: -1px !important;
+  border-radius: var(--ta-radius) var(--ta-radius) 0 0;
+  position: relative;
+  z-index: 1;
+  transition: border-radius 0.2s ease;
+}
+.searchBox,
+.searchBoxMenuReg {
+  border-radius: 0 0 var(--ta-radius) var(--ta-radius);
+}
+.searchToggle.is-collapsed {
+  border-radius: var(--ta-radius);
+  margin-bottom: 0 !important;
+  transition: border-radius 0.42s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 검색 접기: 이전 방식(안쪽 clip 높이) 유지, 패딩은 건드리지 않음 */
+.searchToggle + .searchBox,
+.searchToggle + .searchBoxMenuReg {
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 0 !important;
+}
+.search-fold-clip {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.searchToggle + .searchBox.is-folding,
+.searchToggle + .searchBoxMenuReg.is-folding {
+  overflow: hidden;
+}
+.searchToggle + .searchBox.is-folded,
+.searchToggle + .searchBoxMenuReg.is-folded {
+  height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden;
+  margin: 0;
+  pointer-events: none;
+}
+.searchToggle .schToggle {
+  color: var(--ta-primary);
+}
+.searchToggle .schToggle:after {
+  background: url(../img/arrTop.png) no-repeat 100% 50%;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: 50% 50%;
+}
+.searchToggle.hide .schToggle:after {
+  background: url(../img/arrTop.png) no-repeat 100% 50%;
+  transform: rotate(180deg);
+}
+.searchBox form > p select,
+.searchBox form > p input[type="text"],
+.wf-input,
+.form-control {
+  border-color: var(--ta-border);
+  color: var(--ta-text);
+  border-radius: var(--ta-radius-sm);
+}
+.searchBox form > p select:focus,
+.searchBox form > p input[type="text"]:focus,
+.form-control:focus {
+  border-color: var(--ta-primary);
+  box-shadow: 0 0 0 0.15rem rgba(32, 196, 244, 0.35);
+}
+.searchBox form {
+  display: inline-block;
+  width: 100%;
+  position: relative;
+}
+.searchBox form button.searchBtnType1 {
+  position: absolute;
+  right: 15px;
+  bottom: 2px;
+}
+
+/* ===== 테이블 / DataTables ===== */
+.tbWrap .tbTop strong {
+  border-left-color: var(--ta-primary);
+  color: var(--ta-text);
+}
+table.dataTable thead th,
+table.dataTable thead td,
+table.dataTable tfoot th,
+.dataTables_scrollHead th,
+.dataTables_scrollHeadInner table thead th,
+.table thead th,
+.tbWrap .tbCon th,
+.tbWrap .tbCon table thead th,
+.tbWrap .tbCon .dataTables_wrapper .dataTables_scrollHead th {
+  background: var(--ta-accent-light) !important;
+  color: #334155 !important;
+  font-weight: 600;
+  border-color: var(--ta-border) !important;
+  font-size: 11px;
+}
+.tbWrap .tbCon .dataTables_wrapper table.dataTable th,
+.tbWrap .tbCon .dataTables_wrapper table.dataTable td {
+  box-sizing: border-box !important;
+}
+.dataTables_scrollHead th,
+.dataTables_scrollHeadInner table thead th,
+.tbWrap .tbCon .dataTables_wrapper .dataTables_scrollHead th {
+  height: 34px !important;
+  padding: 8px 6px !important;
+  line-height: 18px;
+  vertical-align: middle;
+}
+.tbWrap .tbCon .dataTables_wrapper .dataTables_scrollBody > table > tbody > tr > td {
+  height: 28px !important;
+  padding: 6px 6px !important;
+  line-height: 16px;
+  vertical-align: middle;
+}
+/* 복제 헤더는 세로만 접고, 좌우 패딩은 실제 헤더와 동일하게 유지 */
+.dataTables_wrapper .dataTables_scrollBody > table > thead > tr > th,
+.dataTables_wrapper .dataTables_scrollBody > table > thead > tr > td {
+  height: 0 !important;
+  padding: 0 6px !important;
+  line-height: 0 !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  background: transparent !important;
+}
+table.dataTable tbody td,
+.table tbody td,
+.tbWrap .tbCon table tbody td {
+  border-color: var(--ta-border) !important;
+  color: var(--ta-text);
+}
+table.dataTable tbody tr:nth-child(even):not(.selected) td {
+  background: #fafbfc;
+}
+table.dataTable tbody tr:hover:not(.selected) > td,
+.table tbody tr:hover:not(.selected) > td {
+  background: var(--ta-hover) !important;
+}
+/* 선택 행: 짝수행(td) 줄무늬·hover보다 우선 */
+table.dataTable tbody > tr.selected > td,
+table.dataTable tbody > tr > td.selected,
+.table tbody > tr.selected > td,
+.tbWrap .tbCon table.dataTable tbody > tr.selected > td {
+  background: var(--ta-selected) !important;
+}
+table.dataTable tbody > tr.selected:hover > td,
+table.dataTable tbody > tr.selected > td.selected:hover,
+.table tbody > tr.selected:hover > td {
+  background: var(--ta-selected-hover) !important;
+}
+.paging span > a.active {
+  color: var(--ta-primary);
+}
+.dataTables_paginate .paginate_button.current {
+  background: var(--ta-accent-light) !important;
+  border-color: var(--ta-primary) !important;
+  color: var(--ta-primary) !important;
+}
+
+/* 그리드는 직각 유지, 바깥 박스(.tbCon)만 라운드 */
+.tbWrap .tbCon {
+  border-color: var(--ta-border);
+  border-radius: var(--ta-radius);
+  background: #fff;
+}
+
+/* 모달 그리드는 컨테이너 전체 너비 사용 */
+.modal .tbWrap,
+.modal .tbWrap .tbCon,
+.modal .tbWrap .tbCon .dataTables_wrapper,
+.modal .tbWrap .tbCon table.dataTable {
+  width: 100% !important;
+}
+
+/* ===== 블록 라운드 (목업 6px) ===== */
+.layer,
+.modal-content,
+.card,
+.anno-pin-box,
+.mask_card {
+  border-radius: var(--ta-radius);
+  overflow: hidden;
+}
+
+/* ===== 화면 탭 ===== */
+.tab_menu {
+  border-bottom-color: var(--ta-primary) !important;
+}
+.tab_menu a.active {
+  border-color: var(--ta-primary) !important;
+  color: var(--ta-primary);
+  background: #fff;
+}
+.tab_menu.type2 a.active {
+  background: var(--ta-primary) !important;
+  border-color: var(--ta-primary-dark) !important;
+  color: #fff !important;
+}
+
+/* ===== 모달 ===== */
+.modal-header {
+  background: var(--ta-accent-light);
+  border-bottom-color: var(--ta-border);
+  border-radius: var(--ta-radius) var(--ta-radius) 0 0;
+}
+.modal-content {
+  border-radius: var(--ta-radius);
+  overflow: hidden;
+}
+.modal-footer {
+  border-top-color: var(--ta-border);
+}
+
+/* ===== Switch / CoreUI primary ===== */
+.switch-primary .switch-input:checked + .switch-slider,
+.switch-outline-primary-alt .switch-input:checked + .switch-slider::before {
+  background-color: var(--ta-primary) !important;
+  border-color: var(--ta-primary-dark) !important;
+}
+.switch-outline-primary .switch-input:checked + .switch-slider,
+.switch-outline-primary-alt .switch-input:checked + .switch-slider {
+  border-color: var(--ta-primary) !important;
+}
+.switch-outline-primary .switch-input:checked + .switch-slider::after,
+.switch-outline-primary-alt .switch-input:checked + .switch-slider::after {
+  color: var(--ta-primary) !important;
+}
+.taskLogInptActive {
+  box-shadow: inset 0 0 0 0.2rem rgba(32, 196, 244, 0.35);
+}
+
+/* ===== 링크 / 강조 ===== */
+.detailBtn,
+.detailInput {
+  color: var(--ta-primary) !important;
+}
+a {
+  color: var(--ta-primary);
+}
+
+/* ===== 대시보드 / 통계 카드 ===== */
+td.daySumColumn,
+td.daySumTd {
+  border-color: var(--ta-primary) !important;
+}
+td.daySumColumn {
+  background-color: var(--ta-accent-light) !important;
+}
+
+/* ===== 항목심사 수기입력 ===== */
+.itm-inpt-hndg-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 22px;
+  box-sizing: border-box;
+}
+.itm-inpt-hndg-inp,
+input.form-control.itm-inpt-hndg-inp {
+  flex: 1 1 auto;
+  width: auto !important;
+  min-width: 0;
+  height: 22px !important;
+  padding: 0 6px !important;
+  font-size: 12px !important;
+  line-height: 20px !important;
+  border: 1px solid var(--ta-border-dark);
+  border-radius: 2px;
+  color: var(--ta-text);
+  display: block;
+  box-sizing: border-box;
+}
+#sanctionRstTable td.hndg-inp-td {
+  vertical-align: middle;
+}
+#sanctionRstTable td.hndg-item-span {
+  vertical-align: middle;
+}
+.btn-add-row,
+.btn-add-row-spacer {
+  flex: 0 0 16px !important;
+  float: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 14px !important;
+  font-weight: normal !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+}
+.btn-add-row {
+  color: var(--ta-primary) !important;
+  cursor: pointer;
+}
+.btn-add-row-spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+.btn-add-row:hover {
+  background: none !important;
+  color: var(--ta-primary-dark) !important;
+}
+.nacrd-y {
+  width: 6px;
+  height: 6px;
+  background: var(--ta-danger-dark);
+  vertical-align: middle;
+}
+.row-hndg-add:not(.selected) td,
+#sanctionRstTable tbody tr.row-hndg-add:not(.selected) td,
+#sanctionRstTable tbody tr.rowHandwriting:not(.selected) td,
+.rowHandwriting:not(.selected) td {
+  background-color: #f5e9e9 !important;
+}
+.row-safewatch-itm:not(.selected) td,
+#sanctionRstTable tbody tr.row-safewatch-itm:not(.selected) td,
+#nacrdTable tbody tr.row-safewatch-itm:not(.selected) td {
+  background-color: var(--ta-accent-light) !important;
+}
+#sanctionRstTable tbody tr.row-hndg-add.row-safewatch-itm:not(.selected) td,
+#sanctionRstTable tbody tr.rowHandwriting.row-safewatch-itm:not(.selected) td {
+  background-color: #f5e9e9 !important;
+}
+.selected-sanction {
+  color: var(--ta-text) !important;
+  background-color: #fff3cd !important;
+  border-color: #f59e0b !important;
+  outline: 0;
+  box-shadow: none !important;
+}
+#sanctionRstTable tbody tr.row-hndg-add td.selected-sanction,
+#sanctionRstTable tbody tr.rowHandwriting td.selected-sanction {
+  background-color: #f0ddd8 !important;
+}
+/* 심사상세 그리드 — 선택 행 (목록 그리드와 동일, ID 우선순위로 특수행 배경보다 우선) */
+#sanctionRstTable tbody > tr.selected > td,
+#totalTextRstTable tbody > tr.selected > td,
+#safeWatchRstTable tbody > tr.selected > td,
+#nacrdTable tbody > tr.selected > td {
+  background: var(--ta-selected) !important;
+}
+#sanctionRstTable tbody > tr.selected:hover > td,
+#totalTextRstTable tbody > tr.selected:hover > td,
+#safeWatchRstTable tbody > tr.selected:hover > td,
+#nacrdTable tbody > tr.selected:hover > td {
+  background: var(--ta-selected-hover) !important;
+}
+#sanctionRstTable tbody tr:hover:not(.selected) td,
+#totalTextRstTable tbody tr:hover:not(.selected) td,
+#safeWatchRstTable tbody tr:hover:not(.selected) td,
+#nacrdTable tbody tr:hover:not(.selected) td {
+  background: var(--ta-hover);
+}
+#sanctionRstTable tbody tr.row-safewatch-itm:hover:not(.selected) td,
+#nacrdTable tbody tr.row-safewatch-itm:hover:not(.selected) td {
+  background: var(--ta-accent-light) !important;
+}
+#sanctionRstTable tbody tr.row-hndg-add:hover:not(.selected) td,
+#sanctionRstTable tbody tr.rowHandwriting:hover:not(.selected) td {
+  background: #f5e9e9 !important;
+}
+#sanctionRstTable tbody td:nth-child(6) {
+  color: var(--ta-danger-dark);
+  font-size: 11px;
+}
+#sanctionRstTable_wrapper .dataTables_scrollHead th,
+#totalTextRstTable_wrapper .dataTables_scrollHead th,
+#safeWatchRstTable_wrapper .dataTables_scrollHead th,
+#appvRecodeTable_wrapper .dataTables_scrollHead th,
+#nacrdTable thead th {
+  background: var(--ta-accent-light) !important;
+  color: #334155 !important;
+}
+
+/* 헤더는 고정, 본문만 넘칠 때 세로 스크롤 (목록 그리드와 동일) */
+body .tbWrap .tbCon .dataTables_wrapper .dataTables_scroll div.dataTables_scrollHead,
+body .dataTables_scroll div.dataTables_scrollHead {
+  overflow: hidden !important;
+  scrollbar-width: none;
+}
+body .tbWrap .tbCon .dataTables_wrapper .dataTables_scroll div.dataTables_scrollHead::-webkit-scrollbar,
+body .dataTables_scroll div.dataTables_scrollHead::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+body .tbWrap .tbCon .dataTables_wrapper .dataTables_scroll div.dataTables_scrollBody,
+body .dataTables_scroll div.dataTables_scrollBody {
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+/* 스크롤 그리드 하단 기본 보더(#111) 제거 */
+table.dataTable.no-footer,
+.dataTables_wrapper.no-footer .dataTables_scrollBody,
+.tbWrap .tbCon .dataTables_wrapper.no-footer .dataTables_scrollBody {
+  border-bottom: none !important;
+}
+
+/* 그리드 바깥 박스(.tbCon) 아래 중복 구분선 제거 */
+.contents {
+  border-bottom: none;
+}
+.layout_type_popup .section_wrapper {
+  border-bottom: none;
+}
+
+/* 심사상세: 우측 패널이 테이블 폭 때문에 아래로 밀리지 않도록 */
+.layout_type_popup .section_view {
+  overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0 !important;
+}
+.layout_type_popup .section_view .tbWrap,
+.layout_type_popup .section_view .tbCon,
+.layout_type_popup .section_view .dataTables_wrapper {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.layout_type_popup .section_view .dataTables_wrapper {
+  width: 100% !important;
+}
+.layout_type_popup .section_view .tbCon .dataTables_wrapper th.td-text-400,
+.layout_type_popup .section_view .tbCon .dataTables_wrapper td.td-text-400 {
+  width: auto !important;
+  min-width: 120px;
+}
+#sanctionRstTable_wrapper .dataTables_scrollHead th:nth-child(1),
+#sanctionRstTable_wrapper .dataTables_scrollBody th:nth-child(1),
+#sanctionRstTable_wrapper .dataTables_scrollBody td:nth-child(1) {
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+}
+#sanctionRstTable_wrapper .dataTables_scrollHead th:nth-child(2),
+#sanctionRstTable_wrapper .dataTables_scrollBody th:nth-child(2),
+#sanctionRstTable_wrapper .dataTables_scrollBody td:nth-child(2) {
+  width: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+}
+
+/* 조회 로딩: 화면 크기와 무관하게 뷰포트 정중앙 */
+.loadingDisplay {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 9998;
+}
+.loadingDisplayWrapper {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  -ms-transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  z-index: 9999;
+  border-color: var(--ta-border);
+  border-radius: var(--ta-radius);
+}
+.loadingDisplayWrapper .fa-spin {
+  color: var(--ta-primary) !important;
+}
+.loadingDisplayText {
+  color: var(--ta-text);
+}
+
+/* 프로그램 사용 이력 상세 팝업 */
+#programLogDetailWrapper {
+  border-color: var(--ta-border) !important;
+  color: var(--ta-text) !important;
+  font-family: var(--ta-font);
+}
+.programLogDetailTitle {
+  border-left-color: var(--ta-primary) !important;
+  color: var(--ta-text) !important;
+  font-family: var(--ta-font);
+}
+td.logTd {
+  border-color: var(--ta-border) !important;
+  color: var(--ta-text) !important;
+}
+td.logTd.logDetailColumn {
+  background-color: var(--ta-accent-light) !important;
+  color: var(--ta-text) !important;
+}
+
+/* ===== 달력 (jQuery UI Datepicker) ===== */
+.cal-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+.searchBox form > p .cal-wrap {
+  float: left;
+  width: calc(50% - 8px);
+}
+.searchBox form > p input.searchBoxCheck ~ .cal-wrap {
+  width: calc(50% - 20px) !important;
+}
+.searchBox form > p .cal-wrap input.cal,
+.searchBox form > p .cal-wrap input[type="text"].cal,
+.cal-wrap input.cal {
+  float: none !important;
+  width: 100% !important;
+  padding-right: 28px;
+  box-sizing: border-box;
+}
+.cal-wrap .cal-fa-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  margin-top: -7px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  font-size: 13px;
+  color: #111;
+  background: transparent !important;
+  pointer-events: none;
+  z-index: 1;
+}
+.searchBox form > p input[type="text"].cal,
+input.cal {
+  border-color: var(--ta-border);
+  color: var(--ta-text);
+  font-family: var(--ta-font);
+  border-radius: var(--ta-radius-sm);
+  background-color: #fff !important;
+  background-image: none !important;
+}
+.searchBox form > p input[type="text"].cal:focus,
+input.cal:focus {
+  border-color: var(--ta-primary) !important;
+  box-shadow: 0 0 0 0.15rem rgba(32, 196, 244, 0.35);
+  outline: none;
+}
+.ui-datepicker,
+#ui-datepicker-div {
+  width: 260px;
+  padding: 10px 10px 12px;
+  border: 1px solid var(--ta-border) !important;
+  border-radius: var(--ta-radius);
+  background: var(--woori-white) !important;
+  box-shadow: 0 8px 24px rgba(0, 103, 172, 0.14);
+  font-family: var(--ta-font) !important;
+  color: var(--ta-text);
+  box-sizing: border-box;
+}
+.ui-datepicker .ui-datepicker-header {
+  position: relative;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 28px;
+  margin: 0 0 6px;
+  background: var(--ta-accent-light) !important;
+  border: 0 !important;
+  border-radius: var(--ta-radius-sm);
+  color: var(--ta-primary) !important;
+  box-sizing: border-box;
+}
+.ui-datepicker .ui-datepicker-title {
+  margin: 0;
+  line-height: 32px;
+  height: 32px;
+  color: var(--ta-primary) !important;
+  font-weight: 700;
+  font-size: 13px;
+  font-family: var(--ta-font);
+}
+.ui-datepicker .ui-datepicker-prev,
+.ui-datepicker .ui-datepicker-next {
+  position: absolute;
+  top: 5px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: hidden;
+}
+.ui-datepicker .ui-datepicker-prev { left: 4px; }
+.ui-datepicker .ui-datepicker-next { right: 4px; }
+.ui-datepicker .ui-datepicker-prev-hover,
+.ui-datepicker .ui-datepicker-next-hover {
+  top: 5px;
+  background: transparent !important;
+  border: 0 !important;
+}
+.ui-datepicker .ui-datepicker-prev span,
+.ui-datepicker .ui-datepicker-next span {
+  display: none !important;
+}
+.ui-datepicker .ui-datepicker-prev::after,
+.ui-datepicker .ui-datepicker-next::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  width: 0;
+  height: 0;
+}
+.ui-datepicker .ui-datepicker-prev::after {
+  left: 7px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 7px solid var(--ta-primary);
+}
+.ui-datepicker .ui-datepicker-next::after {
+  right: 7px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--ta-primary);
+}
+.ui-datepicker table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.ui-datepicker th {
+  padding: 4px 0;
+  color: var(--ta-muted);
+  font-weight: 600;
+  font-size: 11px;
+  font-family: var(--ta-font);
+  text-align: center;
+  border: 0;
+}
+.ui-datepicker td {
+  padding: 1px;
+  border: 0;
+}
+.ui-datepicker td span,
+.ui-datepicker td a,
+.ui-datepicker td .ui-state-default {
+  display: block;
+  width: 30px;
+  height: 28px;
+  margin: 0 auto;
+  padding: 0;
+  line-height: 28px;
+  text-align: center;
+  border: 0 !important;
+  border-radius: 4px;
+  background: transparent !important;
+  color: var(--ta-text) !important;
+  font-family: var(--ta-font);
+  font-weight: 400;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+.ui-datepicker td.ui-datepicker-other-month span,
+.ui-datepicker td.ui-datepicker-unselectable span {
+  background: transparent !important;
+  border: 0 !important;
+  color: transparent !important;
+}
+.ui-datepicker td a.ui-state-hover,
+.ui-datepicker td a:hover {
+  background: var(--ta-accent-light) !important;
+  color: var(--ta-primary) !important;
+}
+.ui-datepicker td a.ui-state-highlight {
+  background: var(--ta-accent-light) !important;
+  color: var(--ta-primary) !important;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--ta-primary-light);
+}
+.ui-datepicker td a.ui-state-active,
+.ui-datepicker td a.ui-state-active.ui-state-highlight {
+  background: var(--ta-primary) !important;
+  color: var(--woori-white) !important;
+  font-weight: 700;
+  box-shadow: none;
+}
+.dataTables_wrapper .dataTables_processing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  margin: 0 !important;
+  width: auto;
+  min-width: 160px;
+  padding: 10px 16px;
+}
+
+/* ===== 체크박스 ===== */
+input[type="checkbox"]:not(.switch-input) {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0 6px 0 0;
+  padding: 0;
+  vertical-align: middle;
+  border: 1.5px solid #8eb4ce;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  outline: none;
+  box-shadow: none;
+  transition: background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+input[type="checkbox"]:not(.switch-input):hover {
+  border-color: var(--ta-primary);
+}
+input[type="checkbox"]:not(.switch-input):focus {
+  border-color: var(--ta-primary);
+  box-shadow: 0 0 0 3px rgba(32, 196, 244, 0.28);
+}
+input[type="checkbox"]:not(.switch-input):checked {
+  background-color: var(--ta-primary);
+  border-color: var(--ta-primary);
+}
+input[type="checkbox"]:not(.switch-input):checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:not(.switch-input):disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+.searchBox form > p input[type="checkbox"] + label,
+.statTaskChkGroup label {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 16px;
+  font-size: 12px;
+  color: var(--ta-text);
+  margin: 0 10px 0 0;
+  cursor: pointer;
+}
+/* 달력 미사용 체크: 종료일 달력 바로 오른쪽 */
+.searchBox form > p input[type="checkbox"].searchBoxCheck {
+  position: absolute;
+  right: 4px;
+  top: 12px;
+  left: auto;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  z-index: 2;
+}
+.statTaskChkGroup {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  line-height: 30px;
+}
+.statTaskChkBox {
+  width: 16px !important;
+  height: 16px !important;
+  vertical-align: middle !important;
+  margin: 0 6px 0 8px !important;
+}

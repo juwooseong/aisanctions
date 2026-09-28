@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminUserMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminUserVO">
+		<result property="aiInptUserId" column="AI_INPT_USER_ID"/>
+		<result property="aiInptUserEno" column="AI_INPT_USER_ENO"/>
+		<result property="aiInptUserNm" column="AI_INPT_USER_NM"/>
+		<result property="aiInptUserFaReYn" column="AI_INPT_USER_FA_RE_YN"/>
+		<result property="aiInptUserAutCd" column="AI_INPT_AUT_CD"/>
+		<result property="aiInptUserAutVal" column="AI_INPT_USER_AUT_VAL"/>
+		<result property="aiInptSnpeEno" column="AI_INPT_SNPE_ENO"/>
+		<result property="aiInptSnpeNm" column="AI_INPT_SNPE_NM"/>
+		<result property="aiInptUserYn" column="AI_INPT_USER_YN"/>
+		<result property="aiInptAdminYn" column="AI_INPT_MGPE_YN"/>
+		<result property="aiInptUserRgsDtm" column="AI_INPT_USER_RGS_DTM"/>
+		<result property="aiInptUserEndDtm" column="AI_INPT_USER_END_DTM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="aiInptSrvcUserDscd" column="AI_INPT_SRVC_USER_DSCD"/>
+	</resultMap>
+	
+	 <select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.selectList */
+		<!-- 디비에 USER_ENO가 중복되는것들이 많아서 사용자가 중복되게 조회됨. 그래서 임시로 ROW_NUMBER를 걸어둠. 추후 지워도 됨. -->
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT * FROM(
+		SELECT ROW_NUMBER()OVER(PARTITION BY AI_INPT_USER_ENO ORDER BY AI_INPT_USER_ID DESC) AS ORDERR,
+			AI_INPT_USER_ID, AI_INPT_AUT_CD, AI_INPT_USER_FA_RE_YN, AI_INPT_USER_ENO, AI_INPT_USER_NM, 
+			AI_INPT_SNPE_ENO, AI_INPT_USER_YN, AI_INPT_MGPE_YN, AI_INPT_USER_RGS_DTM,
+			AI_INPT_USER_END_DTM, LST_DB_CHG_ID, TRN_LOG_SRNO, LST_DB_CHG_DTM, AI_INPT_SRVC_USER_DSCD, 
+			(SELECT AI_INPT_CMN_CD_NM
+				FROM CSPD112TI
+				WHERE AI_INPT_GRP_CD = '120'
+				AND AI_INPT_CMN_CD = A.AI_INPT_AUT_CD) AS AI_INPT_USER_AUT_VAL,
+			(SELECT AI_INPT_USER_NM
+				FROM CSPD101TI
+				WHERE AI_INPT_USER_ENO = A.AI_INPT_SNPE_ENO
+				AND ROWNUM = 1
+			) AS AI_INPT_SNPE_NM
+		FROM CSPD101TI A
+		WHERE 1=1
+		
+		<include refid="selectListCond" />)C WHERE C.ORDERR = '1' 
+ 		<choose>
+			<when test='"aiInptUserAutVal".equals(sortItem) and "asc".equals(sortDir)'>
+			  
+			 <!--  CASE WHEN AI_INPT_USER_AUT_VAL = 'S1' THEN 0 
+		      WHEN AI_INPT_USER_AUT_VAL = 'S1' THEN 1 
+		      ELSE 2 END  -->
+			  ORDER BY DECODE(AI_INPT_USER_AUT_VAL, 'S1', 1, 'S2', 2, 3) 
+			</when>
+			<when test='"aiInptUserAutVal".equals(sortItem) and "desc".equals(sortDir)'>
+			  ORDER BY DECODE(AI_INPT_USER_AUT_VAL, 'QA', 1, 'S2', 2, 3)
+			 
+			</when>
+			<!-- 관리자 -->
+			<when test='"aiInptAdminYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_MGPE_YN
+			</when>
+			<when test='"aiInptAdminYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_MGPE_YN DESC
+			</when>
+			<!-- 직원번호 -->
+			<when test='"aiInptUserEno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_ID
+			</when>
+			<when test='"aiInptUserEno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_ID DESC
+			</when>
+			<!-- 직원명 -->
+			<when test='"aiInptUserNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_NM
+			</when>
+			<when test='"aiInptUserNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_USER_NM DESC
+			</when>
+			<!-- 담당결재자직원번호 -->
+			<when test='"aiInptSnpeEno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_SNPE_ENO
+			</when>
+			<when test='"aiInptSnpeEno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_SNPE_ENO DESC
+			</when>
+			
+			<otherwise>
+				ORDER BY AI_INPT_USER_ID ASC
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select> 
+	
+	
+	
+	<select id="selectListPop" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.selectList */
+		<!-- 디비에 USER_ENO가 중복되는것들이 많아서 사용자가 중복되게 조회됨. 그래서 임시로 ROW_NUMBER를 걸어둠. 추후 지워도 됨. -->
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		SELECT * FROM(
+			SELECT ROW_NUMBER()OVER(PARTITION BY AI_INPT_USER_ENO ORDER BY AI_INPT_USER_ID DESC) AS ORDERR,
+				   AI_INPT_USER_ENO, 
+				   AI_INPT_AUT_CD, 
+				   AI_INPT_USER_NM, 
+				   (
+					SELECT AI_INPT_CMN_CD_NM
+						FROM CSPD112TI
+					WHERE AI_INPT_GRP_CD = '120'
+						AND AI_INPT_CMN_CD = A.AI_INPT_AUT_CD
+					) AS AI_INPT_USER_AUT_VAL
+			FROM CSPD101TI A
+			WHERE 1=1
+			<include refid="selectListCond" />)C WHERE C.ORDERR = '1' 
+	 		<choose>
+				<when test='"aiInptUserAutVal".equals(sortItem) and "asc".equals(sortDir)'>
+					ORDER BY AI_INPT_USER_AUT_VAL
+				</when>
+				<when test='"aiInptUserAutVal".equals(sortItem) and "desc".equals(sortDir)'>
+					ORDER BY AI_INPT_USER_AUT_VAL DESC
+				</when>
+			
+				<!-- 직원명 -->
+				<when test='"aiInptUserNm".equals(sortItem) and "asc".equals(sortDir)'>
+					ORDER BY AI_INPT_USER_NM
+				</when>
+				<when test='"aiInptUserNm".equals(sortItem) and "desc".equals(sortDir)'>
+					ORDER BY AI_INPT_USER_NM DESC
+				</when>
+				
+				<!-- 담당결재자직원번호 -->
+				<when test='"aiInptUserEno".equals(sortItem) and "asc".equals(sortDir)'>
+					ORDER BY AI_INPT_USER_ENO
+				</when>
+				<when test='"aiInptUserEno".equals(sortItem) and "desc".equals(sortDir)'>
+					ORDER BY AI_INPT_USER_ENO DESC
+				</when>
+				
+				<otherwise>
+					ORDER BY AI_INPT_USER_ENO ASC
+				</otherwise>
+			</choose>
+			
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select> 
+
+	
+	<select id="selectOne" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.selectOne */
+		SELECT AI_INPT_USER_ENO FROM CSPD101TI WHERE AI_INPT_USER_ENO = #{aiInptUserEno}
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.selectListTotCnt */
+		
+		
+		
+		SELECT COUNT(*) totcnt FROM(
+		SELECT ROW_NUMBER()OVER(PARTITION BY AI_INPT_USER_ENO ORDER BY AI_INPT_USER_ID DESC) AS ORDERR,
+			AI_INPT_USER_ID, AI_INPT_AUT_CD, AI_INPT_USER_FA_RE_YN, AI_INPT_USER_ENO, AI_INPT_USER_NM, 
+			AI_INPT_SNPE_ENO, AI_INPT_USER_YN, AI_INPT_MGPE_YN, AI_INPT_USER_RGS_DTM,
+			AI_INPT_USER_END_DTM, LST_DB_CHG_ID, TRN_LOG_SRNO, LST_DB_CHG_DTM, AI_INPT_SRVC_USER_DSCD, 
+			(SELECT AI_INPT_CMN_CD_NM
+				FROM CSPD112TI
+				WHERE AI_INPT_GRP_CD = '120'
+				AND AI_INPT_CMN_CD = A.AI_INPT_AUT_CD) AS AI_INPT_USER_AUT_VAL,
+			(SELECT AI_INPT_USER_NM
+				FROM CSPD101TI
+				WHERE AI_INPT_USER_ENO = A.AI_INPT_SNPE_ENO
+				AND ROWNUM = 1
+			) AS AI_INPT_SNPE_NM
+		FROM CSPD101TI A
+		WHERE 1=1
+		
+		<include refid="selectListCond" />)C WHERE C.ORDERR = '1' 
+		
+
+		
+	</select>
+	
+	<select id="selectListConcat" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.selectListTotCnt */
+		 SELECT A.* from(
+ 			SELECT AI_INPT_USER_NM,AI_INPT_USER_ENO
+                FROM CSPD101TI     
+                WHERE AI_INPT_AUT_CD = #{schAuth}
+                ) A
+            <if test="schUserNm != null and schUserNm != ''">             
+  				WHERE CONCAT(AI_INPT_USER_NM,
+                AI_INPT_USER_ENO) like '%' || #{schUserNm} || '%'
+            </if>
+	</select>
+	
+
+	<sql id="selectListCond">
+		<if test="schUserYn != null and schUserYn != ''">
+			AND AI_INPT_USER_YN = #{schUserYn}
+		</if>
+		<if test="schAuth != null and schAuth != ''">
+			AND AI_INPT_AUT_CD = #{schAuth}
+		</if>
+		<if test="schUserNo != null and schUserNo != ''">
+			AND AI_INPT_USER_ENO LIKE '%' || #{schUserNo} || '%'
+		</if>
+		<if test="schUserNm != null and schUserNm != ''">
+			AND AI_INPT_USER_NM LIKE '%' || #{schUserNm} || '%'
+		</if>
+		<if test="aiInptCmnCd != null and aiInptCmnCd != ''">
+			AND AI_INPT_AUT_CD LIKE '%' || #{aiInptCmnCd} || '%'
+		</if>
+		<if test="schUserNoNm != null and schUserNoNm != ''">
+			AND (AI_INPT_USER_NM LIKE '%' || #{schUserNoNm} || '%'
+				OR AI_INPT_USER_ENO LIKE '%' || #{schUserNoNm} || '%')
+		</if>
+		<if test="aiInptUserFaReYn != null and aiInptUserFaReYn != ''">
+			AND AI_INPT_USER_FA_RE_YN = #{aiInptUserFaReYn}
+		</if>
+		<if test="aiInptUserYn != null and aiInptUserYn != ''">
+			AND AI_INPT_USER_YN = #{aiInptUserYn}
+		</if>
+		<if test="aiInptSrvcUserDscd != null and aiInptSrvcUserDscd != ''">
+			AND AI_INPT_SRVC_USER_DSCD = #{aiInptSrvcUserDscd}
+		</if>
+	</sql>
+	
+	<insert id="userInsert" parameterType="com.woori.ajs.model.AdminUserVO">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.userInsert */
+		
+			INSERT INTO CSPD101TI(
+				AI_INPT_USER_ID, 
+				AI_INPT_USER_ENO, 
+				AI_INPT_USER_NM, 
+				AI_INPT_USER_FA_RE_YN, 
+				AI_INPT_AUT_CD, 
+				AI_INPT_SNPE_ENO, 
+				AI_INPT_USER_YN, 
+				AI_INPT_MGPE_YN, 
+				AI_INPT_USER_RGS_DTM, 
+				AI_INPT_USER_END_DTM, 
+				TRN_LOG_SRNO, 
+				LST_DB_CHG_ID, 
+				LST_DB_CHG_DTM,
+				AI_INPT_SRVC_USER_DSCD 
+			)VALUES (
+				#{aiInptUserEno}, 
+				#{aiInptUserEno}, 
+				#{aiInptUserNm}, 
+				'Y',
+				#{aiInptUserAutCd}, 
+				#{aiInptSnpeEno}, 
+				#{aiInptUserYn}, 
+				nvl(#{aiInptAdminYn},'N'),
+				TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'), 
+				NULL, 
+				#{trnLogSrno}, 
+				#{lstDbChgId}, 
+				TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'),
+				#{aiInptSrvcUserDscd}
+			)
+	</insert>
+	
+	<update id="userUpdate" parameterType="com.woori.ajs.model.AdminUserVO">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.userUpdate */
+		UPDATE CSPD101TI SET
+			 AI_INPT_SNPE_ENO = #{aiInptSnpeEno}
+			, AI_INPT_MGPE_YN = NVL(#{aiInptAdminYn},'N')
+			, AI_INPT_USER_YN = #{aiInptUserYn} 
+			, LST_DB_CHG_ID = #{lstDbChgId}
+			, TRN_LOG_SRNO = #{trnLogSrno}
+			, LST_DB_CHG_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+			, AI_INPT_AUT_CD = #{aiInptUserAutCd}
+			, AI_INPT_SRVC_USER_DSCD = #{aiInptSrvcUserDscd}
+		WHERE AI_INPT_USER_ID = #{aiInptUserId}
+	</update>
+	
+	<update id="userDelete" parameterType="com.woori.ajs.model.AdminUserVO">
+		/* 사용자 관리 (7010) */
+		/* AdminUserMapper.userDelete */
+		DELETE FROM CSPD101TI WHERE AI_INPT_USER_ID = #{aiInptUserId}
+		
+		<!-- UPDATE CSPD101TI SET
+			AI_INPT_USER_YN = 'N'
+			, A.LST_DB_CHG_ID = #{lstDbChgId}
+			, A.LST_DB_CHG_DTM = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE AI_INPT_USER_ID = #{aiInptUserId} -->
+	</update>
+	
+</mapper>

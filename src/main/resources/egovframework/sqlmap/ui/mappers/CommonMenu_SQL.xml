@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.CommonMenuMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.CommonMenuVO">
+		<result property="menu_id" column="AI_INPT_MENU_ID"/>
+		<result property="menu_nm" column="AI_INPT_MENU_NM"/>
+		<result property="p_menu_id" column="AI_INPT_HGRN_MENU_ID"/>
+		<result property="menu_url" column="AI_INPT_MENU_URL_NM"/>
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* CommonMenuMapper.selectList */
+		WITH W_TMP AS (
+			SELECT A.AI_INPT_MENU_ID, A.AI_INPT_MENU_NO, A.AI_INPT_MENU_NM, A.AI_INPT_HGRN_MENU_ID, B.AI_INPT_AUT_USG_YN, A.AI_INPT_MGPE_YN, A.AI_INPT_MENU_URL_NM
+			  FROM CSPD108TI A, CSPD109TI B
+			  WHERE B.AI_INPT_MENU_ID = A.AI_INPT_MENU_ID
+			  AND B.AI_INPT_AUT_CD = #{schAuth}
+			  AND (
+			       ('Y' != #{schAdminYN} AND A.AI_INPT_MGPE_YN = 'N')
+			       OR
+			       ('Y' = #{schAdminYN} AND A.AI_INPT_MGPE_YN IN ('N', 'Y'))
+			      )
+			  AND B.AI_INPT_AUT_USG_YN = 'Y'
+		), W_TMP2 AS (
+			SELECT C.AI_INPT_MENU_ID, C.AI_INPT_MENU_NO, C.AI_INPT_MENU_NM, C.AI_INPT_HGRN_MENU_ID, C.AI_INPT_MGPE_YN, C.AI_INPT_MENU_URL_NM
+			       , CASE WHEN C.AI_INPT_MENU_NO IS NULL AND 1 > ( SELECT COUNT(*) FROM W_TMP D WHERE D.AI_INPT_HGRN_MENU_ID = C.AI_INPT_MENU_ID AND D.AI_INPT_AUT_USG_YN = 'Y' ) THEN 'N'
+			              ELSE C.AI_INPT_AUT_USG_YN END AS AI_INPT_AUT_USG_YN
+			  FROM W_TMP C
+		)
+		SELECT *
+		  FROM (
+			SELECT E.AI_INPT_MENU_ID, E.AI_INPT_MENU_NO, E.AI_INPT_MENU_NM, E.AI_INPT_HGRN_MENU_ID, E.AI_INPT_MGPE_YN, E.AI_INPT_MENU_URL_NM
+			       , CASE WHEN E.AI_INPT_MENU_NO IS NULL AND E.AI_INPT_MENU_ID IN ('100000', '200000', '300000', '400000', '500000')
+			                AND 1 > ( SELECT COUNT(*) FROM W_TMP2 D WHERE D.AI_INPT_HGRN_MENU_ID = E.AI_INPT_MENU_ID AND D.AI_INPT_AUT_USG_YN = 'Y' ) THEN 'N'
+				          ELSE E.AI_INPT_AUT_USG_YN END AS AI_INPT_AUT_USG_YN
+			  FROM W_TMP2 E
+		  ) F
+		WHERE F.AI_INPT_MENU_ID != '000000'
+		  AND F.AI_INPT_AUT_USG_YN = 'Y'
+		ORDER BY AI_INPT_MENU_ID, AI_INPT_MENU_NO, AI_INPT_MENU_NM
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* CommonMenuMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD108TI
+		WHERE 1=1
+		<include refid="selectListCond" />
+	</select>
+	
+	<sql id="selectListCond">
+		<if test="schGbn != null and schGbn != ''">
+			AND COL1 = #{schGbn}
+		</if>
+		<if test="schRefNo != null and schRefNo != ''">
+			AND COL1 = #{schRefNo}
+		</if>
+		<if test="schUserNo != null and schUserNo != ''">
+			AND COL1 = #{schUserNo}
+		</if>
+		<if test="schTerm != null and schTerm != ''">
+			AND COL1 = #{searchKeyword}
+		</if>
+	</sql>
+	
+</mapper>

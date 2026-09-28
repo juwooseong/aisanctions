@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.RevertTodoMapper">
+
+	<resultMap id="listMap" type="com.woori.ajs.model.ReverTodoVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="inptRcpDt" column="INPT_RCP_DT" />
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />
+		<result property="ffxRefnoSrno" column="FX_REFNO_SRNO" />
+		<result property="aiInptImgKeyNo" column="AI_INPT_IMG_KEY_NO" />
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD" />
+		<result property="inptAtmcBizDsNm" column="INPT_ATMC_BIZ_NM" />
+		<result property="wrrInfo" column="WRR_INFO" />
+		<result property="inptPrcsCd" column="AI_INPT_PROS_CD" />
+		<result property="inptPrcsNm" column="INPT_PRCSNM" />
+		<result property="inptAtvtCd" column="AI_INPT_ACVT_CD" />
+		<result property="inptAtvtNm" column="INPT_ATVTNM" />
+		<result property="fcCucd" column="FC_CUCD" />
+		<result property="fcCuNm" column="FC_CUNM" />
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM" />
+		<result property="aiInptCusNm" column="AI_INPT_CUS_NM" />
+		<result property="totaltextAiInptRstCd" column="TOTALTEXT_AI_INPT_RST_CD" />
+		<result property="totaltextAiInptRstNm" column="TOTALTEXT_AI_INPT_RST_NM" />
+		<result property="itmInptAiInptRstCd" column="ITM_INPT_AI_INPT_RST_CD" />
+		<result property="itmInptAiInptRstNm" column="ITM_INPT_AI_INPT_RST_NM" />
+		<result property="safewatchAiInptRstCd" column="SAFEWATCH_AI_INPT_RST_CD" />
+		<result property="safewatchAiInptRstNm" column="SAFEWATCH_AI_INPT_RST_NM" />
+		<result property="filtInptRstSrno" column="FILT_INPT_RST_SRNO" />
+		<result property="filtDtctNo" column="FILT_DTCT_NO" />
+		<result property="aiInptCsno" column="AI_INPT_CSNO" />
+		<result property="save" column="SAVE" />
+		<result property="started" column="STARTED" />
+		<result property="bliv" column="BLIV" />
+	</resultMap>
+	
+<!-- 	FFX_REFNO_SRNO -> FX_REFNO_SRNO -->
+<!-- 	AI_INPT_PRCS_CD -> AI_INPT_PROS_CD -->
+<!-- 	AI_INSP_ATVT_CD -> AI_INPT_ACVT_CD -->
+<!-- 	INPT_PRG_HST_ID -> AI_INPT_PRG_SRNO -->
+<!-- 	AI_INSP_ATVT_STS_CD -> AI_INPT_ACVT_STS_CD -->
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* RevertTodoMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+
+			SELECT A.INPT_RCP_DT AS INPT_RCP_DT, 											 -- 생성일
+				   B.AI_INPT_CMN_CD_NM AS INPT_ATMC_BIZ_NM,									 -- 업무구분 1 : 수입, 2 : 수출
+				   A.ACTL_FX_REFNO,															 -- refNo
+				   CASE WHEN A.SAVE_FLAG  = '00000000000000000000' THEN '' ELSE  '저장' END AS SAVE,
+				   CASE WHEN A.SAVE_CHG_DTM  = '00000000000000000000' THEN '' ELSE  'start' END AS STARTED, 
+				   A.INPT_MST_SRNO,															 -- 마스터번호
+				   C.AI_INPT_CMN_CD_NM AS INPT_PRCSNM,										 -- 프로세스
+				   D.AI_INPT_CMN_CD_NM AS INPT_ATVTNM,										 -- 액티비티	
+				   A.CSNO AS AI_INPT_CSNO,												     -- 고객번호
+				   A.CUS_KORL_NM AS AI_INPT_CUS_NM,											 -- 고객명
+				   A.XPBY_COL_CTR_CUCD AS FC_CUNM,											 -- 통화
+				   A.XPBY_COL_AM AS AI_INPT_BUY_AM,											 -- 금액
+				   A.TOTALTEXT_AI_INPT_RST_CD,									             -- TotalText 심사코드
+				   A.ITM_INPT_AI_INPT_RST_CD,									             -- 항목심사 심사코드
+				   A.SAFEWATCH_AI_INPT_RST_CD,									             -- SAFEWATCH 심사코드				   
+		           A.FILT_DTCT_NO,								     						 -- DetectionID
+				   G.AI_INPT_CMN_CD_ENG_NM AS TOTALTEXT_AI_INPT_RST_NM,						 -- TotalText 심사코드명
+				   H.AI_INPT_CMN_CD_ENG_NM AS ITM_INPT_AI_INPT_RST_NM,						 -- 항목심사 심사코드명
+				   I.AI_INPT_CMN_CD_ENG_NM AS SAFEWATCH_AI_INPT_RST_NM,						 -- SAFEWATCH 심사코드명
+				   A.PAPS_RE_SCAN_CMPL_YN,		     						                 -- 재스캔 완료 여부
+				   A.AI_INPT_ACVT_CD,		     						                     -- 액티비티코드
+				   A.INPT_ATMC_BIZ_DSCD,	     						                     -- 업무구분코드
+			       A.WRR_INFO,    						             						 -- 주의 코드명
+			      CASE WHEN A.BL IS NULL OR A.IVOC IS NULL THEN 'NO_BLIV' ELSE 'BLIV' END AS BLIV
+			  FROM ( -- 마스터테이블
+			  		SELECT M.INPT_RCP_DT,
+			  		       M.ACTL_FX_REFNO,
+			  		       M.INPT_MST_SRNO,
+			  		       M.TOTALTEXT_AI_INPT_RST_CD,
+			  		       M.ITM_INPT_AI_INPT_RST_CD,
+			  		       M.SAFEWATCH_AI_INPT_RST_CD,
+			  		       M.INPT_ATMC_BIZ_DSCD,
+			  		       M.AI_INPT_PROS_CD,
+			  		       M.AI_INPT_ACVT_CD,
+			  		       M.FX_REFNO_SRNO,
+			  		       M.PAPS_RE_SCAN_CMPL_YN,
+			  		       NVL(E.XPBY_COL_CTR_CUCD, I.TDOC_RCP_CUCD)AS XPBY_COL_CTR_CUCD,
+						   NVL(E.XPBY_COL_AM,I.TDOC_RCP_AM) 		AS XPBY_COL_AM,
+			               NVL(E.CUS_KORL_NM,I.CUS_KORL_NM) 		AS CUS_KORL_NM,
+			               NVL(E.CSNO, I.CSNO)						AS CSNO,
+				          (-- DetectionID  
+				          	 SELECT MAX(FILT_DTCT_NO) KEEP(
+								                        DENSE_RANK FIRST  
+								                        ORDER BY AI_INPT_PRG_SRNO DESC
+								                        ) AS FILT_DTCT_NO
+							  FROM CSPD007TL 
+							  WHERE INPT_MST_SRNO = M.INPT_MST_SRNO 
+					       ) AS FILT_DTCT_NO								     -- DetectionID
+				       	   , ( 
+							  SELECT   MAX(CASE WHEN H.AI_INPT_ACVT_CD = '40' THEN '재추출'
+							           WHEN H.AI_INPT_ACVT_CD = '70' THEN '재심사'
+								       ELSE X.AI_INPT_CMN_CD_NM  END)  KEEP( DENSE_RANK FIRST  ORDER BY H.AI_INPT_PRG_SRNO DESC)
+								       AS AI_INPT_CMN_CD_NM
+							  FROM  CSPD008TH H
+							     ,  CSPD112TI X
+							  WHERE H.INPT_MST_SRNO = M.INPT_MST_SRNO
+							  AND (H.AI_INPT_ACVT_STS_CD IN ('60', '70', '120') OR H.AI_INPT_ACVT_CD IN ('40', '70')) 
+							  AND X.AI_INPT_GRP_CD(+) = '300' 
+							  AND X.AI_INPT_CMN_CD(+) = H.AI_INPT_ACVT_STS_CD				
+				           )  AS WRR_INFO     
+				           						             -- 주의 코드명		
+			  		 	   , (-- 저장 플래그
+			  		 	  	 SELECT NVL(MAX(LST_DB_CHG_DTM),'00000000000000000000')  
+			  		 	  	 FROM
+				  		 	   (
+								    SELECT LST_DB_CHG_DTM  AS LST_DB_CHG_DTM --심사처리시작시각
+									FROM  CSPD005TH 
+									WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+									AND   AI_INPT_TPY_SAVE_YN = 'Y'		  
+								)
+ 			               )   AS SAVE_FLAG
+ 			               
+			  		 	  , (--임시저장최종일시
+			  		 	  	 SELECT NVL(MAX(LST_DB_CHG_DTM),'00000000000000000000')  
+			  		 	  	 FROM
+				  		 	   (
+								    SELECT LST_DB_CHG_DTM  AS LST_DB_CHG_DTM --심사처리시작시각
+									FROM  CSPD005TH 
+									WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+									AND   AI_INPT_TPY_SAVE_YN = 'Y'		  
+									
+									UNION ALL
+									
+									SELECT LST_DB_CHG_DTM AS LST_DB_CHG_DTM --심사처리시작시각
+									FROM  CSPD008TH 
+									WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+									AND   INPT_MST_SRNO IN (SELECT INPT_MST_SRNO 
+															FROM   CSPD008TH
+															WHERE  INPT_MST_SRNO = M.INPT_MST_SRNO
+															AND    AI_INPT_ACVT_STS_CD = '51')
+								)
+ 			            )   AS SAVE_CHG_DTM						            
+				         , M.LST_DB_CHG_DTM AS MST_CHG_DTM		        --마스터최조정벼변경일시
+				         ,(
+				         	SELECT 
+								INPT_MST_SRNO 
+							FROM CSPD002TG WHERE IMEX_HIS_CD = '01'
+							AND INPT_MST_SRNO = M.INPT_MST_SRNO 
+							AND ROWNUM = 1
+				         ) AS BL
+				         ,(
+				         	SELECT 
+								INPT_MST_SRNO 
+							FROM CSPD002TG WHERE IMEX_HIS_CD = '02'
+							AND INPT_MST_SRNO = M.INPT_MST_SRNO 
+							AND ROWNUM = 1
+				         ) AS IVOC
+			  		 FROM CSPD001TM M 
+			  		     , CSPD201TM E -- 수출테이블
+			  		     , CSPD202TM I -- 수입테이블
+
+			  		 WHERE M.AI_INSPE_ENO = #{userId} 
+			  		   AND M.PAPS_RE_SCAN_NED_YN IS NULL
+			  		   AND M.AI_INPT_ACVT_CD IN ('80', '90', '150') 
+						AND M.ACTL_FX_REFNO = E.FX_ACNO(+)						
+						AND M.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ(+)
+						AND M.ACTL_FX_REFNO = I.FX_ACNO(+)
+						AND M.FX_REFNO_SRNO = I.TDOC_RCP_SRNO(+)
+			  		   		<if test="!(inptMstSrno == '' or inptMstSrno == null)"> <!-- 추후에 뺄것. 현재 TA 편의를 위해 올려놓은것-->
+								AND M.INPT_MST_SRNO = #{inptMstSrno} 
+							</if>
+							<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+								AND M.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+							</if>
+							<if test="!(actlFxRefno == '' or actlFxRefno == null)">
+								AND M.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+							</if>
+							<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)">
+								AND M.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') <!-- 날짜 조회 조건 -->
+						   </if>							
+			  		) A,
+					CSPD112TI B,	-- 공통코드테이블 그룹코드 : 150 = 업무구분코드
+					CSPD112TI C,	-- 공통코드테이블 그룹코드 : 280 = 프로세스코드
+					CSPD112TI D,	-- 공통코드테이블 그룹코드 : 290 = 액티비티코드
+					CSPD112TI G,	-- 공통코드테이블 그룹코드 : 170 = 심사코드, TotalText
+					CSPD112TI H,	-- 공통코드테이블 그룹코드 : 170 = 심사코드, 항목심사
+					CSPD112TI I 	-- 공통코드테이블 그룹코드 : 170 = 심사코드, SAFEWATCH
+			 WHERE B.AI_INPT_GRP_CD(+) = '150'  			-- 공통코드테이블 그룹코드 : 150 = 업무구분코드  
+			   AND A.INPT_ATMC_BIZ_DSCD = B.AI_INPT_CMN_CD(+)
+			   AND C.AI_INPT_GRP_CD(+) = '280'  			-- 공통코드테이블 그룹코드 : 280 = 프로세스코드 
+			   AND A.AI_INPT_PROS_CD = C.AI_INPT_CMN_CD(+)
+			   AND D.AI_INPT_GRP_CD(+) = '290'  			-- 공통코드테이블 그룹코드 : 290 = 액티비티코드  			   
+			   AND A.AI_INPT_ACVT_CD = D.AI_INPT_CMN_CD(+)
+			   AND G.AI_INPT_GRP_CD(+) = '170'  			-- 공통코드테이블 그룹코드 : 170 = 심사코드, TotalText
+			   AND A.TOTALTEXT_AI_INPT_RST_CD = G.AI_INPT_CMN_CD(+)
+			   AND H.AI_INPT_GRP_CD(+) = '170'  			-- 공통코드테이블 그룹코드 : 170 = 심사코드, 항목심사
+			   AND A.ITM_INPT_AI_INPT_RST_CD = H.AI_INPT_CMN_CD(+)
+			   AND I.AI_INPT_GRP_CD(+) = '170'				-- 공통코드테이블 그룹코드 : 170 = 심사코드, SAFEWATCH
+			   AND A.SAFEWATCH_AI_INPT_RST_CD = I.AI_INPT_CMN_CD(+)
+			   
+			   <if test="!(aiInptCsno == '' or aiInptCsno == null)">
+					AND A.CSNO = #{aiInptCsno}
+			   </if>
+
+		<choose> 
+			<when test='"save".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY SAVE
+			</when>
+			<when test='"save".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY SAVE DESC
+			</when>
+			<when test='"inptRcpDt".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.INPT_RCP_DT
+			</when>
+			<when test='"inptRcpDt".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.INPT_RCP_DT DESC
+			</when>
+			<when test='"inptAtmcBizDsNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY B.AI_INPT_CMN_CD_NM
+			</when>
+			<when test='"inptAtmcBizDsNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY B.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test='"actlFxRefno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.ACTL_FX_REFNO
+			</when>
+			<when test='"actlFxRefno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.ACTL_FX_REFNO DESC
+			</when>
+			<when test='"wrrInfo".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.WRR_INFO  
+			</when>
+			<when test='"wrrInfo".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.WRR_INFO DESC
+			</when>
+			<when test='"inptPrcsNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY C.AI_INPT_CMN_CD_NM
+			</when>
+			<when test='"inptPrcsNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY C.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test='"inptAtvtNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY D.AI_INPT_CMN_CD_NM
+			</when>
+			<when test='"inptAtvtNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY D.AI_INPT_CMN_CD_NM DESC
+			</when>
+			<when test='"fcCuNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY XPBY_COL_CTR_CUCD
+			</when>
+			<when test='"fcCuNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY XPBY_COL_CTR_CUCD DESC
+			</when>
+			<when test='"aiInptBuyAm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY XPBY_COL_AM
+			</when>
+			<when test='"aiInptBuyAm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY XPBY_COL_AM DESC
+			</when>
+			<when test='"aiInptCsno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_CSNO
+			</when>
+			<when test='"aiInptCsno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_CSNO DESC
+			</when>
+			<when test='"aiInptCusNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY CUS_KORL_NM
+			</when>
+			<when test='"aiInptCusNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY CUS_KORL_NM DESC
+			</when>
+			<when test='"totaltextAiInptRstNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY G.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test='"totaltextAiInptRstNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY G.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test='"itmInptAiInptRstNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY H.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test='"itmInptAiInptRstNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY H.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test='"safewatchAiInptRstNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY I.AI_INPT_CMN_CD_ENG_NM
+			</when>
+			<when test='"safewatchAiInptRstNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY I.AI_INPT_CMN_CD_ENG_NM DESC
+			</when>
+			<when test='"filtDtctNo".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.FILT_DTCT_NO
+			</when>
+			<when test='"filtDtctNo".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.FILT_DTCT_NO DESC
+			</when>
+			<when test='"inptMstSrno".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY A.INPT_MST_SRNO
+			</when>
+			<when test='"inptMstSrno".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY A.INPT_MST_SRNO DESC
+			</when>
+			<otherwise>
+				ORDER BY A.SAVE_CHG_DTM DESC , A.MST_CHG_DTM
+			</otherwise>
+		</choose>
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* RevertTodoMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+			 FROM ( -- 마스터테이블
+			  		SELECT M.INPT_RCP_DT,
+			  		       M.ACTL_FX_REFNO,
+			  		       M.INPT_MST_SRNO,
+			  		       M.TOTALTEXT_AI_INPT_RST_CD,
+			  		       M.ITM_INPT_AI_INPT_RST_CD,
+			  		       M.SAFEWATCH_AI_INPT_RST_CD,
+			  		       M.INPT_ATMC_BIZ_DSCD,
+			  		       M.AI_INPT_PROS_CD,
+			  		       M.AI_INPT_ACVT_CD,
+			  		       M.FX_REFNO_SRNO,
+			  		       M.PAPS_RE_SCAN_CMPL_YN,
+			  		       NVL(E.XPBY_COL_CTR_CUCD, I.TDOC_RCP_CUCD) AS XPBY_COL_CTR_CUCD,
+						   NVL(E.XPBY_COL_AM,I.TDOC_RCP_AM) 		 AS XPBY_COL_AM,
+			               NVL(E.CUS_KORL_NM,I.CUS_KORL_NM) 		 AS CUS_KORL_NM,
+			               NVL(E.CSNO, I.CSNO)						 AS CSNO,
+				          (-- DetectionID  
+				          	 SELECT MAX(FILT_DTCT_NO) KEEP(
+								                        DENSE_RANK FIRST  
+								                        ORDER BY AI_INPT_PRG_SRNO DESC
+								                        ) AS FILT_DTCT_NO
+							   FROM CSPD007TL 
+							  WHERE INPT_MST_SRNO = M.INPT_MST_SRNO 
+					       ) 					   AS FILT_DTCT_NO								     -- DetectionID
+				       	   ,( 
+							SELECT   MAX(CASE WHEN H.AI_INPT_ACVT_CD = '40' THEN '재추출'
+							           WHEN H.AI_INPT_ACVT_CD = '70' THEN '재심사'
+								       ELSE X.AI_INPT_CMN_CD_NM  END)  KEEP( DENSE_RANK FIRST  ORDER BY H.AI_INPT_PRG_SRNO DESC)
+								       AS AI_INPT_CMN_CD_NM
+							FROM  CSPD008TH H
+							   ,  CSPD112TI X
+							WHERE H.INPT_MST_SRNO = M.INPT_MST_SRNO
+							AND  (H.AI_INPT_ACVT_STS_CD IN ('60', '70', '120') OR H.AI_INPT_ACVT_CD IN ('40', '70')) 
+							AND   X.AI_INPT_GRP_CD(+) = '300' 
+							AND   X.AI_INPT_CMN_CD(+) = H.AI_INPT_ACVT_STS_CD				
+				           )  AS WRR_INFO     						             -- 주의 코드명		
+			  		 	  ,(--임시저장최종일시
+			  		 	  	SELECT NVL(MAX(LST_DB_CHG_DTM),'00000000000000000000')  
+			  		 	  	FROM
+				  		 	   (
+								    SELECT LST_DB_CHG_DTM  AS LST_DB_CHG_DTM --심사처리시작시각
+									FROM  CSPD005TH 
+									WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+									AND   AI_INPT_TPY_SAVE_YN = 'Y'		  
+									
+									UNION ALL
+									
+									SELECT LST_DB_CHG_DTM AS LST_DB_CHG_DTM --심사처리시작시각
+									FROM  CSPD008TH 
+									WHERE INPT_MST_SRNO = M.INPT_MST_SRNO
+									AND   INPT_MST_SRNO IN (SELECT INPT_MST_SRNO 
+															FROM   CSPD008TH
+															WHERE  INPT_MST_SRNO = M.INPT_MST_SRNO
+															AND    AI_INPT_ACVT_STS_CD = '51')
+								)
+ 			            )   AS SAVE_CHG_DTM						            
+				            ,M.LST_DB_CHG_DTM AS MST_CHG_DTM		        --마스터최조정벼변경일시
+			  		  FROM CSPD001TM M 
+			  		     , CSPD201TM E -- 수출테이블
+			  		     , CSPD202TM I -- 수입테이블
+
+			  		 WHERE M.AI_INSPE_ENO = #{userId} 
+			  		   AND M.PAPS_RE_SCAN_NED_YN IS NULL
+			  		   AND M.AI_INPT_ACVT_CD IN ('80', '90', '150') 
+					AND M.ACTL_FX_REFNO = E.FX_ACNO(+)						
+					AND M.FX_REFNO_SRNO = E.XPO_CVRG_MK_SQ(+)
+					AND M.ACTL_FX_REFNO = I.FX_ACNO(+)
+					AND M.FX_REFNO_SRNO = I.TDOC_RCP_SRNO(+)
+			  		   		<if test="!(inptMstSrno == '' or inptMstSrno == null)"> <!-- 추후에 뺄것. 현재 TA 편의를 위해 올려놓은것-->
+								AND M.INPT_MST_SRNO = #{inptMstSrno} 
+							</if>
+							<if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+								AND M.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+							</if>
+							<if test="!(actlFxRefno == '' or actlFxRefno == null)">
+								AND M.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+							</if>
+							<if test= "!(schSdate1 == '' or schSdate1 == null) and !(schEdate1 == '' or schEdate1 == null)">
+								AND M.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '') <!-- 날짜 조회 조건 -->
+						   </if>							
+			  		) A,
+					CSPD112TI B,	-- 공통코드테이블 그룹코드 : 150 = 업무구분코드
+					CSPD112TI C,	-- 공통코드테이블 그룹코드 : 280 = 프로세스코드
+					CSPD112TI D,	-- 공통코드테이블 그룹코드 : 290 = 액티비티코드
+					CSPD112TI G,	-- 공통코드테이블 그룹코드 : 170 = 심사코드, TotalText
+					CSPD112TI H,	-- 공통코드테이블 그룹코드 : 170 = 심사코드, 항목심사
+					CSPD112TI I 	-- 공통코드테이블 그룹코드 : 170 = 심사코드, SAFEWATCH
+			 WHERE B.AI_INPT_GRP_CD(+) = '150'  			-- 공통코드테이블 그룹코드 : 150 = 업무구분코드  
+			   AND A.INPT_ATMC_BIZ_DSCD = B.AI_INPT_CMN_CD(+)
+			   AND C.AI_INPT_GRP_CD(+) = '280'  			-- 공통코드테이블 그룹코드 : 280 = 프로세스코드 
+			   AND A.AI_INPT_PROS_CD = C.AI_INPT_CMN_CD(+)
+			   AND D.AI_INPT_GRP_CD(+) = '290'  			-- 공통코드테이블 그룹코드 : 290 = 액티비티코드  			   
+			   AND A.AI_INPT_ACVT_CD = D.AI_INPT_CMN_CD(+)
+			   AND G.AI_INPT_GRP_CD(+) = '170'  			-- 공통코드테이블 그룹코드 : 170 = 심사코드, TotalText
+			   AND A.TOTALTEXT_AI_INPT_RST_CD = G.AI_INPT_CMN_CD(+)
+			   AND H.AI_INPT_GRP_CD(+) = '170'  			-- 공통코드테이블 그룹코드 : 170 = 심사코드, 항목심사
+			   AND A.ITM_INPT_AI_INPT_RST_CD = H.AI_INPT_CMN_CD(+)
+			   AND I.AI_INPT_GRP_CD(+) = '170'				-- 공통코드테이블 그룹코드 : 170 = 심사코드, SAFEWATCH
+			   AND A.SAFEWATCH_AI_INPT_RST_CD = I.AI_INPT_CMN_CD(+)
+			   
+			   <if test="!(aiInptCsno == '' or aiInptCsno == null)">
+					AND A.CSNO = #{aiInptCsno}
+			   </if>
+	</select>
+
+</mapper>

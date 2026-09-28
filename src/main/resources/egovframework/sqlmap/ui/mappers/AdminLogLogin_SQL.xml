@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminLogLoginMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminLogLoginVO">
+		<result property="aiInptLginHstNo" column="AI_INPT_LGIN_HST_NO"/>
+		<result property="aiInptLginUserNo" column="AI_INPT_LGIN_USER_NO"/>
+		<result property="aiInptLginUserNm" column="AI_INPT_LGIN_USER_NM"/>
+		<result property="aiInptLginDtm" column="AI_INPT_LGIN_DTM"/>
+		<result property="aiInptLginUsgIpad" column="AI_INPT_LGIN_USG_IPAD"/>
+		<result property="aiInptLginUserMchrNm" column="AI_INPT_LGIN_USER_MCHR_NM"/>
+		<result property="aiInptLginYn" column="AI_INPT_LGIN_YN"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 로그인 이력관리 (7021) */	
+		/* AdminLogLoginMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+
+		SELECT
+			AI_INPT_LGIN_HST_NO, AI_INPT_LGIN_USER_NO, AI_INPT_LGIN_USG_IPAD, AI_INPT_LGIN_YN,
+			AI_INPT_LGIN_USER_MCHR_NM, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM,
+			TO_CHAR(TO_DATE(SUBSTR(AI_INPT_LGIN_DTM,1,14),'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI:SS') AS AI_INPT_LGIN_DTM,
+			NVL((SELECT AI_INPT_USER_NM
+				FROM CSPD101TI WHERE AI_INPT_USER_ENO = A.AI_INPT_LGIN_USER_NO 
+				AND ROWNUM = 1),AI_INPT_LGIN_USER_NO) AS AI_INPT_LGIN_USER_NM
+		FROM CSPD810TH A
+		WHERE 1=1
+		<include refid="selectListCond" />
+		
+		<choose>
+			<!-- 직원명 -->
+			<when test='"aiInptLginUserNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_USER_NM
+			</when>
+			<when test='"aiInptLginUserNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_USER_NM DESC
+			</when>
+			<!-- 로그인시간 -->
+			<when test='"aiInptLginDtm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_DTM
+			</when>
+			<when test='"aiInptLginDtm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_DTM DESC
+			</when>
+			<!-- 로그인아이피 -->
+			<when test='"aiInptLginUsgIpad".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_USG_IPAD
+			</when>
+			<when test='"aiInptLginUsgIpad".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_USG_IPAD DESC
+			</when>
+			<!-- 로그인기기명 -->
+			<when test='"aiInptLginUserMchrNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_USER_MCHR_NM
+			</when>
+			<when test='"aiInptLginUserMchrNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_USER_MCHR_NM DESC
+			</when>
+			<!-- 성공여부 -->
+			<when test='"aiInptLginYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_YN
+			</when>
+			<when test='"aiInptLginYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY AI_INPT_LGIN_YN DESC
+			</when>
+			<otherwise>
+				ORDER BY AI_INPT_LGIN_DTM DESC	
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 로그인 이력관리 (7021) */	
+		/* AdminLogLoginMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD810TH
+		WHERE 1=1
+		<include refid="selectListCond" />
+	</select>
+	
+	<sql id="selectListCond">
+		<if test="schUserNo != null and schUserNo != ''">
+			AND AI_INPT_LGIN_USER_NO LIKE '%'||#{schUserNo}||'%'
+		</if>
+		<if test="schSdate1 != null and schSdate1 != '' and schEdate1 != null and schEdate1 != ''">
+			AND SUBSTR(AI_INPT_LGIN_DTM,1,8) BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','')
+		</if>
+		<if test="schUserIp != null and schUserIp != ''">
+			AND AI_INPT_LGIN_USG_IPAD LIKE '%'||#{schUserIp}||'%'
+		</if>
+	</sql>
+	
+	<insert id="insert" parameterType="com.woori.ajs.model.AdminLogLoginVO">
+		/* 로그인 이력관리 (7021) */
+		/* AdminLogLoginMapper.insert */
+		INSERT INTO CSPD810TH (
+			AI_INPT_LGIN_HST_NO
+			, AI_INPT_LGIN_USER_NO
+			, AI_INPT_LGIN_DTM
+			, AI_INPT_LGIN_USG_IPAD
+			, AI_INPT_LGIN_USER_MCHR_NM
+			, TRN_LOG_SRNO
+			, LST_DB_CHG_ID
+			, LST_DB_CHG_DTM
+			, AI_INPT_LGIN_YN
+		) VALUES (
+			<include refid="com.woori.ajs.common.curdate"/>
+			, #{aiInptLginUserNo}
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, #{aiInptLginUsgIpad}
+ 		<!--	, SUBSTRING(#{aiInptLginUserMchrNm},1,190) -->
+			, SUBSTR(#{aiInptLginUserMchrNm},1,190)
+			, TO_CHAR(SYSDATE,'YYYYMMDD')||#{lstDbChgId}
+			, #{lstDbChgId}
+			, <include refid="com.woori.ajs.common.curdate"/>
+			, #{aiInptLginYn}
+		)
+	</insert>
+	
+</mapper>

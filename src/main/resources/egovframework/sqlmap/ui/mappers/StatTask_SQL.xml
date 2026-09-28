@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.StatTaskMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.StatTaskVO">
+		<result property="cate" column="CATE"/>
+		<result property="inptRcpDt" column="INPT_RCP_DT"/>
+		<result property="auth" column="AUTH"/>
+		<result property="aiInptUserAutCd" column="AI_INPT_AUT_CD"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="aiInptUserNm" column="AI_INPT_USER_NM"/>
+		<result property="countEno" column="COUNT_ENO"/>
+		<result property="totalTime" column="TOTAL_TIME"/>
+		<result property="avgTime" column="AVG_TIME"/>
+		<result property="avg" column="AVGE"/>
+	</resultMap>
+	
+
+	<sql id= "listTable">
+		WITH LIST(CATE, INPT_ATMC_BIZ_DSCD, INPT_RCP_DT, AUTH, AI_INPT_AUT_CD, USER_ID, AI_INPT_USER_NM, COUNT_ENO, TOTAL_TIME, AVG_TIME, AVGE, INPT_MST_SRNO) AS (           <!--LIST -->
+			SELECT 
+             	M.CATE	                                                                                                              					<!--M(001) 테이블로부터 가져온 CATE 값  -->
+				, M.INPT_ATMC_BIZ_DSCD                                                                                                           			<!--M(001) 테이블로부터 가져온 업무구분 코드  -->
+				, M.INPT_RCP_DT                                                                                                                  			<!--M(001) 테이블로부터 가져온업무수행 날짜  -->
+				, CASE WHEN U.AI_INPT_AUT_CD = '01' THEN '심사자'                                                                                  			<!--M(001) 테이블로부터 가져온 담당자 구분 명칭 (심사자일 경우) -->
+				  WHEN U.AI_INPT_AUT_CD = '02' THEN '결재자'                                                                                       			<!--M(001) 테이블로부터 가져온 담당자 구분 명칭 (결재자일 경우) -->
+				  ELSE 'QA 담당자' END AS AUTH	                                                                                                    			<!--M(001) 테이블로부터 가져온 담당자 구분 명칭 (QA 담당자일 경우)  -->
+				, U.AI_INPT_AUT_CD                                                                                                               			<!--M(001) 테이블로부터 가져온 권한 구분코드 (심사자, 결재자 ,qa 담당자) -->
+                , U.AI_INPT_USER_ENO AS USER_ID                                                                                							<!--M(001) 테이블로부터 가져온 사용자 아이디  -->
+				, U.AI_INPT_USER_NM                                                                                                              <!--M(001) 테이블로부터 가져온 사용자 이름 -->
+				, COUNT(DISTINCT TM.AI_INPT_CRPE_ENO) AS COUNT_ENO  
+				, TM.PRO_TIME AS TOTAL_TIME                                                                                                      <!--M(001) 테이블로부터 가져온 각 담당자들의 총 처리 시간  -->
+				, TO_NUMBER(TM.PRO_TIME) / COUNT(DISTINCT TM.AI_INPT_CRPE_ENO) AS AVG_TIME      
+				, '' AS AVGE  
+				, M.INPT_MST_SRNO
+             FROM(                                                            
+				SELECT INPT_MST_SRNO, INPT_RCP_DT, INPT_ATMC_BIZ_DSCD, CATE, AI_INPT_BIZ_DSCD FROM (
+			                                                                                                                <!--수입/출 선적서류 제재심사(자동) 건수들 관련 데이터  -->
+					SELECT ROW_NUMBER()OVER(PARTITION BY A.INPT_MST_SRNO ORDER BY TO_NUMBER(V.AI_INPT_PRG_SRNO) DESC) AS ORDERR                  <!--해당 마스터 번호 당 가장 최근 이력의 값을 뽑아내기 위한 인덱스  -->
+					     , A.INPT_MST_SRNO                                                                                                       <!--마스터 테이블로부터 뽑아온 마스터 번호 -->
+						 , INPT_RCP_DT                                                                                                           <!--마스터 테이블로부터 뽑아온  업무수행 날짜  -->
+						 , INPT_ATMC_BIZ_DSCD                                                                                                    <!--마스터 테이블로부터 뽑아온  업무 구분 코드  -->
+						 , CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN '수입 자동 심사'                                                        <!--업무 구분 명칭 (CATE) -->
+						   ELSE '수출 자동 심사' END AS CATE                                                                        
+						 , V.AI_INPT_ACVT_CD                                                                                                     <!--마스터 테이블로부터 뽑아온  액티비티 코드  -->
+						 , V.AI_INPT_ACVT_STS_CD AS AI_INSP_ATVT_STS_CD                                                                          <!--마스터 테이블로부터 뽑아온  액티비티 상태 코드  -->	
+					     , V.AI_INPT_BIZ_DSCD AS AI_INPT_BIZ_DSCD   
+					FROM CSPD001TM A                                                                                                             <!--001 테이블  -->
+					, (
+							SELECT B.INPT_MST_SRNO
+								, B.AI_INPT_ACVT_CD
+								, B.AI_INPT_ACVT_STS_CD
+								, B.AI_INPT_PRG_SRNO
+								, B.AI_INPT_CRPE_ENO
+								, B.AI_INPT_BIZ_DSCD   
+							FROM CSPD008TH B
+							WHERE NOT EXISTS(
+								SELECT INPT_MST_SRNO 
+								FROM CSPD008TH 
+								WHERE INPT_MST_SRNO = B.INPT_MST_SRNO  
+								AND AI_INPT_ACVT_CD = '80') 			
+					)V
+					WHERE V.INPT_MST_SRNO = A.INPT_MST_SRNO 
+					AND A.AI_INPT_ACVT_CD IN ('140', '160') 
+				AND TO_NUMBER(V.AI_INPT_ACVT_CD) >= 80 AND AI_INPT_BIZ_DSCD != '3'          
+                                                                                                                                             <!--액티비티 상태코드가 90(상신) 이후인 경우-->
+				UNION ALL                                                                                                                    <!--UNION -->
+				
+				SELECT ROW_NUMBER()OVER(PARTITION BY A.INPT_MST_SRNO ORDER BY TO_NUMBER(V.AI_INPT_PRG_SRNO) DESC) AS ORDERR                  <!--해당 마스터 번호 당 가장 최근 이력의 값을 뽑아내기 위한 인덱스  -->
+					 , A.INPT_MST_SRNO                                                                                                       <!--마스터 테이블로부터 뽑아온 마스터 번호 -->
+					 , INPT_RCP_DT                                                                                                           <!--마스터 테이블로부터 뽑아온  업무수행 날짜  -->
+					 , INPT_ATMC_BIZ_DSCD                                                                                                    <!--마스터 테이블로부터 뽑아온  업무 구분 코드  -->
+					 , CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN '수입 수기 심사'                                                                <!--업무 구분 명칭 (CATE) -->
+					   ELSE '수출 수기 심사' END AS CATE
+					 , V.AI_INPT_ACVT_CD                                                                                                     <!--마스터 테이블로부터 뽑아온  액티비티 코드  -->
+					 , V.AI_INPT_ACVT_STS_CD AS AI_INSP_ATVT_STS_CD  
+					
+					 , V.AI_INPT_BIZ_DSCD AS AI_INPT_BIZ_DSCD                                                                                <!--마스터 테이블로부터 뽑아온  액티비티 상태 코드  -->
+
+				FROM CSPD001TM A                                                                                                             <!--001 테이블  -->
+				, (
+					SELECT B.INPT_MST_SRNO
+						, B.AI_INPT_ACVT_CD
+						, B.AI_INPT_ACVT_STS_CD
+						, B.AI_INPT_PRG_SRNO 
+						, B.AI_INPT_CRPE_ENO
+						, B.AI_INPT_BIZ_DSCD
+					FROM CSPD008TH B
+					WHERE EXISTS(
+						SELECT INPT_MST_SRNO 
+						FROM CSPD008TH 
+						WHERE INPT_MST_SRNO = B.INPT_MST_SRNO  
+						AND AI_INPT_ACVT_CD = '80')
+				)V WHERE V.INPT_MST_SRNO = A.INPT_MST_SRNO 
+				AND A.AI_INPT_ACVT_CD IN ('140', '160') 
+				AND TO_NUMBER(V.AI_INPT_ACVT_CD) >= 80 AND AI_INPT_BIZ_DSCD != '3'     
+                                                                                                                                               <!--액티비티 상태코드가 90(상신) 이후인 경우-->
+				UNION ALL                                                                                                                        <!--UNION -->	
+				                                                                                                                             <!--수입/출 선적서류 제재심사(수기) 건수들 관련 데이터  -->
+				SELECT ROW_NUMBER()OVER(PARTITION BY A.INPT_MST_SRNO ORDER BY TO_NUMBER(V.AI_INPT_PRG_SRNO) DESC) AS ORDERR                  <!--해당 마스터 번호 당 가장 최근 이력의 값을 뽑아내기 위한 인덱스  -->
+					 , A.INPT_MST_SRNO                                                                                                       <!--마스터 테이블로부터 뽑아온 마스터 번호 -->
+					 , INPT_RCP_DT                                                                                                           <!--마스터 테이블로부터 뽑아온  업무수행 날짜  -->
+					 , '3' AS INPT_ATMC_BIZ_DSCD                                                                                             <!--업무구분 코드 qa : 3 -->
+					 , CASE WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN 'QA 자체점검(수출)'                                                    
+		              ELSE 'QA 자체점검(수입)' END AS CATE                                                                                           <!--업무 구분 명칭 (CATE) -->
+					 , V.AI_INPT_ACVT_CD                                                                                                     <!--마스터 테이블로부터 뽑아온  액티비티 코드  -->
+					 , V.AI_INPT_ACVT_STS_CD AS AI_INSP_ATVT_STS_CD                                                                          <!--마스터 테이블로부터 뽑아온  액티비티 상태 코드  -->
+					 , V.AI_INPT_BIZ_DSCD AS AI_INPT_BIZ_DSCD 
+				FROM CSPD001TM A                                                                                                             <!--001 테이블  -->
+				, (SELECT DISTINCT INPT_MST_SRNO                                                                                             <!--008 테이블로부터 가져온 QA 자체점검 마스터번호 -->
+						, AI_INPT_ACVT_CD                                                                                                    <!--008 테이블로부터 가져온 QA 자체점검 업무들의 액티비티 코드-->
+						, AI_INPT_ACVT_STS_CD                                                                                                <!--008 테이블로부터 가져온 QA 자체점검 업무들의 액티비티 상태코드-->
+						, AI_INPT_PRG_SRNO   
+						, AI_INPT_CRPE_ENO  
+						, AI_INPT_BIZ_DSCD                                                                                                   <!--008 테이블로부터 가져온 QA 자체점검 심사이력 번호  -->
+				   FROM CSPD008TH                                                                                                            <!--008 테이블 -->
+				   WHERE AI_INPT_BIZ_DSCD = '3'                                                                                              <!--QA 자체점검 업무의 경우 배치된 시점부터 업무코드가 '3' 아닌경우의 이력이 없기 때문에 셀프조인을 할 필요가 x-->
+				   )V WHERE V.INPT_MST_SRNO = A.INPT_MST_SRNO  AND A.AI_INPT_QLAS_ACVT_CD IN ('140', '160')                                                                               <!--QA 자체점검 업무의 경우 배치된 시점부터 업무코드가 '3' 아닌경우의 이력이 없기 때문에 셀프조인을 할 필요가 x -->
+				)
+				GROUP BY INPT_MST_SRNO, INPT_RCP_DT, INPT_ATMC_BIZ_DSCD, CATE, AI_INPT_BIZ_DSCD                                                                                                                                       <!--액티비티 상태코드가 90(상신) 이후인 경우 -->
+			)M
+			, CSPD101TI U   
+			,(
+			   SELECT                                                                                                                            <!--008 테이블로부터 뽑아온 담당자 번호 -->
+				   SUM(                                                                                                                          <!--총처리시간  -->                                                                                 
+					(select
+						(TO_DATE(SUBSTR(REPLACE(LST_DB_CHG_DTM ,'-',''),1,14),'YYYYMMDDHH24MISS')                                                <!--디비 변경 시간 - 이젠 row의 프로세스 변경 시간 = 한개의 프로세스 처리시간 -->
+		     		     - TO_DATE(SUBSTR(REPLACE(AI_INPT_PROS_STA_DTM,'-',''),1,14),'YYYYMMDDHH24MISS')) * 24 * 60 * 60 AS vsec
+		     		 from dual)
+				  ) AS PRO_TIME
+				  , INPT_MST_SRNO
+				  , AI_INPT_CRPE_ENO AS AI_INPT_CRPE_ENO
+				  , B.INPT_RCP_DT
+				  , AI_INPT_ACVT_CD
+				  , AI_INPT_BIZ_DSCD
+			
+				FROM(  
+					select ROW_NUMBER() OVER(ORDER BY A.INPT_MST_SRNO) NUM                                                                    <!--해당 마스터 번호 당 가장 최근 이력의 값을 뽑아내기 위한 인덱스 -->                                                                                    <!--08 테이블로부터 가져온 이전 row의 프로세스 수행 시간 값  -->
+						, A.LST_DB_CHG_DTM AS LST_DB_CHG_DTM       
+						, A.AI_INPT_PROS_STA_DTM AS AI_INPT_PROS_STA_DTM                                                                      <!--008 테이블로부터 가져온 디비 변경 시간  -->
+						, CASE WHEN (A.AI_INPT_BIZ_DSCD != '3' OR A.AI_INPT_BIZ_DSCD IS NULL) AND A.AI_INPT_ACVT_STS_CD IN('51', '52', '120', '140', '160') AND A.AI_INPT_ACVT_CD = '100' THEN MAS.AI_INPT_SNPE_ENO                                                   
+						  WHEN  (A.AI_INPT_BIZ_DSCD != '3' OR A.AI_INPT_BIZ_DSCD IS NULL) AND (A.AI_INPT_ACVT_STS_CD IN('51', '52', '90', '100') AND A.AI_INPT_ACVT_CD IN('90', '80')) THEN MAS.AI_INSPE_ENO
+						  WHEN A.AI_INPT_BIZ_DSCD = '3' AND A.AI_INPT_ACVT_STS_CD IN ('51', '52', '120', '140', '160') AND A.AI_INPT_ACVT_CD = '120' THEN MAS.QLAS_SNPE_ENO
+						  WHEN  A.AI_INPT_BIZ_DSCD = '3' AND (A.AI_INPT_ACVT_STS_CD IN('51', '52', '90', '100') AND A.AI_INPT_ACVT_CD = '110') THEN MAS.QLAS_CRPE_ENO
+						  ELSE 'NOT' END AS AI_INPT_CRPE_ENO
+						, A.INPT_MST_SRNO                                                                                                    <!--마스터 번호 -->                                                                                                 <!--심사 이력 번호 번호 -->
+						, MAS.INPT_RCP_DT
+						, MAS.AI_INPT_ACVT_CD
+						, NVL(A.AI_INPT_BIZ_DSCD, MAS.INPT_ATMC_BIZ_DSCD) AS AI_INPT_BIZ_DSCD
+					    , A.AI_INPT_PRG_SRNO     
+				from CSPD008TH A                                                                                                             <!--008 심사 이력 테이블 -->
+					, CSPD001TM MAS	
+				WHERE A.INPT_MST_SRNO = MAS.INPT_MST_SRNO 
+				AND TO_NUMBER(A.AI_INPT_ACVT_CD) >= 80                                                                                              <!--액티비티 상태코드가 90(승인처리) 이상인 값들만 select -->    
+				)B WHERE AI_INPT_ACVT_CD IN ('140', '160') AND AI_INPT_CRPE_ENO != 'NOT'
+				GROUP BY INPT_MST_SRNO, AI_INPT_CRPE_ENO, B.INPT_RCP_DT,  AI_INPT_ACVT_CD, AI_INPT_BIZ_DSCD 
+			)TM
+			WHERE TM.INPT_MST_SRNO = M.INPT_MST_SRNO 
+			AND TM.INPT_RCP_DT = M.INPT_RCP_DT 
+			AND U.AI_INPT_USER_ID = TM.AI_INPT_CRPE_ENO
+			AND TM.AI_INPT_BIZ_DSCD = M.INPT_ATMC_BIZ_DSCD  
+		    AND M.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1}, '-', '') AND REPLACE(#{schEdate1}, '-', '')                                   
+			<include refid="selectListCond" />
+			GROUP BY M.CATE,  M.INPT_ATMC_BIZ_DSCD, M.INPT_RCP_DT, TM.PRO_TIME, TM.AI_INPT_CRPE_ENO,  M.INPT_MST_SRNO , U.AI_INPT_USER_NM , U.AI_INPT_AUT_CD, U.AI_INPT_USER_ENO    
+		)
+	</sql>
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		<include refid="listTable"/>
+			SELECT * FROM (
+				SELECT NVL(CATE,'총합계') AS CATE                                                                                                                               <!--LIST 로부터 가져온 CATE 값 -->
+					, INPT_ATMC_BIZ_DSCD                                                                                                                                      
+					, INPT_RCP_DT                                                                                                                                             
+					, AUTH                                                                                                                                                    
+					, AI_INPT_AUT_CD                                                                                                                                          
+					, USER_ID                                                                                                                                                 
+					, AI_INPT_USER_NM                                                                                                                                         
+					, CASE WHEN INPT_ATMC_BIZ_DSCD IS NOT NULL 
+					  THEN SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)
+					  ELSE SUM(COUNT_ENO) END COUNT_ENO                                                                                                                      
+					, CASE WHEN INPT_ATMC_BIZ_DSCD IS NOT NULL 
+					  THEN 
+						  SUBSTR('0000'||FLOOR(FLOOR(ROUND(NVL(SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID),0)) / 60) / 60),-4,4)||':'                                                              
+						  ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL(SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID),0)) / 60),60),-2,2)||':'
+						  ||SUBSTR('0'||MOD(ROUND(NVL(SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID),0)),60),-2,2) 
+				       ELSE 
+					 	  CASE WHEN LENGTH('0000'||FLOOR(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60) / 60)) >= 9  
+						  THEN 
+							  FLOOR(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60) / 60)||':'
+							  ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60),60),-2,2)||':'
+							  ||SUBSTR('0'||MOD(ROUND(NVL(SUM(TOTAL_TIME),0)),60),-2,2) 
+						  ELSE 
+						  	  SUBSTR('0000'||FLOOR(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60) / 60),-4,4)||':'
+							  ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60),60),-2,2)||':'
+							  ||SUBSTR('0'||MOD(ROUND(NVL(SUM(TOTAL_TIME),0)),60),-2,2) 
+						   END
+				       END TOTAL_TIME
+			          
+					, CASE WHEN INPT_ATMC_BIZ_DSCD IS NOT NULL 
+					  THEN 
+						  SUBSTR('0000'||FLOOR(FLOOR(ROUND(NVL((SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)),0)) / 60) / 60),-4,4)||':'
+						  ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL((SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)),0)) / 60),60),-2,2)||':'
+						  ||SUBSTR('0'||MOD(ROUND(NVL((SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)),0)),60),-2,2) 
+					  ELSE NULL END AVG_TIME
+				    ,  SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID) AS AVGE
+				 FROM LIST
+				 GROUP BY GROUPING SETS ((CATE, INPT_ATMC_BIZ_DSCD, INPT_RCP_DT, AUTH, AI_INPT_AUT_CD, USER_ID, AI_INPT_USER_NM, COUNT_ENO, TOTAL_TIME, AVG_TIME, AVGE, INPT_MST_SRNO),())
+			 )MASTER
+			 GROUP BY CATE, INPT_RCP_DT, USER_ID ,INPT_ATMC_BIZ_DSCD, AUTH, AI_INPT_AUT_CD, AI_INPT_USER_NM, COUNT_ENO, TOTAL_TIME, AVG_TIME, AVGE
+			 ORDER BY CASE WHEN CATE = '총합계' THEN 0 ELSE 1 END DESC, CATE DESC, INPT_RCP_DT 
+			<!-- , AI_INPT_USER_NM   -->
+		
+		    , CASE WHEN AI_INPT_AUT_CD = '01' THEN 0 
+		      WHEN AI_INPT_AUT_CD = '03' THEN 1 
+		      ELSE 2 END 
+		   <!--   , AI_INPT_USER_NM  -->
+			<choose>	
+			<when test="'auth'.equals(sortItem) and 'asc'.equals(sortDir)">
+					, AUTH
+				</when>
+				<when test="'auth'.equals(sortItem) and 'desc'.equals(sortDir)">
+			    	, AUTH DESC
+				</when>
+				<when test="'userId'.equals(sortItem) and 'asc'.equals(sortDir)">
+					, USER_ID
+				</when>
+				<when test="'userId'.equals(sortItem) and 'desc'.equals(sortDir)">
+					, USER_ID DESC
+				</when>
+				<when test="'countEno'.equals(sortItem) and 'asc'.equals(sortDir)">
+					, COUNT_ENO
+				</when>
+				<when test="'countEno'.equals(sortItem) and 'desc'.equals(sortDir)">
+					, COUNT_ENO DESC
+				</when>
+				<when test="'avgTime'.equals(sortItem) and 'asc'.equals(sortDir)">
+					, AVG_TIME
+				</when>
+				<when test="'avgTime'.equals(sortItem) and 'desc'.equals(sortDir)">
+					, AVG_TIME DESC
+				</when>
+				<when test="'totalTime'.equals(sortItem) and 'asc'.equals(sortDir)">
+					, TOTAL_TIME
+				</when>
+				<when test="'totalTime'.equals(sortItem) and 'desc'.equals(sortDir)">
+					, TOTAL_TIME DESC
+				</when>
+			</choose>
+	</select>
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* StatTaskMapper.selectListTotCnt */
+		<include refid="listTable"/>
+			SELECT COUNT(*) FROM(
+				SELECT * FROM (
+				SELECT NVL(CATE,'총합계') AS CATE                                                                                                                               <!--LIST 로부터 가져온 CATE 값 -->
+					, INPT_ATMC_BIZ_DSCD                                                                                                                                      
+					, INPT_RCP_DT                                                                                                                                             
+					, AUTH                                                                                                                                                    
+					, AI_INPT_AUT_CD                                                                                                                                          
+					, USER_ID                                                                                                                                                 
+					, AI_INPT_USER_NM                                                                                                                                         
+					, CASE WHEN INPT_ATMC_BIZ_DSCD IS NOT NULL 
+					  THEN SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)
+					  ELSE SUM(COUNT_ENO) END COUNT_ENO                                                                                                                      
+					, CASE WHEN INPT_ATMC_BIZ_DSCD IS NOT NULL 
+					  THEN 
+						  SUBSTR('0000'||FLOOR(FLOOR(ROUND(NVL(SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID),0)) / 60) / 60),-4,4)||':'                                                              
+						  ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL(SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID),0)) / 60),60),-2,2)||':'
+						  ||SUBSTR('0'||MOD(ROUND(NVL(SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID),0)),60),-2,2) 
+				      ELSE 
+						  SUBSTR('0000'||FLOOR(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60) / 60),-4,4)||':'                                                              <!-- LIST 로부터 가져온 CATE 값 -->
+				          ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL(SUM(TOTAL_TIME),0)) / 60),60),-2,2)||':'
+				          ||SUBSTR('0'||MOD(ROUND(NVL(SUM(TOTAL_TIME),0)),60),-2,2) END TOTAL_TIME
+			          
+					, CASE WHEN INPT_ATMC_BIZ_DSCD IS NOT NULL 
+					  THEN 
+						  SUBSTR('0000'||FLOOR(FLOOR(ROUND(NVL((SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)),0)) / 60) / 60),-4,4)||':'
+						  ||SUBSTR('0'||MOD(FLOOR(ROUND(NVL((SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)),0)) / 60),60),-2,2)||':'
+						  ||SUBSTR('0'||MOD(ROUND(NVL((SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID)),0)),60),-2,2) 
+					  ELSE NULL END AVG_TIME
+				    ,  SUM(TOTAL_TIME) OVER(PARTITION BY CATE, INPT_RCP_DT, USER_ID) / SUM(COUNT_ENO) OVER (PARTITION BY CATE, INPT_RCP_DT, USER_ID) AS AVGE
+				 FROM LIST
+				 GROUP BY GROUPING SETS ((CATE, INPT_ATMC_BIZ_DSCD, INPT_RCP_DT, AUTH, AI_INPT_AUT_CD, USER_ID, AI_INPT_USER_NM, COUNT_ENO, TOTAL_TIME, AVG_TIME, AVGE, INPT_MST_SRNO),())
+			 )MASTER
+			 GROUP BY CATE, INPT_RCP_DT, USER_ID ,INPT_ATMC_BIZ_DSCD, AUTH, AI_INPT_AUT_CD, AI_INPT_USER_NM, COUNT_ENO, TOTAL_TIME, AVG_TIME, AVGE
+
+			 
+		 )
+	</select>
+	
+	<sql id="selectListCond">
+		<if test="inptBizAlctCrpeAuth != null and inptBizAlctCrpeAuth != ''">
+			AND AI_INPT_AUT_CD = #{inptBizAlctCrpeAuth} 
+		</if>
+		<if test="inptAtmcBizDscd != null and inptAtmcBizDscd != ''">
+			AND (INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+			<if test="inptAtmcBizDscd2 != null and inptAtmcBizDscd2 != ''">
+				OR INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd2}
+			</if>
+			<if test="inptAtmcBizDscd3 != null and inptAtmcBizDscd3 != ''">
+				OR INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd3}
+			</if>)	
+		</if>
+	</sql>
+</mapper>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.AdminNationMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.AdminNationVO">
+		<result property="nacd" column="NACD"/>
+		<result property="nutpNacd" column="NUTP_NACD"/>
+		<result property="korlNlNm" column="KORL_NL_NM"/>
+		<result property="engNlNm" column="ENG_NL_NM"/>
+		<result property="korlNlAbrvNm" column="KORL_NL_ABRV_NM"/>
+		<result property="engNlAbrvNm" column="ENG_NL_ABRV_NM"/>
+		<result property="trnLogSrno" column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" column="LST_DB_CHG_DTM"/>
+		<result property="rprsCdYn" column="RPRS_CD_YN"/>
+	</resultMap>
+	
+	<select id="selectOne" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		SELECT
+			KORL_NL_NM
+		   , ENG_NL_NM
+		FROM CSPD115TI 
+		WHERE NACD = UPPER(#{nacd}) AND RPRS_CD_YN='Y'
+	</select>
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 국가정보관리 (8000) */
+		/* AdminNationMapper.selectList */
+		<include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		
+		SELECT
+			NACD, NUTP_NACD, KORL_NL_NM, ENG_NL_NM, KORL_NL_ABRV_NM, 
+			ENG_NL_ABRV_NM, TRN_LOG_SRNO, LST_DB_CHG_ID, LST_DB_CHG_DTM, RPRS_CD_YN
+		FROM CSPD115TI A
+		WHERE 1=1
+		<include refid="selectListCond" />
+		
+		<choose>
+			<!-- 국가코드 -->
+			<when test='"nacd".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY NACD
+			</when>
+			<when test='"nacd".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY NACD DESC
+			</when>
+			<!-- 국가명 영문 -->
+			<when test='"engNlNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY ENG_NL_NM
+			</when>
+			<when test='"engNlNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY ENG_NL_NM DESC
+			</when>
+			<!-- 국가명 한글 -->
+			<when test='"korlNlNm".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY KORL_NL_NM
+			</when>
+			<when test='"korlNlNm".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY KORL_NL_NM DESC
+			</when>
+			<!-- 대표이름여부 -->
+			<when test='"rprsCdYn".equals(sortItem) and "asc".equals(sortDir)'>
+				ORDER BY RPRS_CD_YN
+			</when>
+			<when test='"rprsCdYn".equals(sortItem) and "desc".equals(sortDir)'>
+				ORDER BY RPRS_CD_YN DESC
+			</when>
+			<otherwise>
+				ORDER BY ENG_NL_NM ASC	
+			</otherwise>
+		</choose>
+		
+		
+		<include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* 국가정보관리 (8000) */
+		/* AdminNationMapper.selectListTotCnt */
+		SELECT COUNT(*) totcnt
+		FROM CSPD115TI
+		WHERE 1=1
+		<include refid="selectListCond" />
+	</select>
+	
+	<sql id="selectListCond">
+		<if test="schText1 != null and schText1 != ''">
+			AND NACD LIKE '%'||UPPER(#{schText1})||'%'
+		</if>
+		<if test="schText2 != null and schText2 != ''">
+			AND (KORL_NL_NM LIKE '%'||UPPER(#{schText2})||'%' OR ENG_NL_NM LIKE '%'||UPPER(#{schText2})||'%')
+		</if>
+		<if test="schRepYn != null and schRepYn != ''">
+			AND NVL(RPRS_CD_YN,'N') = #{schRepYn}
+		</if>
+	</sql>
+	
+	<insert id="insert" parameterType="com.woori.ajs.model.AdminNationVO">
+		/* 국가정보관리 (8000) - 등록,수정 */
+		/* AdminNationMapper.insert */
+		MERGE INTO CSPD115TI A
+		USING DUAL
+			ON (A.NACD = UPPER(#{nacd}) AND A.ENG_NL_NM = UPPER(#{engNlNm}))
+		WHEN MATCHED THEN
+			UPDATE SET
+			    A.KORL_NL_NM = #{korlNlNm},
+				A.LST_DB_CHG_ID = #{lstDbChgId},
+				A.TRN_LOG_SRNO = #{trnLogSrno},
+				A.LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>,
+				A.RPRS_CD_YN = NVL(#{rprsCdYn},'N')
+		WHEN NOT MATCHED THEN
+			INSERT (A.NACD, A.NUTP_NACD, A.KORL_NL_NM, A.ENG_NL_NM, A.KORL_NL_ABRV_NM, A.ENG_NL_ABRV_NM, 
+				A.TRN_LOG_SRNO, A.LST_DB_CHG_ID, A.LST_DB_CHG_DTM, A.RPRS_CD_YN)
+			VALUES (UPPER(#{nacd}), #{nutpNacd}, #{korlNlNm}, UPPER(#{engNlNm}), #{korlNlAbrvNm}, UPPER(#{engNlAbrvNm}), 
+				#{trnLogSrno}, #{lstDbChgId}, 
+				<include refid="com.woori.ajs.common.curdate"/>, #{rprsCdYn})
+	</insert>
+	
+	<update id="updateInitRprsCdYn" parameterType="com.woori.ajs.model.AdminNationVO">
+		/* 국가정보관리 (8000) - 등록수정시 대표이름 초기화 */
+		/* AdminNationMapper.updateInitRprsCdYn */
+		UPDATE	CSPD115TI 
+		SET		RPRS_CD_YN = 'N',
+				TRN_LOG_SRNO = #{trnLogSrno},
+				LST_DB_CHG_ID = #{lstDbChgId},
+				LST_DB_CHG_DTM = <include refid="com.woori.ajs.common.curdate"/>
+		WHERE	NACD = UPPER(#{nacd})
+	</update>
+	
+	<delete id="delete" parameterType="com.woori.ajs.model.AdminNationVO">
+		/* 국가정보관리 (8000) - 삭제 */
+		/* AdminNationMapper.delete */
+		DELETE FROM CSPD115TI
+		WHERE NACD = UPPER(#{nacd})
+		AND ENG_NL_NM = #{engNlNm}
+	</delete>
+	
+</mapper>

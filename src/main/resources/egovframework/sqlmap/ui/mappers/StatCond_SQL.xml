@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.StatCondMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.StatCondVO">
+		<result property="inptMstSrno" column="INPT_MST_SRNO" />
+		<result property="actlFxRefno" column="ACTL_FX_REFNO" />
+		<result property="inptAtmcBizDsNm" column="INPT_ATM_BIZ_DSNM" />
+		<result property="aiInptCsno" column="AI_INPT_CSNO" />
+		<result property="aiInptCusNm" column="AI_INPT_CUSNM" />
+		<result property="fcCucd" column="FC_CUCD" />
+		<result property="fcCuNm" column="CUCR" />
+		<result property="krbrNm" column="KRBR_NM" />
+		<result property="imptNm" column="IMPT_NM" />
+		<result property="exptNm" column="EXPT_NM" />
+		<result property="portLoading" column="PORT_LOADING" />
+		<result property="portDisch" column="PORT_DISCH" />
+		<result property="orignNm" column="ORIGN_NM" /> 
+		<result property="fxRefnoSrno" column="FX_REFNO_SRNO" /> 
+		<result property="inptAtmcBizDscd" column="INPT_ATMC_BIZ_DSCD" /> 
+	</resultMap>
+	
+	
+	<select id="selectList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		    <include refid="com.woori.ajs.common.globalPaginationHeader"/>
+		    SELECT A.INPT_MST_SRNO
+               , C.AI_INPT_CMN_CD_NM AS INPT_ATM_BIZ_DSNM
+	           , A.INPT_ATMC_BIZ_DSCD
+	           , A.ACTL_FX_REFNO
+	           , A.FX_REFNO_SRNO AS FX_REFNO_SRNO
+	           , B.CSNO AS AI_INPT_CSNO
+	           , B.CUS_KORL_NM AS AI_INPT_CUSNM
+	           , B.CUCR
+	           , B.KRBR_NM
+	           , (select  NVL(F.ITM_INPT_HNDG_INP_DAT_TXT, F.INPT_SANCTION_DAT_TXT) FROM CSPD004TF F, CSPD002TG T WHERE  F.INPT_MST_SRNO = A.INPT_MST_SRNO AND F.INPT_MST_SRNO = T.INPT_MST_SRNO AND F.INPT_TASK_ID = T.INPT_TASK_ID AND F.INPT_SANCTION_NO = '19' AND F.SAFEWATCH_ITM_YN = 'Y'  AND T.INPT_BL_GRP_NO = '1') AS IMPT_NM
+	           , (select  NVL(F.ITM_INPT_HNDG_INP_DAT_TXT, F.INPT_SANCTION_DAT_TXT) FROM CSPD004TF F, CSPD002TG T WHERE  F.INPT_MST_SRNO = A.INPT_MST_SRNO AND F.INPT_MST_SRNO = T.INPT_MST_SRNO AND F.INPT_TASK_ID = T.INPT_TASK_ID AND F.INPT_SANCTION_NO = '15' AND F.SAFEWATCH_ITM_YN = 'Y'  AND T.INPT_BL_GRP_NO = '1' ) AS EXPT_NM
+	           , (select  NVL(F.ITM_INPT_HNDG_INP_DAT_TXT, F.INPT_SANCTION_DAT_TXT) FROM CSPD004TF F, CSPD002TG T WHERE  F.INPT_MST_SRNO = A.INPT_MST_SRNO AND F.INPT_MST_SRNO = T.INPT_MST_SRNO AND F.INPT_TASK_ID = T.INPT_TASK_ID AND F.INPT_SANCTION_NO = '57' AND F.SAFEWATCH_ITM_YN = 'Y'  AND T.INPT_BL_GRP_NO = '1' ) AS PORT_LOADING
+	           , (select  NVL(F.ITM_INPT_HNDG_INP_DAT_TXT, F.INPT_SANCTION_DAT_TXT) FROM CSPD004TF F, CSPD002TG T WHERE  F.INPT_MST_SRNO = A.INPT_MST_SRNO AND F.INPT_MST_SRNO = T.INPT_MST_SRNO AND F.INPT_TASK_ID = T.INPT_TASK_ID AND F.INPT_SANCTION_NO = '60' AND F.SAFEWATCH_ITM_YN = 'Y'  AND T.INPT_BL_GRP_NO = '1' ) AS PORT_DISCH
+	           , (select  NVL(F.ITM_INPT_HNDG_INP_DAT_TXT, F.INPT_SANCTION_DAT_TXT) FROM CSPD004TF F, CSPD002TG T WHERE  F.INPT_MST_SRNO = A.INPT_MST_SRNO AND F.INPT_MST_SRNO = T.INPT_MST_SRNO AND F.INPT_TASK_ID = T.INPT_TASK_ID AND F.INPT_SANCTION_NO = '148' AND F.SAFEWATCH_ITM_YN = 'Y'  AND T.INPT_BL_GRP_NO = '1' ) AS ORIGN_NM     
+		    <include refid="selectBody"/>
+		    <include refid="com.woori.ajs.common.globalPaginationFooter"/>
+	</select>
+	
+	<sql id="selectBody">
+		 FROM  CSPD001TM A,
+		    	  (
+					SELECT M.FX_ACNO			AS 	ACTL_FX_REFNO	<!--외환계좌번호-->
+				 		  ,M.XPO_CVRG_MK_SQ 	AS 	FX_REFNO_SRNO	<!--수출커버링작성회차-->
+					      ,M.CUS_KORL_NM 							<!--05:고객한글명(매입의뢰인/개설의뢰인) 인 경우--> 
+						  ,M.CSNO 									<!--07:통합고객번호(매입의뢰인/개설의뢰인)-->
+						  ,M.XPBY_COL_CTR_CUCD 	AS  CUCR			<!--08:통화(매입통화/접수통화) = 수출매입추심계약통화코드-->				        
+						  ,M.XPO_PTN_NACD 		AS  NACD			<!--10:수출상대국코드=수출국가코드-->	
+						  ,M.HS_CD 									<!--11:HS코드-->
+						  ,M.DACC_BRCD 								<!--13:영업점코드 = 일계점코드-->	
+					 	  ,M.KRBR_NM
+					  FROM CSPD201TM M <!--수출-->
+		  		     WHERE M.XPO_CVRG_MTBR_MK_DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','') <!--수출커버링모점작성일자-->   
+					   AND (#{inptAtmcBizDscd} = '2' OR #{inptAtmcBizDscd} IS NULL) 	<!--심사자동화업무구분코드(전체:%,1:수입,2:수출)-->
+					   AND M.INPT_ATMC_REQ_DSCD != 	'3' 		<!--심사자동화요청구분코드(3:취소)-->
+		
+					UNION ALL   
+				
+					SELECT M.FX_ACNO		AS 	ACTL_FX_REFNO	<!--외환계좌번호-->
+				 		  ,M.TDOC_RCP_SRNO 	AS 	FX_REFNO_SRNO	<!--수출커버링작성회차-->
+					      ,M.CUS_KORL_NM 						<!--05:고객한글명(매입의뢰인/개설의뢰인) 인 경우--> 
+						  ,M.CSNO 								<!--07:통합고객번호(매입의뢰인/개설의뢰인)-->
+						  ,M.TDOC_RCP_CUCD  AS  CUCR			<!--08:통화(매입통화/접수통화) = 운송서류접수통화코드-->			        
+						  ,M.XPO_NACD       AS  NACD			<!--10:수출상대국코드=수출국가코드-->	
+						  ,M.HS_CD 								<!--11:HS코드-->
+						  ,M.DACC_BRCD 							<!--13:영업점코드 = 일계점코드-->	       
+					  	  ,M.KRBR_NM
+					  FROM CSPD202TM M <!--수입-->
+					 WHERE M.TDOC_RCP_DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','') <!-- 운송서류접수일자-->   
+					   AND (#{inptAtmcBizDscd} = '1' OR #{inptAtmcBizDscd} IS NULL) 	<!--심사자동화업무구분코드(전체:%,1:수입,2:수출)-->
+					   AND M.INPT_ATMC_REQ_DSCD != 	'3' 		<!--심사자동화요청구분코드(3:취소)-->
+      		) B
+      		, CSPD112TI C 
+		    	  
+		    WHERE A.INPT_RCP_DT BETWEEN REPLACE(#{schSdate1},'-','') AND REPLACE(#{schEdate1},'-','')		<!-- 검색기간 -->
+		     <if test="!(inptAtmcBizDscd == '' or inptAtmcBizDscd == null)">
+	    		AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+			</if>
+			<if test="!(actlFxRefno == '' or actlFxRefno == null)">
+				AND A.ACTL_FX_REFNO LIKE '%' || UPPER(#{actlFxRefno}) || '%'
+			</if>
+		    AND A.AI_INPT_ACVT_CD IN ('140','160')
+		    AND B.ACTL_FX_REFNO (+)= A.ACTL_FX_REFNO			<!--외환계좌번호-->
+ 			AND B.FX_REFNO_SRNO (+)= A.FX_REFNO_SRNO 		<!--수출커버링작성회차-->
+		    AND C.AI_INPT_GRP_CD = '150' AND C.AI_INPT_CMN_CD = A.INPT_ATMC_BIZ_DSCD
+
+		  <if test='inptSanctionNo1 == "07"'>
+		  	<if test='aiInptListText1 != null and !"".equals(aiInptListText1)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.CSNO) = UPPER(#{aiInptListText1})
+		  	</if>
+		  	<if test='aiInptListId1 != null and !"".equals(aiInptListId1)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.CSNO) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId1})
+		  	</if>
+		  </if>
+		  <!--조건2 심사항목 = '07:통합고객번호(매입의뢰인/개설의뢰인)' 인-->
+		   <if test='inptSanctionNo2 == "07"'>
+		  	<if test='aiInptListText2 != null and !"".equals(aiInptListText2)'>
+		  		<!-- 조건2이 TEXT 인경우 --> 
+		  		AND UPPER(B.CSNO) = UPPER(#{aiInptListText2})
+		  	</if>
+		  	<if test='aiInptListId2 != null and !"".equals(aiInptListId2)'>
+		  		<!-- 조건2이 LIST 인경우 -->
+		  		AND UPPER(B.CSNO) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId2})
+		  	</if>
+		  </if>
+		  <!--조건3 심사항목 = '07:통합고객번호(매입의뢰인/개설의뢰인)' 인-->
+		   <if test='inptSanctionNo3 == "07"'>
+		  	<if test='aiInptListText3 != null and !"".equals(aiInptListText3)'>
+		  		<!-- 조건3이 TEXT 인경우 --> 
+		  		AND UPPER(B.CSNO) = UPPER(#{aiInptListText3})
+		  	</if>
+		  	<if test='aiInptListId3 != null and !"".equals(aiInptListId3)'>
+		  		<!-- 조건3이 LIST 인경우 -->
+		  		AND UPPER(B.CSNO) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId3})
+		  	</if>
+		  </if>
+		   <if test='inptSanctionNo4 == "07"'>
+		  	<if test='aiInptListText4 != null and !"".equals(aiInptListText4)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.CSNO) = UPPER(#{aiInptListText4})
+		  	</if>
+		  	<if test='aiInptListId4 != null and !"".equals(aiInptListId4)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.CSNO) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId4})
+		  	</if>
+		  </if>
+		   <if test='inptSanctionNo5 == "07"'>
+		  	<if test='aiInptListText5 != null and !"".equals(aiInptListText5)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.CSNO) = UPPER(#{aiInptListText5})
+		  	</if>
+		  	<if test='aiInptListId5 != null and !"".equals(aiInptListId5)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.CSNO) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId5})
+		  	</if>
+		  </if>
+		  
+		  <!--조건1 심사항목 = '08:통화(매입통화/접수통화)' 인-->  
+		  <if test='inptSanctionNo1 == "08"'>
+		  	<if test='aiInptListText1 != null and !"".equals(aiInptListText1)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.CUCR) = UPPER(#{aiInptListText1})
+		  	</if>
+		  	<if test='aiInptListId1 != null and !"".equals(aiInptListId1)'>
+		  		<!-- 조건1 이 LIST 인 경우 -->  
+		  		AND UPPER(B.CUCR) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId1})
+		  	</if>
+		  </if>
+		  <!--조건2 심사항목 = '08:통화(매입통화/접수통화)' 인-->  
+		  <if test='inptSanctionNo2 == "08"'>
+		  	<if test='aiInptListText2 != null and !"".equals(aiInptListText2)'>
+		  		<!-- 조건2이 TEXT 인경우 --> 
+		  		AND UPPER(B.CUCR) = UPPER(#{aiInptListText2})
+		  	</if>
+		  	<if test='aiInptListId2 != null and !"".equals(aiInptListId2)'>
+		  		<!-- 조건2 이 LIST 인 경우 -->  
+		  		AND UPPER(B.CUCR) IN (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId2})
+		  	</if>
+		  </if>
+		  <!--조건3 심사항목 = '08:통화(매입통화/접수통화)' 인-->  
+		  <if test='inptSanctionNo3 == "08"'>
+		  	<if test='aiInptListText3 != null and !"".equals(aiInptListText3)'>
+		  		<!-- 조건3이 TEXT 인경우 --> 
+		  		AND UPPER(B.CUCR) = UPPER(#{aiInptListText3})
+		  	</if>
+		  	<if test='aiInptListId3 != null and !"".equals(aiInptListId3)'>
+		  		<!-- 조건3 이 LIST 인 경우 -->  
+		  		AND UPPER(B.CUCR) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId3})
+		  	</if>
+		  </if>
+		  <if test='inptSanctionNo4 == "08"'>
+		  	<if test='aiInptListText4 != null and !"".equals(aiInptListText4)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.CUCR) = UPPER(#{aiInptListText4})
+		  	</if>
+		  	<if test='aiInptListId4 != null and !"".equals(aiInptListId4)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.CUCR) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId4})
+		  	</if>
+		  </if>
+		   <if test='inptSanctionNo5 == "08"'>
+		  	<if test='aiInptListText5 != null and !"".equals(aiInptListText5)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.CUCR) = UPPER(#{aiInptListText5})
+		  	</if>
+		  	<if test='aiInptListId5 != null and !"".equals(aiInptListId5)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.CUCR) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId5})
+		  	</if>
+		  </if>
+		
+		    
+		  <!--조건1 심사항목 = '10:수출상대국코드' 인 경우-->
+		  <if test='inptSanctionNo1 == "10"'>
+		  	<if test='aiInptListText1 != null and !"".equals(aiInptListText1)'>
+		  		<!-- 조건1이 TEXT 인경우 -->
+		  		AND UPPER(B.NACD) = UPPER(#{aiInptListText1})
+		  	</if>
+		  	<if test='aiInptListId1 != null and !"".equals(aiInptListId1)'>
+		  		<!-- 조건1 이 LIST 인 경우 -->  
+		  		AND UPPER(B.NACD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId1})
+		  	</if>
+		  </if> 
+		  <!--조건2 심사항목 = '10:수출상대국코드' 인 경우-->
+		  <if test='inptSanctionNo2 == "10"'>
+		  	<if test='aiInptListText2 != null and !"".equals(aiInptListText2)'>
+		  		<!-- 조건2이 TEXT 인경우 -->
+		  		AND UPPER(B.NACD) = UPPER(#{aiInptListText2})
+		  	</if>
+		  	<if test='aiInptListId2 != null and !"".equals(aiInptListId2)'>
+		  		<!-- 조건2 이 LIST 인 경우 -->  
+		  		AND UPPER(B.NACD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId2})
+		  	</if>
+		  </if> 
+		  <!--조건3 심사항목 = '10:수출상대국코드' 인 경우-->
+		  <if test='inptSanctionNo3 == "10"'>
+		  	<if test='aiInptListText3 != null and !"".equals(aiInptListText3)'>
+		  		<!-- 조건3이 TEXT 인경우 -->
+		  		AND UPPER(B.NACD) = UPPER(#{aiInptListText3})
+		  	</if>
+		  	<if test='aiInptListId3 != null and !"".equals(aiInptListId3)'>
+		  		<!-- 조건3 이 LIST 인 경우 -->  
+		  		AND UPPER(B.NACD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId3})
+		  	</if>
+		  </if> 
+		  
+		  <if test='inptSanctionNo4 == "10"'>
+		  	<if test='aiInptListText4 != null and !"".equals(aiInptListText4)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.NACD) = UPPER(#{aiInptListText4})
+		  	</if>
+		  	<if test='aiInptListId4 != null and !"".equals(aiInptListId4)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.NACD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId4})
+		  	</if>
+		  </if>
+		   <if test='inptSanctionNo5 == "10"'>
+		  	<if test='aiInptListText5 != null and !"".equals(aiInptListText5)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.NACD) = UPPER(#{aiInptListText5})
+		  	</if>
+		  	<if test='aiInptListId5 != null and !"".equals(aiInptListId5)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.NACD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId5})
+		  	</if>
+		  </if>
+		      
+		  <!--조건1 심사항목 = '11:HS코드' 인 경우-->
+		  <if test='inptSanctionNo1 == "11"'>
+		  	<if test='aiInptListText1 != null and !"".equals(aiInptListText1)'>
+		  		<!-- 조건1이 TEXT 인경우 -->
+		  		AND UPPER(B.HS_CD) = UPPER(#{aiInptListText1})
+		  	</if>
+		  	<if test='aiInptListId1 != null and !"".equals(aiInptListId1)'>
+		  		<!-- 조건1 이 LIST 인 경우 -->  
+		  		AND UPPER(B.HS_CD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId1})
+		  	</if>
+		  </if> 
+		  <!--조건2 심사항목 = '11:HS코드' 인 경우-->
+		  <if test='inptSanctionNo2 == "11"'>
+		  	<if test='aiInptListText2 != null and !"".equals(aiInptListText2)'>
+		  		<!-- 조건2이 TEXT 인경우 -->
+		  		AND UPPER(B.HS_CD) = UPPER(#{aiInptListText2})
+		  	</if>
+		  	<if test='aiInptListId2 != null and !"".equals(aiInptListId2)'>
+		  		<!-- 조건2 이 LIST 인 경우 -->  
+		  		AND UPPER(B.HS_CD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId2})
+		  	</if>
+		  </if> 
+		  <!--조건3 심사항목 = '11:HS코드' 인 경우-->
+		  <if test='inptSanctionNo3 == "11"'>
+		  	<if test='aiInptListText3 != null and !"".equals(aiInptListText3)'>
+		  		<!-- 조건3이 TEXT 인경우 -->
+		  		AND UPPER(B.HS_CD) = UPPER(#{aiInptListText3})
+		  	</if>
+		  	<if test='aiInptListId3 != null and !"".equals(aiInptListId3)'>
+		  		<!-- 조건3 이 LIST 인 경우 -->  
+		  		AND UPPER(B.HS_CD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId3})
+		  	</if>
+		  </if> 
+		  
+		  <if test='inptSanctionNo4 == "11"'>
+		  	<if test='aiInptListText4 != null and !"".equals(aiInptListText4)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.HS_CD) = UPPER(#{aiInptListText4})
+		  	</if>
+		  	<if test='aiInptListId4 != null and !"".equals(aiInptListId4)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.HS_CD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId4})
+		  	</if>
+		  </if>
+		   <if test='inptSanctionNo5 == "11"'>
+		  	<if test='aiInptListText5 != null and !"".equals(aiInptListText5)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.HS_CD) = UPPER(#{aiInptListText5})
+		  	</if>
+		  	<if test='aiInptListId5 != null and !"".equals(aiInptListId5)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.HS_CD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId5})
+		  	</if>
+		  </if>
+		
+		  <!--조건1 심사항목 = '13:영업점코드'-->
+		  <if test='inptSanctionNo1 == "13"'>
+		  	<if test='aiInptListText1 != null and !"".equals(aiInptListText1)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.DACC_BRCD) = UPPER(#{aiInptListText1})
+		  	</if>
+		  	<if test='aiInptListId1 != null and !"".equals(aiInptListId1)'>
+		  		<!-- 조건1 이 LIST 인 경우 -->  
+		  		AND UPPER(B.DACC_BRCD) IN (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId1})  
+		  	</if>
+		  </if>  
+		  <!--조건2 심사항목 = '13:영업점코드'-->
+		  <if test='inptSanctionNo2 == "13"'>
+		  	<if test='aiInptListText2 != null and !"".equals(aiInptListText2)'>
+		  		<!-- 조건2이 TEXT 인경우 --> 
+		  		AND UPPER(B.DACC_BRCD) = UPPER(#{aiInptListText2})
+		  	</if>
+		  	<if test='aiInptListId2 != null and !"".equals(aiInptListId2)'>
+		  		<!-- 조건2 이 LIST 인 경우 -->  
+		  		AND UPPER(B.DACC_BRCD) IN (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId2})  
+		  	</if>
+		  </if>
+		  <!--조건3 심사항목 = '13:영업점코드'-->
+		  <if test='inptSanctionNo3 == "13"'>
+		  	<if test='aiInptListText3 != null and !"".equals(aiInptListText3)'>
+		  		<!-- 조건3이 TEXT 인경우 --> 
+		  		AND UPPER(B.DACC_BRCD) = UPPER(#{aiInptListText3})
+		  	</if>
+		  	<if test='aiInptListId3 != null and !"".equals(aiInptListId3)'>
+		  		<!-- 조건3 이 LIST 인 경우 -->  
+		  		AND UPPER(B.DACC_BRCD) IN (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId3})  
+		  	</if>
+		  </if>
+		   
+		  <if test='inptSanctionNo4 == "13"'>
+		  	<if test='aiInptListText4 != null and !"".equals(aiInptListText4)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.DACC_BRCD) = UPPER(#{aiInptListText4})
+		  	</if>
+		  	<if test='aiInptListId4 != null and !"".equals(aiInptListId4)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.DACC_BRCD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId4})
+		  	</if>
+		  </if>
+		   <if test='inptSanctionNo5 == "13"'>
+		  	<if test='aiInptListText5 != null and !"".equals(aiInptListText5)'>
+		  		<!-- 조건1이 TEXT 인경우 --> 
+		  		AND UPPER(B.DACC_BRCD) = UPPER(#{aiInptListText5})
+		  	</if>
+		  	<if test='aiInptListId5 != null and !"".equals(aiInptListId5)'>
+		  		<!-- 조건1이 LIST 인경우 -->
+		  		 AND UPPER(B.DACC_BRCD) IN  (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT) FROM CSPD104TI WHERE AI_INPT_LIST_ID = #{aiInptListId5})
+		  	</if>
+		  </if>  
+		    
+		    
+		    
+		    <!--조건1 심사항목 >= '15' 전체가 아니면 (조건1 항목이 선택일경우)-->
+			<if test='inptSanctionNum1 >= 15'>
+			  AND  A.INPT_MST_SRNO IN 
+			  	  (SELECT INPT_MST_SRNO 
+			         FROM CSPD004TF 
+			           WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+			             AND SAFEWATCH_ITM_YN = 'Y'
+			             AND INPT_SANCTION_NO = #{inptSanctionNo1}   <!--조건1 항목-->
+			            <if test='aiInptListText1 != null and !"".equals(aiInptListText1)'>
+			             <!-- 조건1이 TEXT 인경우 -->
+			             AND  UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) like '%' ||  UPPER(#{aiInptListText1}) || '%' 
+			             </if>
+			             <if test='aiInptListId1 != null and !"".equals(aiInptListId1)'>
+			              <!-- 조건1 이 LIST 인 경우 -->
+			              AND UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) IN 
+			               (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+			                  FROM CSPD104TI
+			                 WHERE AI_INPT_LIST_ID = #{aiInptListId1}
+			                )
+			             </if>
+			             )
+			  </if>
+		    <!--조건2 심사항목 >= '15' 전체가 아니면 (조건2 항목이 선택일경우)-->
+			  <if test='inptSanctionNum2 >= 15'>
+			  AND  A.INPT_MST_SRNO IN 
+			  	  (SELECT INPT_MST_SRNO 
+			         FROM CSPD004TF 
+			           WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+			             AND SAFEWATCH_ITM_YN = 'Y'
+			             AND INPT_SANCTION_NO =  #{inptSanctionNo2}   <!--조건2 항목-->
+			             <if test='aiInptListText2 != null and !"".equals(aiInptListText2)'>
+			             <!-- 조건2이 TEXT 인경우 -->
+			             AND  UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) like '%' ||  UPPER(#{aiInptListText2}) || '%' 
+			             </if>
+			             <if test='aiInptListId2 != null and !"".equals(aiInptListId2)'>
+			              <!-- 조건2 이 LIST 인 경우 -->
+			              AND UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) IN 
+			               (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+			                  FROM CSPD104TI
+			                 WHERE AI_INPT_LIST_ID = #{aiInptListId2}
+			                )
+			             </if>
+			             )
+			  </if>
+			  <!--조건3 심사항목 >= '15' 전체가 아니면 (조건3 항목이 선택일경우)-->
+			  <if test='inptSanctionNum3 >= 15'>
+			  AND  A.INPT_MST_SRNO IN 
+			  	  (SELECT INPT_MST_SRNO 
+			         FROM CSPD004TF 
+			           WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+			             AND SAFEWATCH_ITM_YN = 'Y'
+			             AND INPT_SANCTION_NO =  #{inptSanctionNo3}   <!--조건3 항목-->
+			             <if test='aiInptListText3 != null and !"".equals(aiInptListText3)'>
+			             <!-- 조건3이 TEXT 인경우 -->
+			             AND  UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) like '%' ||  UPPER(#{aiInptListText3}) || '%' 
+			             </if>
+			             <if test='aiInptListId3 != null and !"".equals(aiInptListId3)'>
+			              <!-- 조건3 이 LIST 인 경우 -->
+			              AND UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) IN 
+			               (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+			                  FROM CSPD104TI
+			                 WHERE AI_INPT_LIST_ID = #{aiInptListId3}
+			                )
+			             </if>
+			             )
+			  </if>  
+			   <!--조건4 심사항목 >= '15' 전체가 아니면 (조건4 항목이 선택일경우)-->
+			  <if test='inptSanctionNum4 >= 15'>
+			  AND  A.INPT_MST_SRNO IN 
+			  	  (SELECT INPT_MST_SRNO 
+			         FROM CSPD004TF 
+			           WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+			             AND SAFEWATCH_ITM_YN = 'Y'
+			             AND INPT_SANCTION_NO =  #{inptSanctionNo4}   <!--조건3 항목-->
+			             <if test='aiInptListText4 != null and !"".equals(aiInptListText4)'>
+			             <!-- 조건4이 TEXT 인경우 -->
+			             AND  UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) like '%' ||  UPPER(#{aiInptListText4}) || '%' 
+			             </if>
+			             <if test='aiInptListId4 != null and !"".equals(aiInptListId4)'>
+			              <!-- 조건4 이 LIST 인 경우 -->
+			              AND UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) IN 
+			               (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+			                  FROM CSPD104TI
+			                 WHERE AI_INPT_LIST_ID = #{aiInptListId4}
+			                )
+			             </if>
+			         )
+			  </if>  
+			  
+			  <!--조건4 심사항목 >= '15' 전체가 아니면 (조건4 항목이 선택일경우)-->
+			  <if test='inptSanctionNum5 >= 15'>
+			  AND  A.INPT_MST_SRNO IN 
+			  	  (SELECT INPT_MST_SRNO 
+			         FROM CSPD004TF 
+			           WHERE INPT_MST_SRNO = A.INPT_MST_SRNO 
+			             AND SAFEWATCH_ITM_YN = 'Y'
+			             AND INPT_SANCTION_NO =  #{inptSanctionNo5}   <!--조건3 항목-->
+			             <if test='aiInptListText5 != null and !"".equals(aiInptListText5)'>
+			             <!-- 조건5이 TEXT 인경우 -->
+			             AND  UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) like '%' ||  UPPER(#{aiInptListText5}) || '%' 
+			             </if>
+			             <if test='aiInptListId5 != null and !"".equals(aiInptListId5)'>
+			              <!-- 조건5 이 LIST 인 경우 -->
+			              AND UPPER(NVL(ITM_INPT_HNDG_INP_DAT_TXT, INPT_SANCTION_DAT_TXT)) IN 
+			               (SELECT UPPER(AI_INPT_RSPT_TXT_DES_TXT)
+			                  FROM CSPD104TI
+			                 WHERE AI_INPT_LIST_ID = #{aiInptListId5}
+			                )
+			             </if>
+			         )
+			  </if>
+	</sql>
+	
+	<select id="selectListTotCnt" parameterType="com.woori.ajs.model.SearchVO" resultType="int">
+		/* StatCondMapper.selectListTotCnt */
+		SELECT COUNT(*) 
+		  <include refid="selectBody"/>
+	</select>
+	
+</mapper>

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.StatUserMapper">
+	
+	<resultMap id="listMap" type="com.woori.ajs.model.StatUserVO">
+		<result property="inptRcpYm" column="INPT_RCP_YM"/>
+		<result property="cnt" column="CNT"/>
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM"/>
+		<result property="num" column="NUM"/>
+		<result property="title" column="TITLE"/>
+		<result property="impCnt" column="IMP_CNT"/>
+		<result property="expCnt" column="EXP_CNT"/>
+		<result property="totCnt" column="TOT_CNT"/>
+		<result property="aiInptBuyAm" column="AI_INPT_BUY_AM"/>
+		<result property="impAiInptBuyAm" column="IMP_AI_INPT_BUY_AM"/>
+		<result property="expAiInptBuyAm" column="EXP_AI_INPT_BUY_AM"/>
+		<result property="inptMstSrno" column="INPT_MST_SRNO"/>
+		<result property="actlFxRefno" column="ACTL_FX_REFNO"/>
+		<result property="inptRcpDt" column="INPT_RCP_DT"/>
+		<result property="fcCucd" column="FC_CUCD"/>
+		<result property="aiInptAcvtCd" column="AI_INPT_ACVT_CD"/>
+		<result property="aiInptAcvtNm" column="AI_INPT_ACVT_NM"/>
+		<result property="aiInptCsno" column="AI_INPT_CSNO"/>
+	</resultMap>
+	
+	<select id="select1List" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 고객별 통계 [6050] - 거래규모 목록 데이터 */
+		/* StatUserMapper.select1List */
+		WITH VW_TASK AS (
+			SELECT	A.INPT_MST_SRNO
+					, A.ACTL_FX_REFNO
+					, A.INPT_RCP_DT
+					, B.XPBY_COL_CTR_CUCD AS FC_CUCD
+					, B.XPBY_COL_AM AS AI_INPT_BUY_AM
+					, SUBSTR(A.INPT_RCP_DT,1,6) AS INPT_RCP_YM
+			FROM	CSPD001TM A, 
+			(
+			  SELECT FX_ACNO AS ACTL_FX_REFNO
+		           , XPBY_COL_CTR_CUCD AS XPBY_COL_CTR_CUCD
+		           , NVL(INPT_FAXC_AM, XPBY_COL_AM) AS XPBY_COL_AM
+		           , CUS_ENG_NM
+		           , CSNO
+		           , XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+		      FROM CSPD201TM
+		   	  UNION ALL
+		      SELECT FX_ACNO AS ACTL_FX_REFNO
+		           , TDOC_RCP_CUCD AS XPBY_COL_CTR_CUCD
+		           , NVL(INPT_FAXC_AM, TDOC_RCP_AM) AS XPBY_COL_AM
+		           , CUS_ENG_NM
+		           , CSNO
+		           , TDOC_RCP_SRNO AS FX_REFNO_SRNO
+		      FROM CSPD202TM
+			) B
+			WHERE A.ACTL_FX_REFNO = B.ACTL_FX_REFNO(+)
+			  AND A.FX_REFNO_SRNO = B.FX_REFNO_SRNO(+)
+			  AND A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+			  AND TO_NUMBER(A.INPT_RCP_DT) BETWEEN TO_NUMBER(REPLACE(#{schSdate},'-','')) AND TO_NUMBER(REPLACE(#{schEdate}	,'-',''))
+			  <if test="!(aiInptCsno == '' or aiInptCsno == null)">
+					AND B.CSNO = #{aiInptCsno}
+			  </if>
+		)
+		SELECT		TO_CHAR(TO_DATE(A.INPT_RCP_YM, 'YYYYMM'), 'YYYY-MM') AS INPT_RCP_YM, 
+		            COUNT(*) AS CNT, 
+		            NVL(SUM(A.AI_INPT_BUY_AM),0) AS AI_INPT_BUY_AM
+		FROM		VW_TASK A
+		GROUP BY	A.INPT_RCP_YM
+		ORDER BY	A.INPT_RCP_YM ASC
+	</select>
+	
+	<select id="select2List" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 고객별 통계 [6050] - Pending, Block 이력 목록 데이터 */
+		/* StatUserMapper.select2List */
+		WITH VW_TASK AS (
+			/* Block 과 Pending 이력이 있는 심사번호목록 */
+			SELECT	A.INPT_MST_SRNO
+					, A.ACTL_FX_REFNO
+					, A.INPT_RCP_DT
+					, A.FX_REFNO_SRNO
+					, C.XPBY_COL_CTR_CUCD AS FC_CUCD
+					, C.XPBY_COL_AM AS AI_INPT_BUY_AM
+					, B.AI_INPT_ACVT_CD 
+				 	, (SELECT AI_INPT_CMN_CD_NM
+						FROM CSPD112TI
+						WHERE AI_INPT_GRP_CD = '290'
+						AND AI_INPT_CMN_CD = B.AI_INPT_ACVT_STS_CD) AS AI_INPT_ACVT_NM
+			FROM	CSPD001TM A, CSPD008TH B,
+					(
+						SELECT FX_ACNO AS ACTL_FX_REFNO
+					           , XPBY_COL_CTR_CUCD AS XPBY_COL_CTR_CUCD
+					           , NVL(INPT_FAXC_AM, XPBY_COL_AM) AS XPBY_COL_AM
+					           , CUS_ENG_NM
+					           , CSNO
+					           , XPO_CVRG_MK_SQ AS FX_REFNO_SRNO
+					      FROM CSPD201TM
+					    UNION ALL
+					    SELECT FX_ACNO AS ACTL_FX_REFNO
+					           , TDOC_RCP_CUCD AS XPBY_COL_CTR_CUCD
+					           , NVL(INPT_FAXC_AM, TDOC_RCP_AM) AS XPBY_COL_AM
+					           , CUS_ENG_NM
+					           , CSNO
+					           , TDOC_RCP_SRNO AS FX_REFNO_SRNO
+					      FROM CSPD202TM
+					) C
+			WHERE	A.INPT_MST_SRNO = B.INPT_MST_SRNO(+)
+			AND		A.ACTL_FX_REFNO = C.ACTL_FX_REFNO(+)
+			AND 	A.FX_REFNO_SRNO = C.FX_REFNO_SRNO(+)
+			AND     A.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+			AND		B.AI_INPT_ACVT_STS_CD IN ('130','140')
+			AND     TO_NUMBER(A.INPT_RCP_DT) BETWEEN TO_NUMBER(REPLACE(#{schSdate},'-','')) AND TO_NUMBER(REPLACE(#{schEdate}	,'-',''))
+			<if test="!(aiInptCsno == '' or aiInptCsno == null)">
+				AND C.CSNO = #{aiInptCsno}
+			</if>
+		)
+		SELECT		A.*
+		FROM		VW_TASK A
+		ORDER BY	A.INPT_MST_SRNO DESC, A.INPT_RCP_DT ASC
+	</select>
+	
+	<select id="selectChartList3" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 고객별 통계 [6050] - 차트 공통목록 데이터 (건수) */
+		/* StatUserMapper.selectChartList3 */
+		SELECT	ROWNUM AS NUM, A.*
+		FROM (
+			SELECT	A.*
+			FROM (
+				SELECT	INPT_SANCTION_DAT_TXT AS TITLE,
+						SUM(CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN 1 ELSE 0 END) AS IMP_CNT,
+						SUM(CASE WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN 1 ELSE 0 END) AS EXP_CNT,
+						COUNT(*) AS TOT_CNT
+				FROM (
+					SELECT	A.INPT_MST_SRNO
+							, A.INPT_SANCTION_DAT_TXT 
+							, MAX(B.INPT_ATMC_BIZ_DSCD) AS INPT_ATMC_BIZ_DSCD
+							, COUNT(*) AS CNT
+					FROM CSPD004TF A, CSPD001TM B,
+					( 
+			        SELECT FX_ACNO AS ACTL_FX_REFNO,
+			               XPO_CVRG_MK_SQ AS FX_REFNO_SRNO,
+			               XPBY_COL_CTR_CUCD AS XPBY_COL_CTR_CUCD,
+			               XPBY_COL_AM AS XPBY_COL_AM,
+			               CUS_ENG_NM,
+			               CSNO
+			          FROM CSPD201TM -- 수출테이블
+						<if test="!(aiInptCsno == '' or aiInptCsno == null)">
+							WHERE CSNO = #{aiInptCsno}
+						</if>
+			        
+			         UNION ALL
+			       
+				 	SELECT FX_ACNO AS ACTL_FX_REFNO,
+				 	       TDOC_RCP_SRNO AS FX_REFNO_SRNO,
+				 	       TDOC_RCP_CUCD AS XPBY_COL_CTR_CUCD,
+				 	       TDOC_RCP_AM AS XPBY_COL_AM,
+				 	       CUS_ENG_NM,
+				 	       CSNO
+				 	  FROM CSPD202TM -- 수입테이블
+						<if test="!(aiInptCsno == '' or aiInptCsno == null)">
+							WHERE CSNO = #{aiInptCsno}
+						</if>
+			        ) C
+					WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO
+				    AND B.ACTL_FX_REFNO = C.ACTL_FX_REFNO(+)
+			   		AND B.FX_REFNO_SRNO = C.FX_REFNO_SRNO(+)
+					AND A.INPT_SANCTION_NO = #{inptSanctionNo}
+					AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}							/* 검색 - (업무구분) 1 - 수입, 2 - 수출 */
+					AND TO_NUMBER(B.INPT_RCP_DT) BETWEEN TO_NUMBER(REPLACE(#{schSdate},'-','')) AND TO_NUMBER(REPLACE(#{schEdate}	,'-',''))
+					AND A.INPT_SANCTION_DAT_TXT IS NOT NULL
+					GROUP BY A.INPT_MST_SRNO, A.INPT_SANCTION_DAT_TXT
+				) A
+				GROUP BY A.INPT_SANCTION_DAT_TXT
+			) A
+			WHERE A.TOT_CNT > 0
+			ORDER BY A.TOT_CNT DESC
+		) A
+		WHERE ROWNUM &lt;= #{recordCountPerPage}
+	</select>
+	
+	<select id="selectChartList2" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 고객별 통계 [6050] - 차트 공통목록 데이터 (금액) */
+		/* StatUserMapper.selectChartList2 */
+		SELECT	ROWNUM AS NUM, A.*
+		FROM (
+			SELECT	A.*
+			FROM (
+				SELECT	INPT_SANCTION_DAT_TXT AS TITLE,
+						NVL(SUM(CASE WHEN A.INPT_ATMC_BIZ_DSCD = '1' THEN A.AI_INPT_BUY_AM ELSE 0 END),0) AS IMP_AI_INPT_BUY_AM,
+						NVL(SUM(CASE WHEN A.INPT_ATMC_BIZ_DSCD = '2' THEN A.AI_INPT_BUY_AM ELSE 0 END),0) AS EXP_AI_INPT_BUY_AM,
+						NVL(SUM(A.AI_INPT_BUY_AM),0) AS AI_INPT_BUY_AM
+				FROM (
+					SELECT	A.INPT_MST_SRNO
+							, A.INPT_SANCTION_DAT_TXT
+							, B.ACTL_FX_REFNO
+							, B.FX_REFNO_SRNO
+							, MAX(B.INPT_ATMC_BIZ_DSCD) AS INPT_ATMC_BIZ_DSCD
+							, SUM(C.XPBY_COL_AM) AS AI_INPT_BUY_AM
+					FROM	CSPD004TF A, CSPD001TM B
+							, (<include refid="com.woori.ajs.common.VW_LEDGER" />) C
+					WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO
+					AND B.ACTL_FX_REFNO = C.ACTL_FX_REFNO(+)
+					AND B.FX_REFNO_SRNO = C.FX_REFNO_SRNO(+)
+					AND A.INPT_SANCTION_NO = #{inptSanctionNo}
+					AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}							/* 검색 - (업무구분) 1 - 수입, 2 - 수출 */
+					AND TO_NUMBER(B.INPT_RCP_DT) BETWEEN TO_NUMBER(REPLACE(#{schSdate},'-','')) AND TO_NUMBER(REPLACE(#{schEdate}	,'-',''))
+					AND A.INPT_SANCTION_DAT_TXT IS NOT NULL
+					<if test='aiInptCsno != null and !"".equals(aiInptCsno)'>
+						AND C.CSNO = #{aiInptCsno}					/* 검색 - 고객번호 */
+					</if>
+					GROUP BY A.INPT_MST_SRNO, A.INPT_SANCTION_DAT_TXT , B.FX_REFNO_SRNO, B.ACTL_FX_REFNO
+				) A
+				GROUP BY A.INPT_SANCTION_DAT_TXT
+			) A
+			WHERE A.AI_INPT_BUY_AM > 0
+			ORDER BY A.AI_INPT_BUY_AM DESC
+		) A
+		WHERE ROWNUM &lt;= #{recordCountPerPage}
+	</select>
+	
+	<select id="selectChartList" parameterType="com.woori.ajs.model.SearchVO" resultMap="listMap">
+		/* 고객별 통계 [6050] - 심사항목코드가 국가코드인 경우(~ Country Code, 건수) */
+		/* StatUserMapper.selectChartList */
+		/* 사용안함 */
+		 SELECT ROWNUM AS NUM,
+		        A.*
+		   FROM ( SELECT A.*
+		            FROM ( SELECT INPT_SANCTION_DAT_TXT AS TITLE,
+		                          COUNT(A.INPT_MST_SRNO) AS TOT_CNT,
+		                          SUM(A.AI_INPT_BUY_AM) AS AI_INPT_BUY_AM
+		                     FROM ( SELECT A.INPT_MST_SRNO,
+		                                   NVL(A.ITM_INPT_HNDG_INP_DAT_TXT,
+		                                   A.INPT_SANCTION_DAT_TXT) AS INPT_SANCTION_DAT_TXT,
+		                                   B.INPT_ATMC_BIZ_DSCD AS INPT_ATMC_BIZ_DSCD,
+		                                   C.XPBY_COL_AM AS AI_INPT_BUY_AM
+		                              FROM CSPD004TF A,
+		                                   CSPD001TM B,
+		                                   ( SELECT FX_ACNO AS ACTL_FX_REFNO,
+		                                             XPO_CVRG_MK_SQ AS FX_REFNO_SRNO,
+		                                             XPBY_COL_CTR_CUCD AS XPBY_COL_CTR_CUCD,
+		                                             NVL(INPT_FAXC_AM, XPBY_COL_AM) AS XPBY_COL_AM,
+		                                             CUS_ENG_NM,
+		                                             CSNO
+		                                        FROM CSPD201TM
+		                                       WHERE CSNO = #{aiInptCsno}
+		                                       UNION ALL
+		                                      SELECT FX_ACNO AS ACTL_FX_REFNO,
+		                                             TDOC_RCP_SRNO AS FX_REFNO_SRNO,
+		                                             TDOC_RCP_CUCD AS XPBY_COL_CTR_CUCD,
+		                                             NVL(INPT_FAXC_AM, TDOC_RCP_AM) AS XPBY_COL_AM,
+		                                             CUS_ENG_NM,
+		                                             CSNO
+		                                        FROM CSPD202TM
+		                                       WHERE CSNO = #{aiInptCsno}
+		                                    ) C
+		                             WHERE A.INPT_MST_SRNO = B.INPT_MST_SRNO
+		                               AND B.ACTL_FX_REFNO = C.ACTL_FX_REFNO
+		                               AND B.FX_REFNO_SRNO = C.FX_REFNO_SRNO
+		                               AND A.INPT_SANCTION_NO = #{inptSanctionNo}
+		                               AND B.INPT_ATMC_BIZ_DSCD = #{inptAtmcBizDscd}
+		                               AND B.AI_INPT_ACVT_CD  IN ('160','140')
+		                               AND B.INPT_RCP_DT BETWEEN REPLACE(#{schSdate},
+		                                   '-',
+		                                   '')
+		                               AND REPLACE(#{schEdate},
+		                                   '-',
+		                                   '')
+		                               AND NVL(A.ITM_INPT_HNDG_INP_DAT_TXT,
+		                                   A.INPT_SANCTION_DAT_TXT) IS NOT NULL
+		                               AND A.SAFEWATCH_ITM_YN = 'Y') A
+		                    GROUP BY A.INPT_SANCTION_DAT_TXT) A
+		           WHERE A.TOT_CNT > 0
+		           ORDER BY A.TOT_CNT DESC ) A
+		  WHERE ROWNUM &lt;= #{recordCountPerPage}
+	</select>
+	
+</mapper>

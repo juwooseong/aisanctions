@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.woori.ajs.dao.WordDictionaryRegBatchMapper">
+	<resultMap id="listMap" type="com.woori.ajs.model.WordDictionaryRegBatchVO">
+		<result property="inptMstSrno" 			column="INPT_MST_SRNO"/>
+		<result property="inptRcpDt" 			column="INPT_RCP_DT"/>
+		<result property="inptSanctionNo" 		column="INPT_SANCTION_NO"/>
+		<result property="aiInptCmnCd" 			column="AI_INPT_CMN_CD"/>
+		<result property="aiInptCmnCdEngNm" 	column="AI_INPT_CMN_CD_ENG_NM"/>
+		<result property="aiInptIntfItmNm" 		column="AI_INPT_INTF_ITM_NM"/>
+		<result property="itmInptHndgInpDatTxt" column="ITM_INPT_HNDG_INP_DAT_TXT"/>
+		<result property="aiInptWordSrno" 		column="AI_INPT_WORD_SRNO"/>
+		<result property="aiInptGrpCd" 			column="AI_INPT_GRP_CD"/>
+		<result property="aiInptWordTxt" 		column="AI_INPT_WORD_TXT"/>
+		<result property="aiInptWordInfNm" 		column="AI_INPT_WORD_INF_NM"/>
+		<result property="aiInptRmrkTxt" 		column="AI_INPT_RMRK_TXT"/>
+		<result property="trnLogSrno" 			column="TRN_LOG_SRNO"/>
+		<result property="lstDbChgId" 			column="LST_DB_CHG_ID"/>
+		<result property="lstDbChgDtm" 			column="LST_DB_CHG_DTM"/>
+	</resultMap>
+
+	
+
+	<select id="selectTargetList" parameterType="com.woori.ajs.model.WordDictionaryRegBatchVO" resultMap="listMap">
+		/* 후보정심사단어사전 자동 등록 - 완료건(승인 및 Block) 조회 */
+		/* WordDictionaryRegBatchMapper.selectTargetList */
+		SELECT INPT_MST_SRNO AS INPT_MST_SRNO FROM CSPD001TM
+		WHERE AI_INPT_ACVT_CD IN ('160')
+		  AND INPT_RCP_DT = #{inptRcpDt}
+	</select>
+
+	<select id="selectContentsToRegList" parameterType="com.woori.ajs.model.WordDictionaryRegBatchVO" resultMap="listMap">
+		/* 후보정심사단어사전 자동 등록 - 완료건에 대한 수기등록 내용 조회 */
+		/* WordDictionaryRegBatchMapper.selectContentsToRegList */
+		SELECT I.INPT_SANCTION_NO AS INPT_SANCTION_NO
+		      ,C.AI_INPT_CMN_CD AS AI_INPT_CMN_CD
+		      ,C.AI_INPT_CMN_CD_ENG_NM AS AI_INPT_CMN_CD_ENG_NM
+		      ,C.AI_INPT_INTF_ITM_NM AS AI_INPT_INTF_ITM_NM
+		      ,UPPER(TRIM(I.ITM_INPT_HNDG_INP_DAT_TXT)) AS ITM_INPT_HNDG_INP_DAT_TXT
+		FROM   CSPD001TM M
+		      ,CSPD004TF I
+		      ,CSPD112TI C
+		WHERE  M.INPT_MST_SRNO   = #{inptMstSrno}
+		AND    I.INPT_MST_SRNO = M.INPT_MST_SRNO
+		AND    I.SAFEWATCH_ITM_YN = 'Y'
+		AND    (TRIM(I.ITM_INPT_HNDG_INP_DAT_TXT) IS NOT NULL AND TRIM(I.ITM_INPT_HNDG_INP_DAT_TXT) NOT IN ('.','..','-','_','\'))
+		AND    (VSIZE(TRIM(I.ITM_INPT_HNDG_INP_DAT_TXT)) &lt; 100 AND VSIZE(TRIM(I.ITM_INPT_HNDG_INP_DAT_TXT)) &gt; 1)
+		AND    C.AI_INPT_GRP_CD = DECODE(M.INPT_ATMC_BIZ_DSCD, '1', '241', '242') --1:수입
+		AND    C.AI_INPT_CMN_CD = TO_CHAR(I.INPT_SANCTION_NO)
+	</select>
+	
+	<select id="selectCountAleadyReg" parameterType="com.woori.ajs.model.WordDictionaryRegBatchVO" resultType="int">
+		/* 후보정심사단어사전 자동 등록 - 이미 등록된 수기단어인지 개수 조회  */
+		/* WordDictionaryRegBatchMapper.selectCountAleadyReg */
+		SELECT  COUNT(*) AS cnt
+		FROM    CSPD117TI --AI심사용어사전정보
+		WHERE   AI_INPT_GRP_CD = #{aiInptIntfItmNm}  --AI심사그룹코드
+		AND     AI_INPT_WORD_TXT = #{itmInptHndgInpDatTxt} --AI심사단어내용
+	</select>
+	
+	<insert id="insertWordDictionary" parameterType="com.woori.ajs.model.WordDictionaryRegBatchVO">
+		/* 후보정심사단어사전 자동 등록 */
+		INSERT INTO CSPD117TI(  AI_INPT_WORD_SRNO
+					  , AI_INPT_GRP_CD
+					  , AI_INPT_WORD_TXT
+					  , AI_INPT_WORD_INF_NM
+					  , AI_INPT_RMRK_TXT
+					  , TRN_LOG_SRNO
+					  , LST_DB_CHG_ID
+					  , LST_DB_CHG_DTM )
+		     VALUES ( (SELECT MAX(AI_INPT_WORD_SRNO)+1 FROM CSPD117TI)
+		     		 , #{aiInptIntfItmNm}
+		     		 , #{itmInptHndgInpDatTxt}
+		     		 , null
+		     		 , null
+		     		 , #{trnLogSrno}
+		     		 , #{lstDbChgId}
+		     		 , TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS'))
+	</insert>
+	
+</mapper>
