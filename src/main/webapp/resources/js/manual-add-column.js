@@ -52,6 +52,52 @@
 		return inptTaskId + '_' + inptSanctionNo;
 	}
 
+	// 국가코드 자동세팅(수기 추가 컬럼 전용): detail.jsp의 fn_itmInptHndgInpDatTextChage와 같은 규칙
+	// (countryCodeData로 소스sanctionNo → 타겟sanctionNo 매핑)을 쓰되, 원본 fn_getNationCd는
+	// 항상 원본 "수기입력" <input id="index_N">만 갱신하도록 고정되어 있어 재사용할 수 없다.
+	// 그래서 "수기 추가" 컬럼 안에서는(같은 colId의, 타겟 행 칸에) 직접 채워 넣는 전용 로직을 둔다.
+	function applyNationCdAutoSetForManualCol(val, colId, rowKey) {
+		if (typeof window.countryCodeData !== 'object') {
+			return;
+		}
+		var sep = rowKey.lastIndexOf('_');
+		if (sep < 0) { return; }
+		var inptSanctionNo = rowKey.substring(sep + 1);
+		var tmpCode = "code_" + inptSanctionNo;
+		var mappedSanctionNo = window.countryCodeData[tmpCode];
+		if (!mappedSanctionNo) { return; }
+		var trimmed = (val || '').trim();
+		if (trimmed === '') { return; }
+
+		$.ajax({
+			url: "/api/common/detail/getNationCd",
+			type: "post",
+			cache: false,
+			data: { itmInptHndgInpDatTxt: trimmed },
+			dataType: "json",
+			success: function (data) {
+				var nationCd = data && data.nationCd;
+				if (!nationCd) { return; }
+
+				var list = window.globalSanctionRstListData || [];
+				for (var i = 0; i < list.length; i++) {
+					if (String(list[i][8]) !== String(mappedSanctionNo)) { continue; }
+
+					var targetRowKey = manualColRowKey(list[i][10], list[i][8]);
+					if (!window.extraManualColValues[colId]) {
+						window.extraManualColValues[colId] = {};
+					}
+					window.extraManualColValues[colId][targetRowKey] = nationCd;
+
+					var $targetInput = $('input.manual-col-input[data-colid="' + colId + '"][data-rowkey="' + targetRowKey + '"]');
+					if ($targetInput.length > 0) {
+						$targetInput.val(nationCd);
+					}
+				}
+			}
+		});
+	}
+
 	// input onchange 시 값 기록 (렌더링된 <input>의 인라인 onchange에서 이 전역 함수를 호출한다)
 	window.fn_manualColValueChange = function (ele, colId, rowKey) {
 		if (ele.value && ele.value.length > MANUAL_COL_MAX_LEN) {
@@ -61,6 +107,7 @@
 			window.extraManualColValues[colId] = {};
 		}
 		window.extraManualColValues[colId][rowKey] = ele.value;
+		applyNationCdAutoSetForManualCol(ele.value, colId, rowKey);
 	};
 
 	// 서버에서 조회해온 sanctionRst 데이터에 이미 저장된 "수기 추가" 값이 있으면
