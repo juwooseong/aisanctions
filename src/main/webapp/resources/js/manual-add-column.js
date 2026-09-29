@@ -199,6 +199,75 @@
 		window.fn_manualColValueChange($input[0], colId, rowKey);
 	});
 
+	// [수기 추가 키입력 이벤트] common_detail.js:2203의 document keydown 핸들러는 익명함수라
+	// 몽키패치로 가로챌 수 없고, 포커스된 엘리먼트가 원본 ".itm-inpt-hndg-inp"인 경우만 처리하므로
+	// "수기 추가" 입력칸(.manual-col-input)에 포커스가 있으면 엔터/화살표 이동이 전혀 동작하지 않는다.
+	// 원본과 동일한 "엔터·아래화살표=다음 행, 위화살표=이전 행" 이동을, 같은 "수기 추가" 컬럼(같은
+	// colId) 안에서 재현한다.
+	// $extraTd를 주면 그 칸(수기 추가 자신의 <td>)에 하이라이트를 붙이고, 안 주면 원본과 동일하게
+	// "수기입력" 칸(td:eq(4))에 붙인다.
+	function highlightSanctionRow($tr, $extraTd) {
+		if (!$tr || $tr.length === 0) { return; }
+		$('#sanctionRstTable').find('tr').find('td').removeClass('selected-sanction');
+		$tr.find('td').eq(2).addClass('selected-sanction');
+		if ($extraTd && $extraTd.length) {
+			$extraTd.addClass('selected-sanction');
+		} else {
+			$tr.find('td').eq(4).addClass('selected-sanction');
+		}
+	}
+
+	// [수기 추가 클릭 이벤트] 원본 "수기입력 클릭" 핸들러(common_detail.js, .itm-inpt-hndg-inp)와
+	// 동일하게, 클릭만으로도(키보드 이동 없이) 해당 행에 selected-sanction 하이라이트를 켠다.
+	// 단, 하이라이트는 "수기입력" 칸이 아니라 클릭한 "수기 추가" 자신의 칸에 붙인다.
+	$(document).on('click', '.manual-col-input', function () {
+		highlightSanctionRow($(this).closest('tr'), $(this).closest('td'));
+	});
+
+	$(document).on('keydown', '.manual-col-input', function (e) {
+		if (window.globalCallType !== 'A') { return; }
+
+		var colId = $(this).data('colid');
+		var $col = $('.manual-col-input[data-colid="' + colId + '"]');
+		var totalIndex = $col.length - 1;
+		var index = $col.index(this);
+		if (index < 0) { return; }
+
+		if (e.keyCode === 13 || e.keyCode === 40) {
+			if (index < totalIndex) {
+				var $next = $col.eq(index + 1);
+				highlightSanctionRow($next.closest('tr'), $next.closest('td'));
+				$next.focus().select();
+			}
+		} else if (e.keyCode === 38) {
+			if (index > 0) {
+				var $prev = $col.eq(index - 1);
+				highlightSanctionRow($prev.closest('tr'), $prev.closest('td'));
+				$prev.focus().select();
+			}
+		} else if (e.keyCode === 9) {
+			// tab/shift+tab: "수기입력" 옆에 "수기 추가" 컬럼이 생기면서 브라우저 기본 Tab 순서가
+			// (수기입력 → 수기추가 → 다음 행 수기입력 → …) 식으로 두 컬럼을 오가게 되어버린다.
+			// 그래서 브라우저 기본 동작에 맡기지 않고, 엔터/화살표와 동일하게 "같은 컬럼의
+			// 다음/이전 행"으로 직접 포커스를 옮긴다.
+			if (e.shiftKey) {
+				if (index > 0) {
+					var $prevTab = $col.eq(index - 1);
+					highlightSanctionRow($prevTab.closest('tr'), $prevTab.closest('td'));
+					$prevTab.focus().select();
+				}
+			} else if (index < totalIndex) {
+				var $nextTab = $col.eq(index + 1);
+				highlightSanctionRow($nextTab.closest('tr'), $nextTab.closest('td'));
+				$nextTab.focus().select();
+			}
+			e.preventDefault();
+		}
+	});
+
+	// 원본 "수기입력" 칸의 Tab 처리는 common_detail.js:2223-2251로 되돌렸다(더 이상 여기서
+	// 다루지 않음). "수기 추가" 컬럼(.manual-col-input)의 Tab만 위에서 계속 처리한다.
+
 	// 현재 extraManualCols 기준으로 항목심사 그리드 전체 컬럼 구성을 만든다.
 	// data: 숫자는 원본 데이터 배열의 인덱스(변경 없음) — "수기 추가" 컬럼만 data:null + 자체 render.
 	function buildColumns() {

@@ -2220,27 +2220,35 @@ $(document).keydown(function(e){
 			}
 		}
 		
-		// tab
+		// tab ("수기 추가" 컬럼이 옆에 생기면서 브라우저 기본 tab 순서가 수기입력↔수기추가를
+		// 오가게 되어, 포커스 이동을 직접 제어한다 — "수기입력" 컬럼 안에서만 다음/이전 행으로 이동)
 		if (e.keyCode == "9") {
-			
+
+			var _tabCol = $('.itm-inpt-hndg-inp');
+
 			// shift + tab
 			if (e.shiftKey) {
-				
-				
-				if (_index < _totalIndex) {
-					$('#sanctionRstTable').find('tr').find('td').removeClass('selected-sanction');
-					$('#sanctionRstTable').find('tr').eq((_index)).find('td').eq(2).addClass('selected-sanction');
-					$('#sanctionRstTable').find('tr').eq((_index)).find('td').eq(4).addClass('selected-sanction');
-				}
-				
-			} else {
-				                       
+
 				if (_index > 0) {
+					var _prevTab = _tabCol.eq(_index - 1);
 					$('#sanctionRstTable').find('tr').find('td').removeClass('selected-sanction');
-					$('#sanctionRstTable').find('tr').eq(_index + 2).find('td').eq(2).addClass('selected-sanction');
-					$('#sanctionRstTable').find('tr').eq(_index + 2).find('td').eq(4).addClass('selected-sanction');
+					_prevTab.closest('tr').find('td').eq(2).addClass('selected-sanction');
+					_prevTab.closest('tr').find('td').eq(4).addClass('selected-sanction');
+					_prevTab.focus().select();
+				}
+
+			} else {
+
+				if (_index < _totalIndex) {
+					var _nextTab = _tabCol.eq(_index + 1);
+					$('#sanctionRstTable').find('tr').find('td').removeClass('selected-sanction');
+					_nextTab.closest('tr').find('td').eq(2).addClass('selected-sanction');
+					_nextTab.closest('tr').find('td').eq(4).addClass('selected-sanction');
+					_nextTab.focus().select();
 				}
 			}
+
+			e.preventDefault();
 		}
 		
 		// 위화살표 이벤트 추가
