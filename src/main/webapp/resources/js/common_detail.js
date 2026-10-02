@@ -1518,7 +1518,9 @@ function fn_setBtn() {
 	}
 	// 심사자 버튼
 	if(globalCallType == "A") {
-		
+
+		$('#left_btn_zone').append('<button id="infoChangeBtn" class="btn btn-sm btn-secondary m-1">정보변경</button>');
+
 		if(_selectStdInfo.aiInptAcvtCd == "80") {            // 수기대상 등록
 			$('#left_btn_zone').append('<button id="reScanBtn" class="btn btn-sm btn-secondary m-1">재스캔</button>');
 			$('#left_btn_zone').append('<button id="reExtractionBtn" class="btn btn-sm btn-secondary m-1">재추출</button>');

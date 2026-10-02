@@ -262,9 +262,8 @@
 
 <script src="${ctx_res}/vendors/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js"></script>
 <script src="${ctx_res}/js/common_detail.js?v=20260816d"></script>
-<!-- 수기입력 동적 컬럼(수기 추가): 결재자 화면은 조회 전용이므로 컬럼 추가/삭제(+/-)는 비활성화하고
-     심사자가 저장해둔 값만 읽기전용으로 보여준다. -->
-<script>window.MANUAL_COL_READONLY = true;</script>
+<!-- 심사자 화면은 "수기 추가" 입력/편집이 가능해야 하므로 읽기전용이 아니다. -->
+<script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
 <script src="${ctx_res}/js/revert/genesis.js"></script>
 <script src="${ctx_res}/js/annotation-host.js?v=20260815c"></script>
