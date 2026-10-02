@@ -268,6 +268,7 @@
 <script src="${ctx_res}/js/revert/genesis.js"></script>
 <script src="${ctx_res}/js/annotation-host.js?v=20260815c"></script>
 <%@include file="/WEB-INF/jsp/common/document-classification-modal.jsp"%>
+<%@include file="/WEB-INF/jsp/common/info-change-modal.jsp"%>
 
 <div class="anno-pin-modal" id="anno_pin_modal">
 	<div class="anno-pin-box">
