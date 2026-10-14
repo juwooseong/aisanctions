@@ -531,32 +531,13 @@ $(document).on('click','#reCrfBtn', function(e) {
 				success : function(data) {
 					h_loading();
 					globalChangeData = 'N';
-
+					
 					if (!(rotateVal % 180 == 0)) {
 						fn_rotate("l");
 					}
 					$('#canvas').prop("height", height_global);
 					$('#canvas').prop("width", width_global);
-
-					// [문서분류 변경 후 탭/이미지 유지 - 복수이미지]
-					// 재조회(fn_getBLData)를 호출하면 화면이 처음부터 다시 그려지면서
-					// 문서분류 탭은 첫번째 탭으로, 이미지 페이징은 1페이지/1번째 이미지로
-					// 리셋되어 버린다. 이를 막기 위해 "변경 후 다시 선택해줘야 할 탭/이미지"
-					// 정보를 common_detail.js의 전역변수 globalImexHisCdChgImgInfo에 담아둔다.
-					// fn_getBLData 내부의 fn_setBl() -> fn_setItem()에서 이 값을 읽어
-					// 해당 문서분류 탭을 다시 활성화하고, 같은 inptTaskId를 가진 이미지로
-					// 페이징 위치를 복원한다(한 번 쓰이면 내부에서 다시 null로 초기화됨).
-					// 복수이미지 변경이므로, 변경한 범위의 첫 이미지(_reCrfStart)를 기준으로
-					// 복원 대상을 잡는다. 이 이미지는 범위 변경으로 인해 분류가
-					// _itemActive(새 문서분류)로 바뀌었으므로 imexHisCd도 새 값으로 세팅한다.
-					globalImexHisCdChgImgInfo = {
-						imexHisCd : _itemActive,							// 변경된(새) 문서분류 코드
-						imexHisNm : _itemSelectText,						// 변경된(새) 문서분류명
-						inptTaskId : globalImglist[_reCrfStart - 1].inptTaskId,		// 복원할 이미지 taskId(변경 범위의 첫 이미지)
-						inptElmtId : globalImglist[_reCrfStart - 1].inptElmtId,		// 복원할 이미지의 엘리먼트Id
-						aiInptPapsQltScre : globalImglist[_reCrfStart - 1].aiInptPapsQltScre	// 복원할 이미지의 품질점수
-					};
-
+					
 					fn_getBLData("A");
 				},
 				error : function(e) {
@@ -635,20 +616,7 @@ $(document).on('click','#reCrfBtn', function(e) {
 						}
 						$('#canvas').prop("height", height_global);
 						$('#canvas').prop("width", width_global);
-
-	 					// [문서분류 변경 후 탭/이미지 유지 - 단일이미지]
-	 					// 복수이미지 분기와 동일한 이유로, 재조회 전에 "변경 후 다시 선택해줘야 할
-	 					// 탭/이미지" 정보를 globalImexHisCdChgImgInfo에 세팅해둔다.
-	 					// 단일 이미지 변경이므로 지금 보고 있던 이미지(_imgInptTaskId) 그대로,
-	 					// 분류만 새 값(_itemActive)으로 바뀐 상태를 복원 대상으로 잡는다.
-	 					globalImexHisCdChgImgInfo = {
-	 						imexHisCd : _itemActive,				// 변경된(새) 문서분류 코드
-	 						imexHisNm : _itemSelectText,			// 변경된(새) 문서분류명
-	 						inptTaskId : _imgInptTaskId,			// 복원할 이미지 taskId(현재 보던 이미지)
-	 						inptElmtId : _inptElmtId,				// 복원할 이미지의 엘리먼트Id
-	 						aiInptPapsQltScre : _aiInptPapsQltScre	// 복원할 이미지의 품질점수
-	 					};
-
+	 					
 	 					fn_getBLData("A");
 	 				},
 	 				error : function(e) {
@@ -659,7 +627,7 @@ $(document).on('click','#reCrfBtn', function(e) {
 	 				complete: function() {
 	 					$('.img-range').val("");
 	 				}
-	 			});
+	 			});	
 	 		}
 	 	}
 	}
