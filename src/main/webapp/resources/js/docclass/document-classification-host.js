@@ -48,6 +48,12 @@
 		));
 	}
 
+	/** 호출 화면에서 지정한 플러그인 옵션 (예: window.DOC_CLASS_OPTIONS = { showBlPrefix: false }) */
+	function pageOptions() {
+		var opts = window.DOC_CLASS_OPTIONS;
+		return (opts && typeof opts === 'object') ? opts : {};
+	}
+
 	function reloadDetail() {
 		if (typeof fn_getBLData === 'function') {
 			fn_getBLData(typeof globalCallType === 'string' && globalCallType ? globalCallType : 'A');
@@ -124,7 +130,7 @@
 					return;
 				}
 				var readOnly = isReadOnly();
-				modal.setOptions({ readOnly: readOnly });
+				modal.setOptions($.extend({}, pageOptions(), { readOnly: readOnly }));
 				$('#documentClassificationModal').toggleClass('read-only', readOnly);
 				modal.setData(res.data);
 				modal.open();

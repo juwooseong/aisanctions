@@ -65,6 +65,8 @@
     confirmDelete: true,
     confirmMove: false,
     includeAllBlGroupsInMoveCombo: true,
+    // BL 탭·이동 콤보 표시명에 'BL' 접두어 노출 여부 (false면 'BL2' → '2', 내부 groupId는 유지)
+    showBlPrefix: true,
     renumberAfterEmptyDelete: true,
     readOnly: false,
     allowDragDrop: true,
@@ -227,7 +229,7 @@
       '        </label>' +
       '        <div class="dc-move-bar-end">' +
       '          <label class="dc-move-field dc-move-field-bl">' +
-      '            <span>BL그룹</span>' +
+      '            <span data-dc-move-group-label>BL그룹</span>' +
       '            <select data-dc-move-group></select>' +
       '          </label>' +
       '          <button type="button" class="dc-move-apply-btn" data-dc-reclassify title="선택한 이미지를 문서분류·BL로 이동">이동</button>' +
@@ -486,8 +488,15 @@
     return (meta && meta.label) || dtype;
   };
 
+  /** BL 그룹 화면 표시명. showBlPrefix=false 면 'BL2' → '2' */
+  DocumentClassification.prototype._groupDisplayLabel = function (group) {
+    var text = String((group && (group.label || group.groupId)) || '');
+    if (this.options.showBlPrefix !== false) return text;
+    return text.replace(/^BL(?=\d+$)/i, '');
+  };
+
   DocumentClassification.prototype._groupTitleHtml = function (group) {
-    var base = escapeHtml(group.label || group.groupId);
+    var base = escapeHtml(this._groupDisplayLabel(group));
     var isActive = this.state.activeGroupId === group.groupId && !!this.state.activeDocType;
     if (!isActive) return base;
     var docLabel = this._activeDocTypeLabel();
@@ -2310,7 +2319,7 @@
       var count = this._pagesInBucket(g.groupId, dtype).length;
       html +=
         '<button type="button" class="dc-group-tab" data-group-id="' + escapeHtml(g.groupId) + '">' +
-        '<span>' + escapeHtml(g.label || g.groupId) + '</span>' +
+        '<span>' + escapeHtml(this._groupDisplayLabel(g)) + '</span>' +
         '<span class="dc-bucket-count">' + count + '</span>' +
         '</button>';
     }, this);
@@ -2329,9 +2338,9 @@
     groups.forEach(function (g) {
       groupHtml +=
         '<option value="' + escapeHtml(g.groupId) + '">' +
-        escapeHtml(g.label || g.groupId) +
+        escapeHtml(this._groupDisplayLabel(g)) +
         '</option>';
-    });
+    }, this);
     this.$moveGroup.html(groupHtml || '<option value="">(그룹 없음)</option>');
     var prefer = preferredGroupId || this.state.activeGroupId || '';
     if (prefer && this.$moveGroup.find('option[value="' + cssEscape(prefer) + '"]').length) {
@@ -2343,6 +2352,8 @@
 
   DocumentClassification.prototype._renderMoveCombos = function () {
     if (!this.$moveDocType || !this.$moveDocType.length) return;
+    this.$root.find('[data-dc-move-group-label]')
+      .text(this.options.showBlPrefix === false ? '그룹' : 'BL그룹');
     var types = ((this.state.data && this.state.data.documentTypes) || []).slice();
     var docHtml = '';
     types.forEach(function (dt) {

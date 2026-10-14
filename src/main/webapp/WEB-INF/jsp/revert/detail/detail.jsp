@@ -267,6 +267,8 @@
 <script src="${ctx_res}/js/manual-add-column.js"></script>
 <script src="${ctx_res}/js/revert/genesis.js"></script>
 <script src="${ctx_res}/js/annotation-host.js?v=20260815c"></script>
+<!-- 문서분류 일괄변경 팝업 옵션: showBlPrefix=false 면 BL 탭/콤보에 'BL' 없이 번호만 표시 -->
+<script>window.DOC_CLASS_OPTIONS = { showBlPrefix: false };</script>
 <%@include file="/WEB-INF/jsp/common/document-classification-modal.jsp"%>
 <%@include file="/WEB-INF/jsp/common/info-change-modal.jsp"%>
 
