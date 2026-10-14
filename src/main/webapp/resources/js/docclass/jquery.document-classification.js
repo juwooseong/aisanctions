@@ -490,7 +490,12 @@
 
   /** BL 그룹 화면 표시명. showBlPrefix=false 면 'BL2' → '2' */
   DocumentClassification.prototype._groupDisplayLabel = function (group) {
-    var text = String((group && (group.label || group.groupId)) || '');
+    return this._groupIdText((group && (group.label || group.groupId)) || '');
+  };
+
+  /** 그룹 ID 문자열 → 화면/메시지 표시용 (showBlPrefix 반영) */
+  DocumentClassification.prototype._groupIdText = function (groupId) {
+    var text = String(groupId || '');
     if (this.options.showBlPrefix !== false) return text;
     return text.replace(/^BL(?=\d+$)/i, '');
   };
@@ -1834,11 +1839,11 @@
     if (!page) return '';
     var id = this._pageIdentity(page);
     if (page.documentType === ETC_DOC_TYPE || page.groupId === ETC_GROUP_ID) {
-      return (page.groupId && page.groupId !== ETC_GROUP_ID ? page.groupId + ' / ' : '') +
+      return (page.groupId && page.groupId !== ETC_GROUP_ID ? this._groupIdText(page.groupId) + ' / ' : '') +
         'ETC [미분류] / ' + id.inptTaskId;
     }
     var meta = this._getDocTypeMeta(page.documentType);
-    return page.groupId + ' / ' + ((meta && meta.label) || page.documentType) +
+    return this._groupIdText(page.groupId) + ' / ' + ((meta && meta.label) || page.documentType) +
       ' / ' + id.inptTaskId;
   };
 
@@ -2766,7 +2771,8 @@
     var stripN = pages.length;
     var totalN = this.getRightSelectedPageIds().length;
     if (checked) {
-      var label = (dtype && gid ? (dtype + ' · ' + gid) : (gid || dtype || '스트립'));
+      var gidText = this._groupIdText(gid);
+      var label = (dtype && gidText ? (dtype + ' · ' + gidText) : (gidText || dtype || '스트립'));
       this._setStatus(
         stripN
           ? (label + ' ' + stripN + '건을 선택했습니다.' +
@@ -3208,7 +3214,7 @@
         }
       );
       this._setStatus(
-        moveIds.length + '건을 ' + targetGroupId + ' / ' + targetDocType +
+        moveIds.length + '건을 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType +
         ' (' + (idx + 1) + '번째 위치) 로 이동했습니다.',
         'ok'
       );
@@ -3573,15 +3579,19 @@
   /** 빈 그룹 삭제·재정렬 안내 문구 */
   DocumentClassification.prototype._formatPruneSummary = function (prune) {
     if (!prune) return '';
+    var self = this;
     var parts = [];
     if (prune.removed && prune.removed.length) {
-      parts.push('빈 그룹 삭제(' + prune.removed.join(', ') + ')');
+      parts.push('빈 그룹 삭제(' + prune.removed.map(function (id) {
+        return self._groupIdText(id);
+      }).join(', ') + ')');
     }
     if (prune.renames && prune.renames.length) {
       parts.push(
         '분류별 순번 재정렬 ' +
         prune.renames.map(function (r) {
-          return (r.documentType ? r.documentType + ' ' : '') + r.from + '→' + r.to;
+          return (r.documentType ? r.documentType + ' ' : '') +
+            self._groupIdText(r.from) + '→' + self._groupIdText(r.to);
         }).join(', ')
       );
     }
@@ -3668,11 +3678,11 @@
     this._ensureActiveTarget();
 
     var finalGroup = this._findGroupById(groupId);
-    var finalGroupLabel = (finalGroup && (finalGroup.label || finalGroup.groupId)) || groupId;
+    var finalGroupLabel = this._groupDisplayLabel(finalGroup || { groupId: groupId });
     var logMsg = batch.movedIds.length + '건 이동 → ' + finalGroupLabel + ' / ' + docLabel;
     if (requestedGroupId !== groupId || (prune.renames && prune.renames.length)) {
-      logMsg += ' (요청 ' + requestedGroupId;
-      if (requestedGroupId !== groupId) logMsg += ' → ' + groupId;
+      logMsg += ' (요청 ' + this._groupIdText(requestedGroupId);
+      if (requestedGroupId !== groupId) logMsg += ' → ' + this._groupIdText(groupId);
       logMsg += ')';
     }
     var pruneSummary = this._formatPruneSummary(prune);
@@ -3703,8 +3713,8 @@
         (prune.renames || []).some(function (r) {
           return r.from === requestedGroupId && r.to === groupId;
         })) {
-      statusMsg += ' · 요청 ' + requestedGroupId + '이(가) ' +
-        groupId + '(으)로 순번이 재정렬되었습니다.';
+      statusMsg += ' · 요청 ' + this._groupIdText(requestedGroupId) + '이(가) ' +
+        this._groupIdText(groupId) + '(으)로 순번이 재정렬되었습니다.';
     }
     this._setStatus(statusMsg, 'ok');
 
@@ -3742,7 +3752,7 @@
     var requestedGroupId = targetGroupId;
     var batch = this._movePagesBatch(ids, targetGroupId, targetDocType);
     if (!batch.movedIds.length) {
-      this._setStatus('선택한 페이지는 이미 ' + targetGroupId + ' / ' + targetDocType + ' 에 있습니다.', 'info');
+      this._setStatus('선택한 페이지는 이미 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType + ' 에 있습니다.', 'info');
       return false;
     }
     batch.movedIds.forEach(function (id) {
@@ -3767,7 +3777,7 @@
       removedGroups: prune.removed,
       renames: prune.renames
     });
-    var statusMsg = batch.movedIds.length + '건을 ' + targetGroupId + ' / ' + targetDocType + ' 로 이동했습니다.';
+    var statusMsg = batch.movedIds.length + '건을 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType + ' 로 이동했습니다.';
     if (pruneSummary) statusMsg += ' · ' + pruneSummary;
     this._setStatus(statusMsg, 'ok');
     var refreshIds = Object.keys(batch.fromGroups)
@@ -3806,7 +3816,7 @@
     this.state.activeGroupId = targetGroupId;
     this.state.activeDocType = ETC_DOC_TYPE;
     var pruneSummary = this._formatPruneSummary(prune);
-    var logMsg = batch.movedIds.length + '건 → 미분류 (' + targetGroupId + ')';
+    var logMsg = batch.movedIds.length + '건 → 미분류 (' + this._groupIdText(targetGroupId) + ')';
     if (pruneSummary) logMsg += ' · ' + pruneSummary;
     this._logChange(logMsg, {
       op: 'MOVE_PAGE',
@@ -3815,7 +3825,7 @@
       removedGroups: prune.removed,
       renames: prune.renames
     });
-    var statusMsg = batch.movedIds.length + '건을 미분류(' + targetGroupId + ')로 되돌렸습니다.';
+    var statusMsg = batch.movedIds.length + '건을 미분류(' + this._groupIdText(targetGroupId) + ')로 되돌렸습니다.';
     if (pruneSummary) statusMsg += ' · ' + pruneSummary;
     this._setStatus(statusMsg, 'ok');
     if (prune.removed.length || prune.renames.length) this.render();
@@ -3856,14 +3866,14 @@
       return g.groupId === targetGroupId;
     });
     if (!groupExists) {
-      this._setStatus('대상 그룹을 찾을 수 없습니다: ' + targetGroupId, 'warn');
+      this._setStatus('대상 그룹을 찾을 수 없습니다: ' + this._groupIdText(targetGroupId), 'warn');
       return false;
     }
 
     var requestedGroupId = targetGroupId;
     var batch = this._movePagesBatch(ids, targetGroupId, targetDocType);
     if (!batch.movedIds.length) {
-      this._setStatus('선택한 페이지는 이미 ' + targetGroupId + ' / ' + targetDocType + ' 에 있습니다.', 'info');
+      this._setStatus('선택한 페이지는 이미 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType + ' 에 있습니다.', 'info');
       return false;
     }
 
@@ -3894,7 +3904,7 @@
       removedGroups: prune.removed,
       renames: prune.renames
     });
-    var statusMsg = batch.movedIds.length + '건을 ' + targetGroupId + ' / ' + targetDocType + ' 로 이동했습니다.';
+    var statusMsg = batch.movedIds.length + '건을 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType + ' 로 이동했습니다.';
     if (pruneSummary) statusMsg += ' · ' + pruneSummary;
     this._setStatus(statusMsg, 'ok');
 
@@ -4054,7 +4064,7 @@
     var group = this.state.data.groups.filter(function (g) { return g.groupId === groupId; })[0];
     if (group) this._ensureGroupBuckets(group);
 
-    this._logChange(groupId + ' / ' + label + ' 문서분류 비우기 (' + batch.movedIds.length + '건→미분류)', {
+    this._logChange(this._groupIdText(groupId) + ' / ' + label + ' 문서분류 비우기 (' + batch.movedIds.length + '건→미분류)', {
       op: 'CLEAR_DOCUMENT_BUCKET',
       groupId: groupId,
       documentType: docType,
@@ -4171,9 +4181,9 @@
     );
     var etcGroupId = this._defaultBlGroupId();
     var msg = groupPages.length === 0
-      ? groupId + ' (' + typeMeta.label + ') 그룹을 삭제하시겠습니까?'
-      : groupId + ' (' + typeMeta.label + ') 그룹을 삭제하시겠습니까?\n' + groupPages.length +
-        '개 페이지가 미분류(' + etcGroupId + ')로 이동합니다.';
+      ? this._groupIdText(groupId) + ' (' + typeMeta.label + ') 그룹을 삭제하시겠습니까?'
+      : this._groupIdText(groupId) + ' (' + typeMeta.label + ') 그룹을 삭제하시겠습니까?\n' + groupPages.length +
+        '개 페이지가 미분류(' + this._groupIdText(etcGroupId) + ')로 이동합니다.';
     if (this.options.confirmDelete && !window.confirm(msg)) return false;
 
     var movedIds = groupPages.map(function (p) { return p.pageId; });
@@ -4212,7 +4222,7 @@
     this._rebuildPageIndex();
     this._ensureActiveTarget();
 
-    this._logChange(groupId + ' 그룹 삭제' + (movedIds.length ? ' (' + movedIds.length + '건→미분류)' : ''), {
+    this._logChange(this._groupIdText(groupId) + ' 그룹 삭제' + (movedIds.length ? ' (' + movedIds.length + '건→미분류)' : ''), {
       op: 'DELETE_GROUP',
       groupId: groupId,
       movedPageIds: movedIds,
@@ -4220,8 +4230,10 @@
     });
     if (renames.length) {
       this._setStatus(
-        groupId + ' 삭제 후 그룹 순번을 재정렬했습니다. (' +
-        renames.map(function (r) { return r.from + '→' + r.to; }).join(', ') + ')',
+        this._groupIdText(groupId) + ' 삭제 후 그룹 순번을 재정렬했습니다. (' +
+        renames.map(function (r) {
+          return this._groupIdText(r.from) + '→' + this._groupIdText(r.to);
+        }, this).join(', ') + ')',
         'ok'
       );
     }
