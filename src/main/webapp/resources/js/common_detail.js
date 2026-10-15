@@ -57,6 +57,8 @@ var globalAppvRecodeTable = null;
 var globalAppvRecodeListData = [];
 // 
 var globalImexHisCdChgImgInfo = null;
+// 문서분류 변경 후 재조회 시 유지할 BL탭/문서분류탭/이미지 정보 {inptBlGrpNo, imexHisCd, inptTaskId} (1회 사용 후 null)
+var globalReCrfKeepInfo = null;
 // 마우스 켄버스 오버 구분 변수
 var moueUp = false;
 // 화면 임시저장 여부
@@ -269,6 +271,8 @@ function fn_getBLData(_callType) {
 			
 			h_loading();
 			globalChangeData = 'N';
+			// 문서분류 변경 후 유지정보는 이번 조회에서만 사용 (조회 실패 시에도 정리)
+			globalReCrfKeepInfo = null;
 			
 		}
 
@@ -291,10 +295,21 @@ function fn_setBl(_arrTobTab) {
 		}
 		
 		$('#bl_list').empty().append(_strHtml);
-		
-		$('#bl_0').addClass('bl-link_active');
-		$('#bl_0').addClass('active');
-		$('#active_inptBlGrpNo').val(_arrTobTab[0].inptBlGrpNo);
+
+		// 문서분류 변경 후 재조회면 변경 전 BL탭 유지 (없어졌으면 첫번째 BL탭)
+		var _activeBlIdx = 0;
+		if (globalReCrfKeepInfo != null) {
+			for (var i in _arrTobTab) {
+				if (String(_arrTobTab[i].inptBlGrpNo) == String(globalReCrfKeepInfo.inptBlGrpNo)) {
+					_activeBlIdx = i;
+					break;
+				}
+			}
+		}
+
+		$('#bl_' + _activeBlIdx).addClass('bl-link_active');
+		$('#bl_' + _activeBlIdx).addClass('active');
+		$('#active_inptBlGrpNo').val(_arrTobTab[_activeBlIdx].inptBlGrpNo);
 	}
 	
 	$('#bl_select').empty().append(_selectHtml);
@@ -369,8 +384,19 @@ function fn_setItem() {
 	
 	var _selectedImexHisCd;
 	var _selectedImexHisNm;
-	
-	if(globalImexHisCdChgImgInfo == null) {
+	var _keepInptTaskId = "0";
+
+	// 문서분류 변경 후 재조회면 변경 전 문서분류탭/다음 이미지 유지 (탭이 없어졌으면 기존처럼 첫번째 탭)
+	var _keepInfo = globalReCrfKeepInfo;
+	globalReCrfKeepInfo = null;
+
+	if(_keepInfo != null && String(_activeInptBlGrpNo) == String(_keepInfo.inptBlGrpNo) && $('#hisCd_' + _keepInfo.imexHisCd).length > 0) {
+		var _keepItem = $('#hisCd_' + _keepInfo.imexHisCd).find('a');
+		_keepItem.addClass('item-active');
+		_selectedImexHisCd = _keepItem.attr('data-imexHisCd');
+		_selectedImexHisNm = _keepItem.attr('data-imexHisNm');
+		_keepInptTaskId = _keepInfo.inptTaskId ? _keepInfo.inptTaskId : "0";
+	} else if(globalImexHisCdChgImgInfo == null) {
 		$('#item_list').children().first().find('a').addClass('item-active');
 		//imexHisCd 받기
 		_selectedImexHisCd = $('#item_list').children().first().find('a').attr('data-imexHisCd');
@@ -419,8 +445,8 @@ function fn_setItem() {
 	}
 	
 	$('#bl_select').val(_activeInptBlGrpNo);
-	
-	fn_setImgInfo(_activeInptBlGrpNo, _selectedImexHisCd, "0");
+
+	fn_setImgInfo(_activeInptBlGrpNo, _selectedImexHisCd, _keepInptTaskId);
 }
 
 

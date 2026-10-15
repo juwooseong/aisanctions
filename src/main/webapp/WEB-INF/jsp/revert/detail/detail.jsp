@@ -261,7 +261,7 @@
 
 
 <script src="${ctx_res}/vendors/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js"></script>
-<script src="${ctx_res}/js/common_detail.js?v=20260816d"></script>
+<script src="${ctx_res}/js/common_detail.js?v=20261015a"></script>
 <!-- 심사자 화면은 "수기 추가" 입력/편집이 가능해야 하므로 읽기전용이 아니다. -->
 <script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
@@ -453,6 +453,33 @@ $(document).on('change','#item_select', function(e) {
 	}
 });
 
+// 문서분류 변경 후 재조회 시 유지할 탭/이미지 정보 생성
+// _fromIdx ~ _toIdx : 변경할 이미지의 현재 문서분류탭 내 인덱스(0부터)
+// _moved : 변경으로 이미지가 현재 탭에서 빠지는지 여부
+function fn_makeReCrfKeepInfo(_fromIdx, _toIdx, _moved) {
+	var _curImexHisCd = $('#item_list .item-active').attr('data-imexHisCd') || $('#active_imexHisCd').val();
+	var _keepInptTaskId = $('#active_inptTaskId').val();
+
+	if (_moved) {
+		if (globalImglist[_toIdx + 1]) {
+			// 변경한 이미지 다음 이미지
+			_keepInptTaskId = globalImglist[_toIdx + 1].inptTaskId;
+		} else if (_fromIdx > 0 && globalImglist[_fromIdx - 1]) {
+			// 마지막 이미지까지 변경했으면 바로 앞 이미지
+			_keepInptTaskId = globalImglist[_fromIdx - 1].inptTaskId;
+		} else {
+			// 남는 이미지가 없으면 첫번째 이미지
+			_keepInptTaskId = "0";
+		}
+	}
+
+	return {
+		inptBlGrpNo : $('#active_inptBlGrpNo').val(),
+		imexHisCd : _curImexHisCd,
+		inptTaskId : _keepInptTaskId
+	};
+}
+
 // 문서분류변경
 $(document).on('click','#reCrfBtn', function(e) {
 	
@@ -520,7 +547,10 @@ $(document).on('click','#reCrfBtn', function(e) {
 		_params.reCrfList = _reCrfList.length == 0 ? null : _reCrfList;
 		
 		if(confirm(_reCrfEnd - _reCrfStart + 1 + "개의 문서를 " + _itemSelectText + "[" + _blSelectText + "]로 변경 하시겠습니까?")) {
-			
+
+			var _curImexHisCd = $('#item_list .item-active').attr('data-imexHisCd') || $('#active_imexHisCd').val();
+			var _reCrfKeepInfo = fn_makeReCrfKeepInfo(_reCrfStart - 1, _reCrfEnd - 1, !(_itemActive == _curImexHisCd && _blSelectVal == _activeInptBlGrpNo));
+
 			$.ajax({
 				url : "/api/common/revertDetail/reCrfMulti",
 				type : "post",
@@ -537,7 +567,9 @@ $(document).on('click','#reCrfBtn', function(e) {
 					}
 					$('#canvas').prop("height", height_global);
 					$('#canvas').prop("width", width_global);
-					
+
+					// 재조회 후 변경 전 문서분류탭 유지, 변경된 이미지 다음 이미지 선택
+					globalReCrfKeepInfo = _reCrfKeepInfo;
 					fn_getBLData("A");
 				},
 				error : function(e) {
@@ -597,7 +629,17 @@ $(document).on('click','#reCrfBtn', function(e) {
 	 	} else {
 		
 	 		if(confirm(_data_imexhisnm + "[" + _activeInptBlGrpNoText + "]을(를) " + _itemSelectText + "[" + _blSelectText + "]로 변경 하시겠습니까?")) {
-				
+
+				// 현재 이미지 위치
+				var _curImgIdx = globalImgNo;
+				for (var i in globalImglist) {
+					if (globalImglist[i].inptTaskId == _imgInptTaskId) {
+						_curImgIdx = parseInt(i);
+						break;
+					}
+				}
+				var _reCrfKeepInfo = fn_makeReCrfKeepInfo(_curImgIdx, _curImgIdx, true);
+
 	 			s_loading();
 				
 	 			$.ajax({
@@ -616,7 +658,9 @@ $(document).on('click','#reCrfBtn', function(e) {
 						}
 						$('#canvas').prop("height", height_global);
 						$('#canvas').prop("width", width_global);
-	 					
+
+	 					// 재조회 후 변경 전 문서분류탭 유지, 변경된 이미지 다음 이미지 선택
+	 					globalReCrfKeepInfo = _reCrfKeepInfo;
 	 					fn_getBLData("A");
 	 				},
 	 				error : function(e) {
