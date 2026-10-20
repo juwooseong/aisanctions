@@ -289,8 +289,11 @@ public class CommonDetailApiController {
 						
 						JSONObject jsonObj = CastUtil.objToJSONObj(jsonParser.parse(outResult.toString()));
 						String imgStr = CastUtil.objToStr(jsonObj.get("imgStr"));
-						
+						// 데이터 구분 (image : 이미지 base64, text : 텍스트)
+						String type = CastUtil.objToStr(jsonObj.get("type"));
+
 						map.put("imgStr", imgStr);
+						map.put("type", type);
 					}
 					
 				} else {

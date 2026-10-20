@@ -360,6 +360,10 @@ function fn_init_draw_image(_inptBlGrpNo, _imexHisCd, _inptTaskId, _spdKind, _in
 //					image_global.src =  response;
 					imgType = "error";
 					
+				} else if (data.type == "text") {
+					// 텍스트(전문 등)가 넘어온 경우 텍스트를 이미지로 그려서 사용
+					image_global.src = fn_text_to_image_src(response);
+					imgType = "success";
 				} else {
 					image_global.src =  "data:image/jpeg;base64," + response;
 					imgType = "success";
@@ -426,6 +430,85 @@ function fn_init_draw_image(_inptBlGrpNo, _imexHisCd, _inptTaskId, _spdKind, _in
 	}
 }
 
+
+// 텍스트를 canvas 비율(용지)에 맞춰 그린 후 이미지 src(data URI)로 반환
+// 확대/회전/하이라이트 로직이 image_global 기준으로 동작하므로 이미지로 변환해서 사용한다.
+function fn_text_to_image_src(text) {
+
+	var _scale = 3;		// 확대 시 글자가 깨지지 않도록 고해상도로 그림
+	var _width = canvas_width_global * _scale;
+	var _height = canvas_height_global * _scale;
+	var _padding = 20 * _scale;
+	var _fontFamily = "'Malgun Gothic', '맑은 고딕', 'Dotum', monospace";
+
+	var _textCanvas = document.createElement('canvas');
+	_textCanvas.width = _width;
+	_textCanvas.height = _height;
+
+	var _ctx = _textCanvas.getContext('2d');
+	var _srcLines = String(text).replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
+	var _maxWidth = _width - (_padding * 2);
+	var _fontSize = 14 * _scale;
+	var _minFontSize = 6 * _scale;
+	var _lineHeight;
+	var _lines;
+
+	// 전체 텍스트가 한 화면에 들어올 때까지 글자 크기를 줄임
+	while (true) {
+		_ctx.font = _fontSize + "px " + _fontFamily;
+		_lineHeight = Math.ceil(_fontSize * 1.4);
+		_lines = fn_wrap_text_lines(_ctx, _srcLines, _maxWidth);
+
+		if (_lines.length * _lineHeight <= _height - (_padding * 2) || _fontSize <= _minFontSize) {
+			break;
+		}
+
+		_fontSize -= 0.5 * _scale;
+	}
+
+	_ctx.fillStyle = "#fff";
+	_ctx.fillRect(0, 0, _width, _height);
+	_ctx.fillStyle = "#000";
+	_ctx.textBaseline = "top";
+
+	for (var i = 0; i < _lines.length; i++) {
+		_ctx.fillText(_lines[i], _padding, _padding + (i * _lineHeight));
+	}
+
+	return _textCanvas.toDataURL("image/png");
+}
+
+// 최대 너비를 넘는 줄은 글자 단위로 줄바꿈
+function fn_wrap_text_lines(ctx, srcLines, maxWidth) {
+
+	var _lines = [];
+
+	for (var i = 0; i < srcLines.length; i++) {
+
+		var _line = srcLines[i];
+
+		if (ctx.measureText(_line).width <= maxWidth) {
+			_lines.push(_line);
+			continue;
+		}
+
+		var _cur = "";
+
+		for (var j = 0; j < _line.length; j++) {
+
+			if (_cur != "" && ctx.measureText(_cur + _line.charAt(j)).width > maxWidth) {
+				_lines.push(_cur);
+				_cur = "";
+			}
+
+			_cur += _line.charAt(j);
+		}
+
+		_lines.push(_cur);
+	}
+
+	return _lines;
+}
 
 function fn_init() {
 
