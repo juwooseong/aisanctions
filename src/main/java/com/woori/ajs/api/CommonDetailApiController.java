@@ -253,6 +253,8 @@ public class CommonDetailApiController {
 				HashMap<String, String> resultMap = new HashMap();
 				resultMap.put("inpt_task_id", vo.getInptTaskId());
 				resultMap.put("inpt_mst_srno", Integer.toString(vo.getInptMstSrno()));
+				// 문서분류코드(IMEX_HIS_CD)가 00 이면 SWIFT 전문
+				resultMap.put("swift_yn", "00".equals(vo.getImexHisCd()) ? "Y" : "N");
 				
 				JSONObject json = new JSONObject();
 				json.putAll(resultMap);

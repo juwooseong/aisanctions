@@ -334,6 +334,7 @@ function fn_init_draw_image(_inptBlGrpNo, _imexHisCd, _inptTaskId, _spdKind, _in
 	var options = {};		
 	options.inptTaskId = parseInt(_inptTaskId);
 	options.inptMstSrno = globalInptMstSrno;
+	options.imexHisCd = _imexHisCd;
 
 	var response;
 

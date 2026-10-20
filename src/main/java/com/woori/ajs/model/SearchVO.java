@@ -40,6 +40,7 @@ public class SearchVO extends DefaultVO {
 	private int inptMstSrno;
 	private String inptTaskId;
 	private String inptElmtId;
+	private String imexHisCd;		//문서분류코드
 	private String inptAtmcBizDscd;
 	private String actlFxRefno;
 	private String aiInptCsno;
@@ -632,6 +633,12 @@ public class SearchVO extends DefaultVO {
 	}
 	public void setInptTaskId(String inptTaskId) {
 		this.inptTaskId = inptTaskId;
+	}
+	public String getImexHisCd() {
+		return imexHisCd;
+	}
+	public void setImexHisCd(String imexHisCd) {
+		this.imexHisCd = imexHisCd;
 	}
 	public String getInptElmtId() {
 		return inptElmtId;
