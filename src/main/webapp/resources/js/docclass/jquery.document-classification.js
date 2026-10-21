@@ -33,6 +33,27 @@
   var ETC_DOC_TYPE = 'ETC';
   var CHANGE_LOG_MAX = 100;
   var TINY_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+  /** 텍스트를 A4 비율 흰 바탕 이미지(data URI)로 그림 — 전체가 들어오도록 글자 크기 자동 조정 */
+  function textToImageSrc(text) {
+    var W = 1070, H = 1470, PAD = 40;
+    var lines = String(text).replace(/\r\n?/g, '\n').replace(/\t/g, '    ').split('\n');
+    var cv = document.createElement('canvas');
+    var ctx = cv.getContext('2d');
+    var font = function (size) { return size + "px 'Malgun Gothic', monospace"; };
+    cv.width = W;
+    cv.height = H;
+    ctx.font = font(100);
+    var maxLineW = Math.max.apply(null, lines.map(function (l) { return ctx.measureText(l).width; })) || 1;
+    var size = Math.min(28, 100 * (W - PAD * 2) / maxLineW, (H - PAD * 2) / (lines.length * 1.4));
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#000';
+    ctx.textBaseline = 'top';
+    ctx.font = font(size);
+    lines.forEach(function (l, i) { ctx.fillText(l, PAD, PAD + i * size * 1.4); });
+    return cv.toDataURL('image/png');
+  }
   var BUCKET_GAP = 6;
   var PREVIEW_ZOOM_MIN = 0.25;
   var PREVIEW_ZOOM_MAX = 5;
@@ -960,6 +981,17 @@
     if (this.$board[0]) {
       this.$board[0].addEventListener('scroll', this._onBlockScrollCapture, true);
     }
+    // 썸네일 응답이 텍스트(SWIFT 전문)면 <img> 로드가 실패하므로 텍스트를 받아 이미지로 그려 대체
+    this._onThumbError = function (e) {
+      var img = e.target;
+      var pageId = img && img.tagName === 'IMG' ? img.getAttribute('data-page-id') : null;
+      if (!pageId || /^data:/.test(img.src)) return;
+      $.ajax({ url: img.src, dataType: 'text' }).done(function (text, status, xhr) {
+        if (!/^text\/plain/i.test(xhr.getResponseHeader('Content-Type') || '')) return;
+        img.src = self.state.thumbCache[pageId] = textToImageSrc(text);
+      });
+    };
+    this.$root[0].addEventListener('error', this._onThumbError, true);
   };
 
   DocumentClassification.prototype._sectionScrollKey = function (el) {
@@ -2095,6 +2127,7 @@
     } else if (url) {
       this.state.thumbCache[page.pageId] = url;
       bodyHtml = '<img class="dc-image-preview-img" src="' + escapeHtml(url) +
+        '" data-page-id="' + escapeHtml(page.pageId) +
         '" alt="' + escapeHtml(title) + '">';
     } else {
       bodyHtml =
@@ -4831,6 +4864,9 @@
     $(document).off('keydown.dcPreview');
     if (this.$board && this.$board[0] && this._onBlockScrollCapture) {
       this.$board[0].removeEventListener('scroll', this._onBlockScrollCapture, true);
+    }
+    if (this._onThumbError) {
+      this.$root[0].removeEventListener('error', this._onThumbError, true);
     }
     if (this.state.thumbObserver) {
       this.state.thumbObserver.disconnect();
