@@ -413,8 +413,25 @@ function fn_getNationCd(val, _sanctionNo, _indexNo) {
 	});	
 }
 
+// SWIFT(01) 문서와 이미지 문서 간 문서분류 변경 차단 (차단 시 true)
+function fn_isSwiftCrossChange(_fromCd, _toCd) {
+	if ((_fromCd == "01") != (_toCd == "01")) {
+		alert(_fromCd == "01"
+			? "SWIFT 전문은 다른 문서분류로 변경할 수 없습니다."
+			: "이미지 문서는 SWIFT(01)로 변경할 수 없습니다.");
+		return true;
+	}
+	return false;
+}
+
 // 문서분류  selectBox 변경
 $(document).on('change','#item_select', function(e) {
+	// SWIFT/이미지 간 변경이면 원래 문서분류로 되돌림
+	if (fn_isSwiftCrossChange($('#active_imexHisCd').val(), $(this).val())) {
+		$(this).val($('#active_imexHisCd').val()).trigger('change');
+		return;
+	}
+
 	var _arrImgPageInfo = $globaObjlData.imgPageInfo;
 	var _activeInptBlGrpNo = $('#active_inptBlGrpNo').val();
 	var _imgInptTaskId = $('#active_inptTaskId').val();
@@ -482,7 +499,11 @@ function fn_makeReCrfKeepInfo(_fromIdx, _toIdx, _moved) {
 
 // 문서분류변경
 $(document).on('click','#reCrfBtn', function(e) {
-	
+
+	if (fn_isSwiftCrossChange($('#active_imexHisCd').val(), $('#item_select').val())) {
+		return false;
+	}
+
 	var _reCrfListType = $('[name="imgSelect"]:checked').val();
 
 	if(_reCrfListType == "multiple") {
@@ -679,7 +700,11 @@ $(document).on('click','#reCrfBtn', function(e) {
 
 // 재추출
 $(document).on('click','#reExtractionBtn', function(e) {
-	
+
+	if (fn_isSwiftCrossChange($('#active_imexHisCd').val(), $('#item_select').val())) {
+		return false;
+	}
+
 	var _arrImgPageInfo = $globaObjlData.imgPageInfo;
 	var _activeInptBlGrpNo = $('#active_inptBlGrpNo').val();
 	var _activeInptBlGrpNoText = $('.bl-link_active').text();
