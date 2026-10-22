@@ -84,7 +84,15 @@
 				showJsonPreview: false,
 				showPerfStats: false,
 				showGuide: false,
-				showChangeLog: false
+				showChangeLog: false,
+				// SWIFT(01) 문서와 이미지 문서 간 문서분류 이동 차단 (미분류는 허용, 원래 분류 기준)
+				canClassify: function (page, toCd, origCd) {
+					if (!toCd) {
+						return true;
+					}
+					return (origCd === '01') === (toCd === '01');
+				},
+				classifyBlockedMessage: 'SWIFT 전문과 이미지 문서는 서로 다른 문서분류로 이동할 수 없습니다.'
 			},
 			onSaved: function () {
 				alert('문서분류가 저장되었습니다.');

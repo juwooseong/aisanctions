@@ -85,6 +85,9 @@
     showEmptyBuckets: true,
     confirmDelete: true,
     confirmMove: false,
+    // 문서분류 변경 허용 판단 function(page, toImexHisCd, origImexHisCd) → false 면 차단 (원래 분류 기준)
+    canClassify: null,
+    classifyBlockedMessage: '이동할 수 없는 문서분류입니다.',
     includeAllBlGroupsInMoveCombo: true,
     // BL 탭·이동 콤보 표시명에 'BL' 접두어 노출 여부 (false면 'BL2' → '2', 내부 groupId는 유지)
     showBlPrefix: true,
@@ -804,7 +807,17 @@
       self.moveSelectedByCombo();
     });
 
+    this.$root.on('focus.dc', '[data-dc-move-doc-type]', function () {
+      $(this).data('dcPrev', this.value);
+    });
     this.$root.on('change.dc', '[data-dc-move-doc-type]', function () {
+      // 선택 페이지가 이동할 수 없는 문서분류면 알림 후 이전 값으로 되돌림
+      if (self._countSelectedBlocked(this.value) > 0) {
+        window.alert(self.options.classifyBlockedMessage);
+        $(this).val($(this).data('dcPrev') || self.state.activeDocType || ETC_DOC_TYPE);
+        return;
+      }
+      $(this).data('dcPrev', this.value);
       self._fillMoveGroupOptions(String($(this).val() || ''));
       self._syncMoveGroupComboState();
     });
@@ -941,6 +954,13 @@
     });
     this.$root.on('dragover.dc', '[data-drop-zone], .dc-type-tab, .dc-group-tab', function (e) {
       if (!self._canBucketReorder() && !self._canDragDrop()) return;
+      // 차단 문서분류면 드롭 금지 커서 (preventDefault 안 하면 drop 도 발생하지 않음)
+      if (self._isDragBlocked($(this))) {
+        e.originalEvent.dataTransfer.dropEffect = 'none';
+        self._clearDropSplitBar(this);
+        $(this).removeClass('dc-drop-over');
+        return;
+      }
       e.preventDefault();
       e.originalEvent.dataTransfer.dropEffect = 'move';
       if ($(this).is('[data-drop-zone]')) {
@@ -1536,6 +1556,26 @@
     page.inptBlGrpNo = groupId; // INPT_BL_GRP_NO
     page.documentType = documentType;
     page.imexHisCd = this._imexHisCdForDocType(documentType);
+  };
+
+  /** canClassify 옵션 기준 문서분류 변경 차단 여부 (원래 분류로 판단 → 미분류 경유 우회 방지) */
+  DocumentClassification.prototype._isClassifyBlocked = function (page, targetDocType) {
+    if (!page || typeof this.options.canClassify !== 'function') return false;
+    var orig = this._findOriginalPage(page.pageId) || page;
+    return this.options.canClassify(page, this._imexHisCdForDocType(targetDocType), orig.imexHisCd) === false;
+  };
+
+  DocumentClassification.prototype._alertClassifyBlocked = function (count) {
+    if (count > 0) window.alert(this.options.classifyBlockedMessage + ' (' + count + '건 제외)');
+  };
+
+  /** 선택 페이지 중 해당 문서분류로 이동이 차단되는 건수 */
+  DocumentClassification.prototype._countSelectedBlocked = function (docType) {
+    var self = this;
+    return this.getRightSelectedPageIds().filter(function (id) {
+      var page = self._findPage(id);
+      return page && page.documentType !== docType && self._isClassifyBlocked(page, docType);
+    }).length;
   };
 
   DocumentClassification.prototype._findOriginalPage = function (pageId) {
@@ -3087,6 +3127,26 @@
     }, 50);
   };
 
+  /** 드래그 중인 페이지 중 하나라도 드롭 대상 문서분류로 이동이 차단되는지 (_onDrop 대상 계산과 동일) */
+  DocumentClassification.prototype._isDragBlocked = function ($zone) {
+    if (typeof this.options.canClassify !== 'function' || !this.state.dragPageId) return false;
+    var docType;
+    if ($zone.hasClass('dc-type-tab')) {
+      docType = String($zone.data('docType') || '');
+    } else if ($zone.hasClass('dc-group-tab') && String($zone.data('groupId') || '') === ETC_GROUP_ID) {
+      docType = ETC_DOC_TYPE;
+    } else if (!$zone.hasClass('dc-group-tab') && this.state.activeGroupId === ETC_GROUP_ID) {
+      docType = ETC_DOC_TYPE;
+    } else {
+      docType = this.state.activeDocType || this._workingDocType();
+    }
+    var self = this;
+    return this._resolveDragMoveIds().some(function (id) {
+      var page = self._findPage(id);
+      return page && page.documentType !== docType && self._isClassifyBlocked(page, docType);
+    });
+  };
+
   DocumentClassification.prototype._onDrop = function (e, zone) {
     if (!this._canBucketReorder() && !this._canDragDrop()) return;
     e.preventDefault();
@@ -3190,12 +3250,17 @@
       .map(function (p) { return p.pageId; })
       .filter(function (id) { return moveIds.indexOf(id) === -1; });
 
+    var blockedIds = [];
     moveIds.forEach(function (pageId) {
       var page = self._findPage(pageId);
       if (!page) return;
+      var fromKey = self._bucketKey(page.groupId, page.documentType);
+      if (fromKey !== targetKey && self._isClassifyBlocked(page, targetDocType)) {
+        blockedIds.push(pageId);
+        return;
+      }
       fromGroups[page.groupId] = true;
       fromDocTypes[String(page.documentType || '')] = true;
-      var fromKey = self._bucketKey(page.groupId, page.documentType);
       if (fromKey === targetKey) {
         reorderIds.push(pageId);
       } else {
@@ -3204,6 +3269,9 @@
         reclassifiedIds.push(pageId);
       }
     });
+    this._alertClassifyBlocked(blockedIds.length);
+    // 차단된 페이지는 대상 순서 재배치에서 제외
+    moveIds = moveIds.filter(function (id) { return blockedIds.indexOf(id) === -1; });
 
     if (!reorderIds.length && !reclassifiedIds.length) return false;
 
@@ -3378,6 +3446,7 @@
     var result = {
       movedIds: [],
       skippedIds: [],
+      blockedIds: [],
       registeredNewType: false,
       fromGroups: {},
       fromDocTypes: {}
@@ -3406,6 +3475,10 @@
         result.skippedIds.push(pageId);
         return;
       }
+      if (self._isClassifyBlocked(page, targetDocType)) {
+        result.blockedIds.push(pageId);
+        return;
+      }
       result.fromGroups[page.groupId] = true;
       result.fromDocTypes[String(page.documentType || '')] = true;
       var isInflow = true;
@@ -3414,6 +3487,7 @@
       result.movedIds.push(pageId);
       newcomerIds.push(pageId);
     });
+    this._alertClassifyBlocked(result.blockedIds.length);
     Object.keys(result.fromGroups).forEach(function (gid) {
       self._removeFromGroupOrder(gid, result.movedIds);
     });
@@ -3690,6 +3764,7 @@
       return false;
     }
     var batch = this._movePagesBatch(ids, groupId, docType);
+    if (!batch.movedIds.length && batch.blockedIds.length) return false;
     if (!batch.movedIds.length) {
       this._setStatus('선택한 페이지는 이미 ' + groupLabel + ' / ' + docLabel + ' 에 있습니다.', 'info');
       return false;
@@ -3784,6 +3859,7 @@
     }
     var requestedGroupId = targetGroupId;
     var batch = this._movePagesBatch(ids, targetGroupId, targetDocType);
+    if (!batch.movedIds.length && batch.blockedIds.length) return false;
     if (!batch.movedIds.length) {
       this._setStatus('선택한 페이지는 이미 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType + ' 에 있습니다.', 'info');
       return false;
@@ -3834,6 +3910,7 @@
     if (!this._ensureBlGroupExists(targetGroupId)) return false;
     this._snapshotScrollPositions();
     var batch = this._movePagesBatch(ids, targetGroupId, ETC_DOC_TYPE);
+    if (!batch.movedIds.length && batch.blockedIds.length) return false;
     if (!batch.movedIds.length) {
       this._setStatus('선택한 페이지는 이미 미분류에 있습니다.', 'info');
       return false;
@@ -3905,6 +3982,7 @@
 
     var requestedGroupId = targetGroupId;
     var batch = this._movePagesBatch(ids, targetGroupId, targetDocType);
+    if (!batch.movedIds.length && batch.blockedIds.length) return false;
     if (!batch.movedIds.length) {
       this._setStatus('선택한 페이지는 이미 ' + this._groupIdText(targetGroupId) + ' / ' + targetDocType + ' 에 있습니다.', 'info');
       return false;
@@ -3962,6 +4040,10 @@
     var srcKey = this._bucketKey(srcGroup, srcDoc);
     var targetKey = this._bucketKey(targetGroupId, targetDocType);
     var isInflow = srcKey !== targetKey;
+    if (isInflow && this._isClassifyBlocked(page, targetDocType)) {
+      this._alertClassifyBlocked(1);
+      return false;
+    }
 
     var targetBucketIds = this._pagesInBucket(targetGroupId, targetDocType)
       .map(function (p) { return p.pageId; })
