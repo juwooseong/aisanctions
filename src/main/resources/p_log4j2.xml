@@ -17,12 +17,30 @@
         		</Delete>
         	</DefaultRolloverStrategy>
         </RollingFile> 
+        <!-- 외부 인터페이스(inspection/extraction/img) 송수신 전용 로그 -->
+        <RollingFile name="interfaceFile" fileName="/applog/aisanction/interface.log" filePattern="/applog/aisanction/interface.%d{yyyy-MM-dd}.%i.log">
+        	<PatternLayout pattern="%d %5p %m%n"/>
+        	<Policies>
+        		<SizeBasedTriggeringPolicy size="10MB"/>
+        		<TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+        	</Policies>
+        	<DefaultRolloverStrategy max="500">
+        		<Delete basePath="/applog/aisanction">
+        			<IfFileName glob="interface.*.log"/>
+        			<IfLastModified age="30d"/>
+        		</Delete>
+        	</DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
 
 		<Logger name="com.woori.ajs" level="ERROR" additivity="false">
             <AppenderRef ref="console" />
             <AppenderRef ref="file" />
+        </Logger>
+        <!-- 외부 인터페이스 로그 (앱 로그 레벨과 무관하게 INFO 저장) -->
+        <Logger name="INTERFACE" level="INFO" additivity="false">
+            <AppenderRef ref="interfaceFile" />
         </Logger>
         <Root level="ERROR">
             <AppenderRef ref="console" level="ERROR" />
