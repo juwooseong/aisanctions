@@ -5,6 +5,17 @@
 <c:set var="modelTitle" value="${param.modelTitle}"/>
 <c:set var="modelGridId" value="modalUserListTable${param.pageId}"/>
 
+<style>
+/* 사용자 조회 그리드 선택 행 강조 (theme_mockup.css 선택 행 색상과 동일) */
+#schUserModal table.dataTable tbody > tr.selected > td {
+	background: #cce9f7 !important;
+	font-weight: bold;
+}
+#schUserModal table.dataTable tbody > tr.selected:hover > td {
+	background: #b3dff5 !important;
+}
+</style>
+
 <div class="modal fade" id="schUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -199,19 +210,13 @@ $(function() {
 	        	// JSONAPI 호출
 	        	$.get("/api/common/user", options, function(data){
 	            	// callback 처리로 data 를 가공하여 datatable 에 출력한다.
-	            	var json = data.resultList; 
-	            	var modalList = document.getElementById("btnUserModalSelectInfo");
+	            	var json = data.resultList;
 	            	if(!json.error){
 		                callback({
 		                	recordsTotal : data.paginationInfo.totalRecordCount,
 		                	recordsFiltered : data.paginationInfo.totalRecordCount,
 		                	data : data.resultList
 		                });
-		                if(json.length == 0){
-		                	modalList.disabled=true;
-		                }else{
-		                	modalList.disabled=false;
-		                }
 		                $(modalDataTableId).find(' tbody tr').css("cursor", "pointer");
 	            	}else{
 	            		callback({
@@ -253,6 +258,11 @@ $(function() {
 
 		$("#btnUserModalSelectInfo").click(function(e){
 			//선택버튼 클릭시.
+			//검색 목록이 없거나 선택한 행이 없으면 알림 후 모달 유지 (data-dismiss 로 닫히지 않도록 전파 차단)
+			if(modalUserListTable.dataCount() == 0 || modalUserListTable.rows({selected: true}).count() == 0){
+				alert("선택 대상이 없습니다.");
+				return false;
+			}
 			if(window.<c:out value="${modelGridId}"/>_selectOK){
 				if(<c:out value="${modelGridId}"/>_data.row !=null){
 					<c:out value="${modelGridId}"/>_selectOK(<c:out value="${modelGridId}"/>_data.row);
