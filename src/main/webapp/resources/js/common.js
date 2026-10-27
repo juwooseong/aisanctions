@@ -615,8 +615,16 @@ $(function() {
 		var calElementMonth = calElementValue.substr(5, 2);
 		var calElementDay = calElementValue.substr(8, 4);
 		var calElementValueConvt = calElementYear + calElementMonth + calElementDay;
+
+		// 존재하지 않는 날짜(02-30, 04-31, 평년 02-29 등) 차단
+		var calDateObj = new Date(Number(calElementYear), Number(calElementMonth) - 1, Number(calElementDay));
+		if(calDateObj.getMonth() != Number(calElementMonth) - 1){
+			calObject.focus().val("");
+			$('#ui-datepicker-div').css('display','none');
+			return;
+		}
 		//var todayString = new Date().getFullYear() + "" + (new Date().getMonth()+1) + new Date().getDate();
-		var todayString = new Date().getFullYear() + "" + (new Date().getMonth()+1) + (new Date().getDate() >= 10 ? new Date().getDate() : '0' + new Date().getDate());
+		var todayString = getToDay();	// YYYYMMDD (월/일 0 채움)
 
 		
 		//console.log("today str : " + todayString);
@@ -628,8 +636,24 @@ $(function() {
 			$('#ui-datepicker-div').css('display','none');
 			return;
 		}else{
+			// 시작일/종료일 정합성 체크 (name 규칙: schSdateN ↔ schEdateN)
+			var calName = calObject.attr('name') || '';
+			var isStart = calName.indexOf('schSdate') === 0;
+			var isEnd = calName.indexOf('schEdate') === 0;
+			if(isStart || isEnd){
+				var pairName = isStart ? calName.replace('schSdate', 'schEdate') : calName.replace('schEdate', 'schSdate');
+				var pairVal = $.trim(calObject.closest('form').find('input[name="' + pairName + '"]').val());
+				if(pairVal && (isStart ? paramDate > pairVal : paramDate < pairVal)){
+					alert(isStart ? "시작일은 종료일보다 늦을 수 없습니다" : "종료일은 시작일보다 빠를 수 없습니다");
+					// 종료일은 변경 전 값으로 복원 (값을 먼저 넣어야 focus 시 이전 값이 다시 저장됨)
+					calObject.val(isEnd ? (calObject.data('prevVal') || "") : "").focus();
+					$('#ui-datepicker-div').css('display','none');
+					return;
+				}
+			}
 			calObject.val(paramDate);
-			
+			calObject.data('prevVal', paramDate);
+
 		}
 	}
 	
@@ -657,6 +681,11 @@ $(function() {
 			return false;
 		});
 		
+		// 변경 전 값 저장 (종료일 정합성 오류 시 복원용)
+		$(document).on('focus','.cal', function() {
+			$(this).data('prevVal', $(this).val());
+		});
+
 		$(document).on('click','.cal', function() {
 			dateTmpVar = $(this).val();
 			//$(this).val("");
@@ -797,7 +826,7 @@ $(function() {
 			
 			// YYYY-MM-DD 정규식
 			if(dateStrLen == 10){
-				var pattern = /^(19[7-9][0-9]|20\d{2})-(0[0-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/;
+				var pattern = /^(19[7-9][0-9]|20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/;
 				if(pattern.test(dateStr)){
 					//$(this).val(dateStr);
 					validationEvent(dateStr, $(this));
@@ -809,7 +838,7 @@ $(function() {
 			}
 			// YYYYMMDD 정규식
 			else if(dateStrLen == 8){
-				var pattern = /^(19[7-9][0-9]|20\d{2})(0[0-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])$/;
+				var pattern = /^(19[7-9][0-9]|20\d{2})(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])$/;
 				if(pattern.test(dateStr)){
 					var convertedDate = dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8);
 					//$(this).val(convertedDate);
@@ -822,7 +851,7 @@ $(function() {
 			// MMDD 정규식
 			}else if(dateStrLen == 4){
 				 // MMDD 1단계
-				var pattern = /[0-1]{1}[0-9]{1}[0-3]{1}[0-9]{1}/;
+				var pattern = /^(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])$/;
 				 // MMDD 2단계
 				if(pattern.test(dateStr)){
 					var convertTmpNumverMonth = Number(dateStr.substring(0, 2));
