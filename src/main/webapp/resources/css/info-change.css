@@ -1,0 +1,243 @@
+@charset "UTF-8";
+/*
+ * 정보변경 입력 폼 (.info-chg)
+ * - 모든 스타일을 .info-chg 하위로 한정하고 외부 CSS(Bootstrap 등)에 의존하지 않는다.
+ * - 팝업 단독 / 다른 엘리먼트 안 어디에 넣어도 동일하게 보이도록 기본값을 루트에서 고정한다.
+ */
+
+/* ---------- 루트 · 리셋 ---------- */
+/* :not(#_) → 우선순위를 ID 수준으로 올려 부모의 'div', '.xxx div' 같은 규칙에 덮이지 않게 함 */
+.info-chg:not(#_) {
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	background: #fff;
+	color: #1e293b;
+	font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif;
+	font-size: 13px;
+	font-weight: normal;
+	line-height: 1.4;
+	text-align: left;
+	letter-spacing: normal;
+	word-break: keep-all;
+}
+.info-chg,
+.info-chg *,
+.info-chg *::before,
+.info-chg *::after {
+	box-sizing: border-box;
+}
+.info-chg form,
+.info-chg table,
+.info-chg label {
+	margin: 0;
+	padding: 0;
+}
+
+/* ---------- 헤더 / 본문 / 하단 ---------- */
+.info-chg .info-chg-head {
+	margin: 0;
+	padding: 12px 16px;
+	background: #1e3a5f;
+	color: #fff;
+	font-size: 14px;
+	font-weight: 700;
+}
+.info-chg .info-chg-body {
+	padding: 16px;
+}
+.info-chg .info-chg-foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 10px 16px;
+	border-top: 1px solid #e2e8f0;
+	background: #f8fafc;
+}
+
+/*
+ * ---------- 입력 폼 : 행 단위 레이아웃 ----------
+ * - 행(.info-chg-row)마다 항목 수가 달라도 됨 (2·3·4개 혼합 가능)
+ * - 같은 행의 항목(.info-chg-item)은 폭을 균등 분배
+ * - 항목 안 라벨(.info-chg-th) : 입력(.info-chg-td) = 3 : 7 (비율 변경 시 30% 값만 수정)
+ */
+.info-chg .info-chg-form {
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid #e2e8f0;
+	border-left: 1px solid #e2e8f0;
+	background: #fff;
+}
+.info-chg .info-chg-row {
+	display: flex;
+	margin: 0;
+	padding: 0;
+}
+.info-chg .info-chg-item {
+	display: flex;
+	flex: 1 1 0%;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+}
+.info-chg .info-chg-th,
+.info-chg .info-chg-td {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	min-height: 41px;	/* 입력칸(28) + 상하 패딩 + 테두리 → 라디오·체크박스만 있는 행도 같은 높이 */
+	margin: 0;
+	padding: 6px 8px;
+	border-right: 1px solid #e2e8f0;
+	border-bottom: 1px solid #e2e8f0;
+	font-size: 13px;
+	text-align: left;
+}
+.info-chg .info-chg-th {
+	flex: 0 0 30%;
+	width: 30%;
+	background: #f1f5f9;
+	color: #334155;
+	font-weight: 600;
+}
+.info-chg .info-chg-td {
+	flex: 1 1 0%;
+	background: #fff;
+	color: #1e293b;
+	font-weight: normal;
+}
+/*
+ * 여러 칸 차지 항목 (info-chg-span-N) : N칸 폭을 차지하되 라벨 폭은 1칸 항목과 동일
+ * - 행에 혼자 있으면 그 행을 N칸 기준으로 본 라벨 폭 (예: span-4 = 4열 행의 라벨 폭)
+ */
+.info-chg .info-chg-span-2 { flex-grow: 2; }
+.info-chg .info-chg-span-3 { flex-grow: 3; }
+.info-chg .info-chg-span-4 { flex-grow: 4; }
+.info-chg .info-chg-span-2 > .info-chg-th { flex-basis: 15%;  width: 15%; }
+.info-chg .info-chg-span-3 > .info-chg-th { flex-basis: 10%;  width: 10%; }
+.info-chg .info-chg-span-4 > .info-chg-th { flex-basis: 7.5%; width: 7.5%; }
+
+.info-chg .info-chg-req {
+	color: #dc2626;
+}
+
+/* ---------- 입력 요소 ---------- */
+.info-chg .info-chg-input {
+	display: block;
+	width: 100%;
+	height: 28px;
+	margin: 0;
+	padding: 2px 6px;
+	border: 1px solid #cbd5e1;
+	border-radius: 3px;
+	background: #fff;
+	color: #1e293b;
+	font: inherit;
+	line-height: 22px;
+	box-shadow: none;
+	outline: none;
+}
+.info-chg .info-chg-input:focus {
+	border-color: #1e3a5f;
+	box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.15);
+}
+.info-chg .info-chg-input[readonly] {
+	background: #f1f5f9;
+	color: #64748b;
+}
+.info-chg .info-chg-input.is-num {
+	text-align: right;
+}
+.info-chg textarea.info-chg-input {
+	height: 70px;
+	line-height: 1.4;
+	resize: vertical;
+}
+.info-chg select.info-chg-input {
+	padding-right: 4px;
+}
+
+/*
+ * 입력 폭 고정 (60 ~ 300px, 20px 단위)
+ * - .info-chg-input / .info-chg-search 에 함께 지정. 미지정 시 칸 폭 100%
+ * - 칸보다 넓으면 칸에 맞춰 줄어듦(max-width)
+ */
+.info-chg .info-chg-w60  { width: 60px;  max-width: 100%; }
+.info-chg .info-chg-w80  { width: 80px;  max-width: 100%; }
+.info-chg .info-chg-w100 { width: 100px; max-width: 100%; }
+.info-chg .info-chg-w120 { width: 120px; max-width: 100%; }
+.info-chg .info-chg-w140 { width: 140px; max-width: 100%; }
+.info-chg .info-chg-w160 { width: 160px; max-width: 100%; }
+.info-chg .info-chg-w180 { width: 180px; max-width: 100%; }
+.info-chg .info-chg-w200 { width: 200px; max-width: 100%; }
+.info-chg .info-chg-w220 { width: 220px; max-width: 100%; }
+.info-chg .info-chg-w240 { width: 240px; max-width: 100%; }
+.info-chg .info-chg-w260 { width: 260px; max-width: 100%; }
+.info-chg .info-chg-w280 { width: 280px; max-width: 100%; }
+.info-chg .info-chg-w300 { width: 300px; max-width: 100%; }
+
+/* 입력 + 버튼 (조회) */
+.info-chg .info-chg-search {
+	display: flex;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+}
+.info-chg .info-chg-search .info-chg-input {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.info-chg .info-chg-search .info-chg-btn {
+	flex: 0 0 auto;
+	min-width: 0;
+	padding: 0 8px;
+}
+
+/* 라디오 · 체크박스 */
+.info-chg .info-chg-opt {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0 12px 0 0;
+	color: #1e293b;
+	font-size: 13px;
+	font-weight: normal;
+	cursor: pointer;
+}
+.info-chg .info-chg-opt input {
+	width: auto;
+	height: auto;
+	margin: 0;
+}
+
+/* ---------- 버튼 ---------- */
+.info-chg .info-chg-btn {
+	display: inline-block;
+	min-width: 60px;
+	height: 28px;
+	margin: 0;
+	padding: 0 12px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	font: inherit;
+	line-height: 26px;
+	text-align: center;
+	cursor: pointer;
+}
+.info-chg .info-chg-btn-secondary {
+	border-color: #94a3b8;
+	background: #fff;
+	color: #334155;
+}
+.info-chg .info-chg-btn-secondary:hover {
+	background: #f1f5f9;
+}
+.info-chg .info-chg-btn-primary {
+	border-color: #1e3a5f;
+	background: #1e3a5f;
+	color: #fff;
+}
+.info-chg .info-chg-btn-primary:hover {
+	background: #16304f;
+}

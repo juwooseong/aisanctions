@@ -55,6 +55,35 @@ public class RevertDetailController {
 		return mv;
 	}
 	
+	/**
+	 * 심사상세 정보변경 팝업화면.
+	 * @param vo	: inptMstSrno, 심사마스터번호
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/revert/detail/infoChange")
+	public ModelAndView infoChange(HttpServletRequest request, ModelAndView mv, SearchVO vo) throws Exception {
+		mv.setViewName("blank/common/info-change");
+		LoginVO loginInfo = LoginUtils.getLoginInfo(request);
+
+		//접근권한체크 (심사상세와 동일)
+		if(StringUtil.isNotEmpty(vo.getInptMstSrno())) {
+			SearchVO vo2 = new SearchVO();
+			vo2.setSchGbn("01");
+			vo2.setSchUserNo(loginInfo.getId());
+			vo2.setInptMstSrno(vo.getInptMstSrno());
+			int checkAccess = commonRevertDetailService.selectCheckAccess(vo2);
+			if(checkAccess==0) {
+				ComUtil.alertClose(mv, "접근권한이 없습니다.");
+			}
+		} else {
+			ComUtil.alertClose(mv, "정보가 부족합니다.");
+		}
+
+		mv.addObject("inptMstSrno", vo.getInptMstSrno());
+		return mv;
+	}
+
 	@RequestMapping(value = "/revert/detail/ModiBlNum")
 	public ModelAndView ModiBlNum(ModelAndView mv) throws Exception {
 		mv.setViewName("full/revert/detail/ModiBlNum");

@@ -270,7 +270,6 @@
 <!-- 문서분류 일괄변경 팝업 옵션: showBlPrefix=false 면 BL 탭/콤보에 'BL' 없이 번호만 표시 -->
 <script>window.DOC_CLASS_OPTIONS = { showBlPrefix: false };</script>
 <%@include file="/WEB-INF/jsp/common/document-classification-modal.jsp"%>
-<%@include file="/WEB-INF/jsp/common/info-change-modal.jsp"%>
 
 <div class="anno-pin-modal" id="anno_pin_modal">
 	<div class="anno-pin-box">
@@ -696,6 +695,19 @@ $(document).on('click','#reCrfBtn', function(e) {
 	 		}
 	 	}
 	}
+});
+
+// 정보변경 팝업 (심사상세 창 가운데에 오픈)
+$(document).on('click', '#infoChangeBtn', function(e) {
+	e.preventDefault();
+
+	var _w = 1000;
+	var _h = 540;
+	var _left = window.screenX + (window.outerWidth - _w) / 2;
+	var _top = window.screenY + (window.outerHeight - _h) / 2;
+
+	window.open("/revert/detail/infoChange?inptMstSrno=" + encodeURIComponent(globalInptMstSrno), "infoChangePopup",
+		"left=" + _left + ", top=" + _top + ", width=" + _w + ", height=" + _h + ", resizable=0, scrollbars=1, toolbar=0, status=0, location=0, menubar=0");
 });
 
 // 재추출
