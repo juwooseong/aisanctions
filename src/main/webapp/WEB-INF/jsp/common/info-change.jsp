@@ -9,6 +9,8 @@
 	<link rel="shortcut icon" type="image/x-icon" href="${ctx_res}/img/logo_s.png">
 	<link href="${ctx_res}/css/info-change.css" rel="stylesheet">
 	<script src="${ctx_res}/vendors/jquery/js/jquery.min.js"></script>
+	<%-- 사용자 조회 레이어(user-picker.jsp) 그리드용 --%>
+	<%@include file="/WEB-INF/jsp/common/datatable.jsp"%>
 	<style>
 	body { margin: 0; background: #fff; }
 	</style>
@@ -33,7 +35,14 @@
 					<div class="info-chg-row">
 						<div class="info-chg-item">
 							<div class="info-chg-th">텍스트&nbsp;<span class="info-chg-req">*</span></div>
-							<div class="info-chg-td"><input type="text" class="info-chg-input info-chg-w140" name="sampleText" maxlength="50" placeholder="텍스트 입력"></div>
+							<div class="info-chg-td">
+								<!-- 사용자 조회 레이어(user-picker.jsp) 연동 : 조회 버튼 / Enter -->
+								<div class="info-chg-search info-chg-w180">
+									<input type="text" class="info-chg-input" name="sampleText" maxlength="50" placeholder="직원번호/직원명">
+									<input type="hidden" name="sampleTextEno">
+									<button type="button" class="info-chg-btn info-chg-btn-secondary" id="sampleTextSearchBtn">조회</button>
+								</div>
+							</div>
 						</div>
 						<div class="info-chg-item">
 							<div class="info-chg-th">읽기전용</div>
@@ -127,6 +136,8 @@
 		</div>
 	</div>
 
+<%@include file="/WEB-INF/jsp/common/user-picker.jsp"%>
+
 <script>
 // TODO: 실제 엔드포인트 확정되면 URL 교체
 var INFO_CHANGE_GET_URL = "/api/common/detail/getInfoChangeData";
@@ -154,6 +165,27 @@ $(window).on('load', function () {
 $(document).on('input', '[name="sampleAmount"]', function () {
 	var _num = this.value.replace(/[^0-9]/g, '');
 	this.value = _num ? Number(_num).toLocaleString() : '';
+});
+
+// 텍스트: 사용자 조회 레이어 호출 → 선택 시 직원명 표시, 직원번호는 hidden 에 보관
+function fn_openUserPickerForText() {
+	fnUserPickerOpen({
+		keyword : $.trim($('[name="sampleText"]').val()),
+		onSelect: function (row) {
+			$('[name="sampleText"]').val(row.aiInptUserNm);
+			$('[name="sampleTextEno"]').val(row.aiInptUserEno);
+		}
+	});
+}
+$(document).on('click', '#sampleTextSearchBtn', fn_openUserPickerForText);
+$(document).on('keyup', '[name="sampleText"]', function (e) {
+	if (e.keyCode === 13) {
+		fn_openUserPickerForText();
+	}
+});
+// 직접 수정하면 이전에 선택한 직원번호는 무효
+$(document).on('input', '[name="sampleText"]', function () {
+	$('[name="sampleTextEno"]').val('');
 });
 
 // 조회: 코드 검색 팝업 등 연동 자리 (샘플은 값만 세팅)
