@@ -24,6 +24,7 @@ var DetailAnno = (function (window, $) {
 	var pinDraft = null;
 	var seq = 1;
 	var saveTimer = null;
+	var suppressPaint = false;	// paintAfter 중 fn_clear_box 래퍼의 paint() 생략 (중복 그리기 방지)
 	var DRAG_THRESHOLD = 5;
 
 	function ctxPath() {
@@ -461,7 +462,7 @@ var DetailAnno = (function (window, $) {
 			return;
 		}
 		if (loadedMst === id) {
-			paint();
+			redraw();
 			return;
 		}
 		$.ajax({
@@ -475,7 +476,7 @@ var DetailAnno = (function (window, $) {
 			markers = res.markers || [];
 			pins = res.pins || [];
 			loadedMst = id;
-			paint();
+			redraw();
 		});
 	}
 
@@ -729,14 +730,32 @@ var DetailAnno = (function (window, $) {
 		return mode !== 'navigate';
 	}
 
+	// 이미지·박스를 다시 그린 뒤 형광펜·핀을 맨 위에 한 번만 그림
+	// (fn_clear_box 래퍼와 fn_draw_multi_box 내부 fn_clear_box 호출에서 paint() 가 겹치면
+	//  반투명 형광펜이 두 번 칠해져 진해지므로 그 동안은 래퍼의 paint() 를 생략)
 	function paintAfter() {
-		if (typeof fn_clear_box === 'function') {
-			fn_clear_box();
-		}
-		if (typeof fn_draw_multi_box === 'function') {
-			fn_draw_multi_box();
+		suppressPaint = true;
+		try {
+			if (typeof fn_clear_box === 'function') {
+				fn_clear_box();
+			}
+			if (typeof fn_draw_multi_box === 'function') {
+				fn_draw_multi_box();
+			}
+		} finally {
+			suppressPaint = false;
 		}
 		paint();
+	}
+
+	// 이미 그려진 캔버스 위에 paint() 를 덧칠하지 않도록 이미지부터 다시 그림 (이미지 로드 전이면 paint 만)
+	function redraw() {
+		var img = window.image_global;
+		if (window.ctx_global && img && img.width) {
+			paintAfter();
+		} else {
+			paint();
+		}
 	}
 
 	function wrapGenesis() {
@@ -768,7 +787,9 @@ var DetailAnno = (function (window, $) {
 			var oc = fn_clear_box;
 			fn_clear_box = function () {
 				oc.apply(this, arguments);
-				paint();
+				if (!suppressPaint) {
+					paint();
+				}
 			};
 		}
 		if (typeof fn_init_draw_image === 'function') {
@@ -868,7 +889,7 @@ var DetailAnno = (function (window, $) {
 		}
 		if (document.fonts && document.fonts.load) {
 			document.fonts.load('22px FontAwesome').then(function () {
-				paint();
+				redraw();
 			});
 		}
 	}
