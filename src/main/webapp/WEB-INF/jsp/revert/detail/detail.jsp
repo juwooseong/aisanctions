@@ -80,7 +80,7 @@
 								<button type="button" class="anno-swatch orange" data-anno-color="rgba(251,146,60,0.4)" data-pin-color="#ea580c" title="주황"></button>
 								<button type="button" class="anno-swatch black" data-anno-color="rgba(15,23,42,0.45)" data-pin-color="#111827" title="검정"></button>
 							</span>
-							<span class="anno-hint" id="annoHint">핀 클릭=의견 · 형광펜 선택 후 Delete=삭제</span>
+							<span class="anno-hint" id="annoHint">핀 클릭=의견 · 형광펜 선택 후 X=삭제</span>
 						</div>
 						<div id="canvas_area" class="canvas-overflow-revert">
 							<canvas id="canvas" width="535" height="735" class="doc-canvas"></canvas>
@@ -266,7 +266,7 @@
 <script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
 <script src="${ctx_res}/js/revert/genesis.js"></script>
-<script src="${ctx_res}/js/annotation-host.js?v=20260815c"></script>
+<script src="${ctx_res}/js/annotation-host.js?v=20261029d"></script>
 <!-- 문서분류 일괄변경 팝업 옵션: showBlPrefix=false 면 BL 탭/콤보에 'BL' 없이 번호만 표시 -->
 <script>window.DOC_CLASS_OPTIONS = { showBlPrefix: false };</script>
 <%@include file="/WEB-INF/jsp/common/document-classification-modal.jsp"%>

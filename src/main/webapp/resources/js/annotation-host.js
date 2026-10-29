@@ -1,4 +1,4 @@
-/* 심사상세 형광펜 · 핀 고정 */
+/* 심사상세 형광펜(영역 지정) · 핀 고정 */
 var DetailAnno = (function (window, $) {
 	'use strict';
 
@@ -187,6 +187,120 @@ var DetailAnno = (function (window, $) {
 		};
 	}
 
+	// 영역 지정 : width 0 인 marker 는 대각선 두 점(points[0], points[1])으로 만든 사각형 영역
+	//            (기존 형광펜 데이터는 width > 0 이라 선으로 그대로 표시)
+	function isRect(mk) {
+		return !!mk && Number(mk.width) === 0;
+	}
+
+	function rectOf(pts) {
+		var a = toCanvas(pts[0][0], pts[0][1]);
+		var b = toCanvas(pts[1][0], pts[1][1]);
+		return {
+			x: Math.min(a.x, b.x),
+			y: Math.min(a.y, b.y),
+			w: Math.abs(b.x - a.x),
+			h: Math.abs(b.y - a.y)
+		};
+	}
+
+	function fillRect(g, pts, fill) {
+		var r = rectOf(pts);
+		g.save();
+		// 영역은 글자를 덮으므로 팔레트 색(알파 0.4~0.45)보다 더 투명하게 (약 0.25)
+		g.globalAlpha = 0.6;
+		g.fillStyle = fill;
+		g.fillRect(r.x, r.y, r.w, r.h);
+		g.restore();
+	}
+
+	// 선택된 형광펜 삭제 아이콘 : 이동 모드에서 형광펜 선택 시 오른쪽 상단에 표시
+	var DEL_ICON_R = 9;
+
+	function selectedMarker() {
+		if (mode !== 'navigate' || !selected || selected.type !== 'marker') {
+			return null;
+		}
+		var mk = findMarker(selected.id);
+		return (mk && pageMarkers().indexOf(mk) > -1) ? mk : null;
+	}
+
+	// 형광펜 범위(캔버스 좌표) : 영역은 사각형, 기존 선 형광펜은 점들의 범위
+	function boundsOf(mk) {
+		var pts = mk.points || [];
+		var i, cp, minX, minY, maxX, maxY;
+		if (pts.length < 2) {
+			return null;
+		}
+		if (isRect(mk)) {
+			return rectOf(pts);
+		}
+		for (i = 0; i < pts.length; i++) {
+			cp = toCanvas(pts[i][0], pts[i][1]);
+			minX = (i === 0) ? cp.x : Math.min(minX, cp.x);
+			minY = (i === 0) ? cp.y : Math.min(minY, cp.y);
+			maxX = (i === 0) ? cp.x : Math.max(maxX, cp.x);
+			maxY = (i === 0) ? cp.y : Math.max(maxY, cp.y);
+		}
+		return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+	}
+
+	function delIconPos(mk) {
+		var r = boundsOf(mk);
+		return r ? { x: r.x + r.w, y: r.y } : null;
+	}
+
+	function hitDelIcon(cx, cy) {
+		var mk = selectedMarker();
+		var p = mk ? delIconPos(mk) : null;
+		if (!p) {
+			return null;
+		}
+		var dx = cx - p.x, dy = cy - p.y;
+		return (dx * dx + dy * dy <= (DEL_ICON_R + 2) * (DEL_ICON_R + 2)) ? mk : null;
+	}
+
+	function paintSelectedMarker(g) {
+		var mk = selectedMarker();
+		var r = mk ? boundsOf(mk) : null;
+		if (!r) {
+			return;
+		}
+		g.save();
+		// 선택 표시 (점선 테두리)
+		g.strokeStyle = '#334155';
+		g.lineWidth = 1;
+		g.setLineDash([4, 3]);
+		g.strokeRect(r.x, r.y, r.w, r.h);
+		g.setLineDash([]);
+		// 삭제 아이콘 (빨간 원 + 흰 X)
+		g.beginPath();
+		g.arc(r.x + r.w, r.y, DEL_ICON_R, 0, Math.PI * 2);
+		g.fillStyle = '#dc2626';
+		g.fill();
+		g.strokeStyle = '#fff';
+		g.lineWidth = 1.5;
+		g.stroke();
+		g.beginPath();
+		g.moveTo(r.x + r.w - 3.5, r.y - 3.5);
+		g.lineTo(r.x + r.w + 3.5, r.y + 3.5);
+		g.moveTo(r.x + r.w + 3.5, r.y - 3.5);
+		g.lineTo(r.x + r.w - 3.5, r.y + 3.5);
+		g.lineWidth = 2;
+		g.stroke();
+		g.restore();
+	}
+
+	function deleteMarker(mk) {
+		if (!mk || !window.confirm('선택한 형광펜을 삭제할까요?')) {
+			return;
+		}
+		markers = markers.filter(function (m) { return m.id !== mk.id; });
+		selected = null;
+		persist();
+		paintAfter();
+	}
+
 	function paint() {
 		var g = window.ctx_global;
 		var c = document.getElementById('canvas');
@@ -198,6 +312,10 @@ var DetailAnno = (function (window, $) {
 		for (i = 0; i < mks.length; i++) {
 			pts = mks[i].points || [];
 			if (pts.length < 2) {
+				continue;
+			}
+			if (isRect(mks[i])) {
+				fillRect(g, pts, mks[i].color || color);
 				continue;
 			}
 			g.save();
@@ -215,22 +333,9 @@ var DetailAnno = (function (window, $) {
 			g.stroke();
 			g.restore();
 		}
+		// 드래그 중인 영역 미리보기
 		if (stroke && stroke.points && stroke.points.length > 1) {
-			pts = stroke.points;
-			g.save();
-			g.lineCap = 'round';
-			g.lineJoin = 'round';
-			g.strokeStyle = color;
-			g.lineWidth = widthPx * (c.width / (srcSize().w || c.width));
-			g.beginPath();
-			cp = toCanvas(pts[0][0], pts[0][1]);
-			g.moveTo(cp.x, cp.y);
-			for (j = 1; j < pts.length; j++) {
-				cp = toCanvas(pts[j][0], pts[j][1]);
-				g.lineTo(cp.x, cp.y);
-			}
-			g.stroke();
-			g.restore();
+			fillRect(g, stroke.points, color);
 		}
 		var pns = pagePins();
 		for (i = 0; i < pns.length; i++) {
@@ -262,6 +367,7 @@ var DetailAnno = (function (window, $) {
 			}
 			g.restore();
 		}
+		paintSelectedMarker(g);
 	}
 
 	function distPointSeg(px, py, ax, ay, bx, by) {
@@ -281,8 +387,20 @@ var DetailAnno = (function (window, $) {
 		var c = document.getElementById('canvas');
 		var img = window.image_global;
 		var scale = (c && img && img.width) ? (c.width / img.width) : 1;
+		var r;
 		for (i = mks.length - 1; i >= 0; i--) {
 			pts = mks[i].points || [];
+			// 영역 : 안쪽 어디를 눌러도 선택 (테두리 바깥 4px 여유)
+			if (isRect(mks[i])) {
+				if (pts.length < 2) {
+					continue;
+				}
+				r = rectOf(pts);
+				if (cx >= r.x - 4 && cx <= r.x + r.w + 4 && cy >= r.y - 4 && cy <= r.y + r.h + 4) {
+					return mks[i];
+				}
+				continue;
+			}
 			thr = Math.max(8, (mks[i].width || widthPx) * scale * 0.6);
 			for (j = 1; j < pts.length; j++) {
 				ca = toCanvas(pts[j - 1][0], pts[j - 1][1]);
@@ -431,10 +549,15 @@ var DetailAnno = (function (window, $) {
 		$('#annoToolbar').toggleClass('marker-on', mode === 'marker');
 		$('#annoToolbar').toggleClass('pin-on', mode === 'pin');
 		var hint = '';
-		if (mode === 'marker') hint = '드래그하여 형광펜을 그립니다.';
+		if (mode === 'marker') hint = '드래그하여 형광펜 영역을 지정합니다.';
 		else if (mode === 'pin') hint = '색상을 고른 뒤 클릭한 위치에 핀을 고정합니다.';
-		else hint = '핀·형광펜 드래그=이동 · 핀 클릭=의견 · 빈 곳 드래그=화면 이동';
+		else hint = '핀·형광펜 드래그=이동 · 형광펜 선택 후 X=삭제 · 핀 클릭=의견 · 빈 곳 드래그=화면 이동';
 		$('#annoHint').text(hint);
+		// 모드 전환 시 형광펜 선택(삭제 아이콘) 해제
+		if (selected && selected.type === 'marker') {
+			selected = null;
+			paintAfter();
+		}
 		var c = document.getElementById('canvas');
 		if (c) {
 			c.style.cursor = (mode === 'navigate') ? 'grab' : 'crosshair';
@@ -463,6 +586,12 @@ var DetailAnno = (function (window, $) {
 		if (mode === 'navigate') {
 			pos = mousePos(e);
 			c = document.getElementById('canvas');
+			// 선택된 형광펜의 삭제 아이콘 클릭
+			mk = hitDelIcon(pos.x, pos.y);
+			if (mk) {
+				deleteMarker(mk);
+				return true;
+			}
 			pin = hitPin(pos.x, pos.y);
 			if (pin) {
 				src = toSource(pos.x, pos.y);
@@ -495,13 +624,18 @@ var DetailAnno = (function (window, $) {
 				paintAfter();
 				return true;
 			}
-			selected = null;
+			// 빈 곳 클릭 : 선택 해제 (삭제 아이콘 지움)
+			if (selected) {
+				selected = null;
+				paintAfter();
+			}
 			return false;
 		}
 		dragging = true;
 		src = toSource(mousePos(e).x, mousePos(e).y);
 		if (mode === 'marker') {
-			stroke = { points: [[src.x, src.y]] };
+			// 영역 : 시작점 / 끝점(드래그 중 갱신)
+			stroke = { points: [[src.x, src.y], [src.x, src.y]] };
 			return true;
 		}
 		if (mode === 'pin') {
@@ -525,13 +659,18 @@ var DetailAnno = (function (window, $) {
 			paintAfter();
 			return true;
 		}
+		// 삭제 아이콘 위에서는 손가락 커서
+		if (!dragging && mode === 'navigate' && selected && selected.type === 'marker') {
+			pos = mousePos(e);
+			document.getElementById('canvas').style.cursor = hitDelIcon(pos.x, pos.y) ? 'pointer' : 'grab';
+		}
 		if (!dragging || mode !== 'marker' || !stroke) {
 			return false;
 		}
 		src = toSource(mousePos(e).x, mousePos(e).y);
-		last = stroke.points[stroke.points.length - 1];
-		if (!last || Math.abs(last[0] - src.x) > 1 || Math.abs(last[1] - src.y) > 1) {
-			stroke.points.push([src.x, src.y]);
+		last = stroke.points[1];
+		if (Math.abs(last[0] - src.x) > 1 || Math.abs(last[1] - src.y) > 1) {
+			stroke.points[1] = [src.x, src.y];
 			paintAfter();
 		}
 		return true;
@@ -559,14 +698,24 @@ var DetailAnno = (function (window, $) {
 		}
 		dragging = false;
 		if (mode === 'marker' && stroke && stroke.points && stroke.points.length >= 2) {
+			var r = rectOf(stroke.points);
+			var p0 = stroke.points[0], p1 = stroke.points[1];
+			stroke = null;
+			// 너무 작은 영역(클릭 등)은 저장하지 않음
+			if (r.w < DRAG_THRESHOLD || r.h < DRAG_THRESHOLD) {
+				paintAfter();
+				return true;
+			}
 			markers.push({
 				id: nextId('mk'),
 				inptTaskId: taskId(),
-				points: stroke.points,
+				points: [
+					[Math.min(p0[0], p1[0]), Math.min(p0[1], p1[1])],
+					[Math.max(p0[0], p1[0]), Math.max(p0[1], p1[1])]
+				],
 				color: color,
-				width: widthPx
+				width: 0
 			});
-			stroke = null;
 			persist();
 			paintAfter();
 			return true;
@@ -705,14 +854,7 @@ var DetailAnno = (function (window, $) {
 				return;
 			}
 			e.preventDefault();
-			if (!window.confirm('선택한 형광펜을 삭제할까요?')) {
-				return;
-			}
-			var id = selected.id;
-			markers = markers.filter(function (m) { return m.id !== id; });
-			selected = null;
-			persist();
-			paintAfter();
+			deleteMarker(findMarker(selected.id));
 		});
 		setMode('navigate');
 	}
