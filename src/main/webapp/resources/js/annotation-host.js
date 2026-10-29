@@ -302,13 +302,60 @@ var DetailAnno = (function (window, $) {
 		paintAfter();
 	}
 
+	// 핀 메모 표시 : 최대 폭 / 최대 줄 수 / 줄 높이 (캔버스 px)
+	var MEMO_MAX_W = 180;
+	var MEMO_MAX_LINES = 3;
+	var MEMO_LINE_H = 15;
+
+	// 메모를 줄 단위로 나눔 : 입력한 줄바꿈 유지, 한 줄이 maxW 를 넘으면 글자 단위로 다음 줄로
+	// maxLines 를 넘는 내용이 있으면 마지막 줄 끝을 '…' 로 줄임
+	function wrapMemo(g, text, maxW, maxLines) {
+		var paras = text.replace(/\r\n?/g, '\n').split('\n');
+		var lines = [];
+		var over = false;
+		var i, k, ch, cur, last;
+		for (i = 0; i < paras.length && !over; i++) {
+			cur = '';
+			for (k = 0; k < paras[i].length; k++) {
+				ch = paras[i].charAt(k);
+				if (cur && g.measureText(cur + ch).width > maxW) {
+					lines.push(cur);
+					cur = '';
+					if (lines.length >= maxLines) {
+						over = true;
+						break;
+					}
+				}
+				cur += ch;
+			}
+			if (!over) {
+				lines.push(cur);
+				if (lines.length >= maxLines && i < paras.length - 1) {
+					over = true;
+				}
+			}
+		}
+		if (lines.length > maxLines) {
+			lines = lines.slice(0, maxLines);
+			over = true;
+		}
+		if (over) {
+			last = lines[lines.length - 1];
+			while (last && g.measureText(last + '…').width > maxW) {
+				last = last.slice(0, -1);
+			}
+			lines[lines.length - 1] = last + '…';
+		}
+		return lines;
+	}
+
 	function paint() {
 		var g = window.ctx_global;
 		var c = document.getElementById('canvas');
 		if (!g || !c) {
 			return;
 		}
-		var i, p, pts, j, cp, pin, txt;
+		var i, p, pts, j, cp, pin;
 		var mks = pageMarkers();
 		for (i = 0; i < mks.length; i++) {
 			pts = mks[i].points || [];
@@ -346,16 +393,19 @@ var DetailAnno = (function (window, $) {
 			var fill = pinFill(pin);
 			var head = drawThumbtack(g, p, !!(selected && selected.type === 'pin' && selected.id === pin.id), fill);
 			if (pin.opinion) {
-				txt = String(pin.opinion);
-				if (txt.length > 28) {
-					txt = txt.slice(0, 28) + '…';
-				}
+				// 메모 : 입력한 줄바꿈 + 폭(MEMO_MAX_W) 기준 자동 줄바꿈, 최대 MEMO_MAX_LINES 줄 넘으면 말줄임
 				g.font = '11px Malgun Gothic, sans-serif';
 				g.textAlign = 'left';
 				g.textBaseline = 'middle';
-				var tw = g.measureText(txt).width + 10;
-				var boxH = 18;
-				var boxY = Math.round(head.midY - boxH / 2);
+				var lines = wrapMemo(g, String(pin.opinion), MEMO_MAX_W, MEMO_MAX_LINES);
+				var tw = 0;
+				for (j = 0; j < lines.length; j++) {
+					tw = Math.max(tw, g.measureText(lines[j]).width);
+				}
+				tw += 10;
+				var boxH = lines.length * MEMO_LINE_H + 4;
+				// 첫 줄이 핀 머리 높이에 오도록 위쪽 기준으로 배치
+				var boxY = Math.round(head.midY - MEMO_LINE_H / 2 - 2);
 				g.fillStyle = '#fff';
 				g.strokeStyle = fill;
 				g.lineWidth = 1.5;
@@ -364,7 +414,9 @@ var DetailAnno = (function (window, $) {
 				g.fill();
 				g.stroke();
 				g.fillStyle = '#333';
-				g.fillText(txt, head.boxX + 5, head.midY);
+				for (j = 0; j < lines.length; j++) {
+					g.fillText(lines[j], head.boxX + 5, boxY + 2 + MEMO_LINE_H * j + MEMO_LINE_H / 2);
+				}
 			}
 			g.restore();
 		}
