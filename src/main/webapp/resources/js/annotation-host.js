@@ -785,13 +785,21 @@ var DetailAnno = (function (window, $) {
 	// 이미지·박스를 다시 그린 뒤 형광펜·핀을 맨 위에 한 번만 그림
 	// (fn_clear_box 래퍼와 fn_draw_multi_box 내부 fn_clear_box 호출에서 paint() 가 겹치면
 	//  반투명 형광펜이 두 번 칠해져 진해지므로 그 동안은 래퍼의 paint() 를 생략)
+	// genesis.js 하이라이트 깜빡임 타이머 동작 여부 (fn_selected_blink → refresh_id_list 에 등록)
+	function isBlinking() {
+		return typeof refresh_id_list !== 'undefined' && refresh_id_list && refresh_id_list.length > 0;
+	}
+
 	function paintAfter() {
 		suppressPaint = true;
 		try {
 			if (typeof fn_clear_box === 'function') {
 				fn_clear_box();
 			}
-			if (typeof fn_draw_multi_box === 'function') {
+			// 하이라이트 깜빡임 중에는 fn_draw_multi_box 호출 금지 :
+			// fn_draw_multi_box 첫 줄의 fn_remove_blink_list() 가 깜빡임 타이머를 멈춰 하이라이트가 사라짐
+			// (박스·하이라이트는 0.5초마다 도는 깜빡임 타이머가 fn_clear_box 와 함께 다시 그림)
+			if (typeof fn_draw_multi_box === 'function' && !isBlinking()) {
 				fn_draw_multi_box();
 			}
 		} finally {
