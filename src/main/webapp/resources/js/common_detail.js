@@ -43,6 +43,8 @@ var globalTotalTextRstTableId = '#totalTextRstTable';
 var globalTotalTextRstListTable = null;
 // totalText dataTable Data
 var globalTotalTextRstListData = [];
+// TotalText심사 펼침 여부 (false=닫힘(기본) : 텍스트·추출내용 열 숨김, true=전체 열)
+var globalTotalTextExpanded = false;
 // 항목심사 dataTable ID
 var globalSanctionRstTableId = '#sanctionRstTable';
 // 항목심사 dataTable
@@ -708,10 +710,12 @@ function fn_dataTableComplete() {
         	{title: '추출내용', className: 'td-text-left td-text-100 text-wrap' },
         	{title: 'Alert내용', className: 'td-text-left td-text-100 text-wrap' }
         ],
-        createdRow: function(aRow, aData, row, data, dataIndex){
-    		$(aRow).find('td:eq(4)').css('color', "red");
+        // Alert내용 빨간색 : cells 는 숨김 열 칸까지 포함 (td:eq(4) 는 열 숨김 시 순번이 바뀜)
+        createdRow: function(aRow, aData, dataIndex, cells){
+    		$(cells[4]).css('color', "red");
         }
     });
+	fn_applyTotalTextView();
 
 	globalSanctionRstListTable = $(globalSanctionRstTableId).DataTable({
 		data: globalSanctionRstListData,
@@ -1766,6 +1770,25 @@ $(document).on('click','.inpt-tab-link', function(e) {
 	// 해더 리사이즈
 	$('.dataTables_scrollHeadInner').width('100%');
 	
+});
+
+// TotalText심사 펼침/닫힘 적용
+// - 열 표시만 바꾸고 행 데이터(숨김 5~7 : 심사번호/이력코드/작업ID)는 그대로라 행 클릭 하이라이트에 영향 없음
+function fn_applyTotalTextView() {
+	if (!globalTotalTextRstListTable || $(globalTotalTextRstTableId).length == 0) {
+		return;
+	}
+	globalTotalTextRstListTable.columns([2, 3]).visible(globalTotalTextExpanded, false);
+	globalTotalTextRstListTable.columns.adjust().draw(false);
+	$('#totalTextToggleBtn').html(globalTotalTextExpanded
+		? '<i class="fa fa-chevron-up fa-sm"></i> Alert만 보기'
+		: '<i class="fa fa-chevron-down fa-sm"></i> 전체 펼침');
+}
+
+// TotalText심사 펼침/닫힘 버튼 Click
+$(document).on('click', '#totalTextToggleBtn', function() {
+	globalTotalTextExpanded = !globalTotalTextExpanded;
+	fn_applyTotalTextView();
 });
 
 //TotalText dataTable row Click

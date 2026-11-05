@@ -162,6 +162,8 @@
 						<div class="tbWrap">
 							<div class="tbTop">
 								<strong>TotalText심사</strong>
+								<!-- 펼침/닫힘 : 닫힘(기본)=Alert내용 위주(텍스트·추출내용 열 숨김), 펼침=전체 열 -->
+								<p class="reset-btn" id="totalTextToggleBtn"><i class="fa fa-chevron-down fa-sm"></i> 전체 펼침</p>
 							</div>
 							<div class="tbCon tbCon-totalText-detail">
 								<table class="table table-responsive-sm width-100" id="totalTextRstTable"></table>
@@ -261,7 +263,7 @@
 
 
 <script src="${ctx_res}/vendors/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js"></script>
-<script src="${ctx_res}/js/common_detail.js?v=20261015a"></script>
+<script src="${ctx_res}/js/common_detail.js?v=20261105a"></script>
 <!-- 심사자 화면은 "수기 추가" 입력/편집이 가능해야 하므로 읽기전용이 아니다. -->
 <script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
