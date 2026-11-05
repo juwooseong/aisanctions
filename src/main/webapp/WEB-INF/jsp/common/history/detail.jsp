@@ -119,8 +119,6 @@
 						<div class="tbWrap">
 							<div class="tbTop">
 								<strong>TotalText심사</strong>
-								<!-- 펼침/닫힘 : 닫힘(기본)=Alert내용 위주(텍스트·추출내용 열 숨김), 펼침=전체 열 -->
-								<p class="reset-btn" id="totalTextToggleBtn"><i class="fa fa-chevron-down fa-sm"></i> 전체 펼침</p>
 							</div>
 							<div class="tbCon tbCon-totalText-history">
 								<table class="table table-responsive-sm width-100" id="totalTextRstTable"></table>
@@ -195,7 +193,7 @@
 
 <script src="${ctx_res}/vendors/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js"></script>
 <script src="${ctx_res}/js/revert/genesis.js"></script>
-<script src="${ctx_res}/js/common_detail.js?v=20261105a"></script>
+<script src="${ctx_res}/js/common_detail.js"></script>
 
 <script>
 var pageParams = [];

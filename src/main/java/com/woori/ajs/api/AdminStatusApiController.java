@@ -67,8 +67,6 @@ import egovframework.ui.util.LoginUtils;
 @RestController
 public class AdminStatusApiController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RevertStatCompleteApiController.class);
-	// 외부 인터페이스 송수신 로그 (log4j2 INTERFACE 로거 → interface.log)
-	private static final Logger IF_LOG = LoggerFactory.getLogger("INTERFACE");
 	/** adminStatusService */
 	@Resource(name = "adminStatusService")
 	private AdminStatusService adminStatusService;
@@ -160,9 +158,6 @@ public class AdminStatusApiController {
 		String inputLine = null;
 		StringBuffer outResult = new StringBuffer();
 		
-		long ifStart = System.currentTimeMillis();
-		IF_LOG.info("[REQ][inspection] url={} body={}", sendUrl, jsArray);
-
 		try {
 			URL url = new URL(sendUrl);
 			
@@ -197,8 +192,7 @@ public class AdminStatusApiController {
 				os.flush();
 				os.close();
 				
-				int resCode = conn.getResponseCode();
-				if (resCode == HttpURLConnection.HTTP_OK) {
+				if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
 					// 리턴된 결과값 읽기
 					in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 					
@@ -215,8 +209,6 @@ public class AdminStatusApiController {
 					in.close();
 				}
 				
-				IF_LOG.info("[RES][inspection] code={} {}ms body={}", resCode, System.currentTimeMillis() - ifStart, outResult);
-
 				conn.disconnect();
 			}
 			
@@ -224,7 +216,6 @@ public class AdminStatusApiController {
 			// logger.error(e.getMessage(),e);
 			// 문제 발생시 에러처리와 사용자 화면에서의 안내 메세지를 어떻게 할지 정해야 한다.
 			LOGGER.error("Exception ::: " + e);
-			IF_LOG.error("[ERR][inspection] url={} {}ms", sendUrl, System.currentTimeMillis() - ifStart, e);
 			//	e.printStackTrace();
 			map.put("rst", "fail");
 			
@@ -294,9 +285,6 @@ public class AdminStatusApiController {
 		String inputLine = null;
 		StringBuffer outResult = new StringBuffer();
 		
-		long ifStart = System.currentTimeMillis();
-		IF_LOG.info("[REQ][extraction] url={} body={}", sendUrl, jsObj);
-
 		try {
 			URL url = new URL(sendUrl);
 			
@@ -331,8 +319,7 @@ public class AdminStatusApiController {
 				os.flush();
 				os.close();
 				
-				int resCode = conn.getResponseCode();
-				if (resCode == HttpURLConnection.HTTP_OK) {
+				if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
 					// 리턴된 결과값 읽기
 					in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 					
@@ -349,8 +336,6 @@ public class AdminStatusApiController {
 					in.close();
 				}
 				
-				IF_LOG.info("[RES][extraction] code={} {}ms body={}", resCode, System.currentTimeMillis() - ifStart, outResult);
-
 				conn.disconnect();
 			}
 			
@@ -358,7 +343,6 @@ public class AdminStatusApiController {
 			// logger.error(e.getMessage(),e);
 			// 문제 발생시 에러처리와 사용자 화면에서의 안내 메세지를 어떻게 할지 정해야 한다.
 			LOGGER.error("Exception ::: " + e);
-			IF_LOG.error("[ERR][extraction] url={} {}ms", sendUrl, System.currentTimeMillis() - ifStart, e);
 			map.put("rst", "fail");
 			
 			if (in != null) {

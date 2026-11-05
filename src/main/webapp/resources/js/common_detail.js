@@ -43,8 +43,6 @@ var globalTotalTextRstTableId = '#totalTextRstTable';
 var globalTotalTextRstListTable = null;
 // totalText dataTable Data
 var globalTotalTextRstListData = [];
-// TotalText심사 펼침 여부 (false=닫힘(기본) : 텍스트·추출내용 열 숨김, true=전체 열)
-var globalTotalTextExpanded = false;
 // 항목심사 dataTable ID
 var globalSanctionRstTableId = '#sanctionRstTable';
 // 항목심사 dataTable
@@ -59,8 +57,6 @@ var globalAppvRecodeTable = null;
 var globalAppvRecodeListData = [];
 // 
 var globalImexHisCdChgImgInfo = null;
-// 문서분류 변경 후 재조회 시 유지할 BL탭/문서분류탭/이미지 정보 {inptBlGrpNo, imexHisCd, inptTaskId} (1회 사용 후 null)
-var globalReCrfKeepInfo = null;
 // 마우스 켄버스 오버 구분 변수
 var moueUp = false;
 // 화면 임시저장 여부
@@ -201,8 +197,17 @@ function fn_getBLData(_callType) {
 		success : function(data) {
 			
 			if(data.resultCode=="200"){
-				
-				globalImexHisCdChgImgInfo = null;
+
+				// [문서분류 변경 후 탭/이미지 유지]
+				// 원래 이 자리에서 항상 globalImexHisCdChgImgInfo를 null로 초기화했었다.
+				// 그런데 fn_setItem()은 이 값이 null이 아니면 "복원할 문서분류/이미지"로 보고
+				// 그 탭과 이미지를 다시 선택해주는 로직(복원 로직)을 가지고 있는데,
+				// 매 조회마다 여기서 무조건 null로 지워버려서 복원 로직이 동작할 수 없었다.
+				// 분류 변경(reCrfBtn) 흐름에서 detail.jsp 쪽이 재조회(fn_getBLData("A")) 호출 직전에
+				// globalImexHisCdChgImgInfo에 "변경 후 유지해야 할 탭/이미지 정보"를 세팅해두므로,
+				// 여기서는 그 값을 지우지 않고 그대로 아래 fn_setBl() -> fn_setItem()까지 전달한다.
+				// (이 값은 사용 후 fn_setImgInfo() 내부에서 한 번 쓰고 다시 null로 초기화되므로,
+				//  최초 진입 등 평소 흐름에는 영향이 없다.)
 				$globaObjlData = data;
 				globalCallType = _callType;
 				globalInptMstSrno = $globaObjlData.selectStdInfo.inptMstSrno.toString();
@@ -273,8 +278,6 @@ function fn_getBLData(_callType) {
 			
 			h_loading();
 			globalChangeData = 'N';
-			// 문서분류 변경 후 유지정보는 이번 조회에서만 사용 (조회 실패 시에도 정리)
-			globalReCrfKeepInfo = null;
 			
 		}
 
@@ -297,21 +300,10 @@ function fn_setBl(_arrTobTab) {
 		}
 		
 		$('#bl_list').empty().append(_strHtml);
-
-		// 문서분류 변경 후 재조회면 변경 전 BL탭 유지 (없어졌으면 첫번째 BL탭)
-		var _activeBlIdx = 0;
-		if (globalReCrfKeepInfo != null) {
-			for (var i in _arrTobTab) {
-				if (String(_arrTobTab[i].inptBlGrpNo) == String(globalReCrfKeepInfo.inptBlGrpNo)) {
-					_activeBlIdx = i;
-					break;
-				}
-			}
-		}
-
-		$('#bl_' + _activeBlIdx).addClass('bl-link_active');
-		$('#bl_' + _activeBlIdx).addClass('active');
-		$('#active_inptBlGrpNo').val(_arrTobTab[_activeBlIdx].inptBlGrpNo);
+		
+		$('#bl_0').addClass('bl-link_active');
+		$('#bl_0').addClass('active');
+		$('#active_inptBlGrpNo').val(_arrTobTab[0].inptBlGrpNo);
 	}
 	
 	$('#bl_select').empty().append(_selectHtml);
@@ -386,19 +378,8 @@ function fn_setItem() {
 	
 	var _selectedImexHisCd;
 	var _selectedImexHisNm;
-	var _keepInptTaskId = "0";
-
-	// 문서분류 변경 후 재조회면 변경 전 문서분류탭/다음 이미지 유지 (탭이 없어졌으면 기존처럼 첫번째 탭)
-	var _keepInfo = globalReCrfKeepInfo;
-	globalReCrfKeepInfo = null;
-
-	if(_keepInfo != null && String(_activeInptBlGrpNo) == String(_keepInfo.inptBlGrpNo) && $('#hisCd_' + _keepInfo.imexHisCd).length > 0) {
-		var _keepItem = $('#hisCd_' + _keepInfo.imexHisCd).find('a');
-		_keepItem.addClass('item-active');
-		_selectedImexHisCd = _keepItem.attr('data-imexHisCd');
-		_selectedImexHisNm = _keepItem.attr('data-imexHisNm');
-		_keepInptTaskId = _keepInfo.inptTaskId ? _keepInfo.inptTaskId : "0";
-	} else if(globalImexHisCdChgImgInfo == null) {
+	
+	if(globalImexHisCdChgImgInfo == null) {
 		$('#item_list').children().first().find('a').addClass('item-active');
 		//imexHisCd 받기
 		_selectedImexHisCd = $('#item_list').children().first().find('a').attr('data-imexHisCd');
@@ -448,7 +429,17 @@ function fn_setItem() {
 	
 	$('#bl_select').val(_activeInptBlGrpNo);
 
-	fn_setImgInfo(_activeInptBlGrpNo, _selectedImexHisCd, _keepInptTaskId);
+	// [문서분류 변경 후 이미지 페이징 유지]
+	// 기존에는 세 번째 인자(현재 활성 inptTaskId)를 항상 "0"으로 고정해서 넘겼기 때문에,
+	// fn_setImgInfo() -> fn_setImgPageBtn() 내부에서 globalImglist와 매칭되는 이미지가 없어
+	// 항상 1페이지/1번째 이미지로 되돌아갔다(fn_getBLData에서 globalImgNo=0, globalImgPageNo=1로
+	// 리셋해둔 값이 그대로 유지되는 것).
+	// globalImexHisCdChgImgInfo가 세팅되어 있다면(분류 변경 후 복원해야 하는 상황) 그 안에 담긴
+	// inptTaskId를 넘겨서, 변경 후에도 같은 이미지가 선택되어 있던 페이지로 되돌아가게 한다.
+	// 값이 없으면(평소 최초 진입 등) 기존과 동일하게 "0"을 넘겨 첫 페이지/첫 이미지를 보여준다.
+	var _restoreInptTaskId = (globalImexHisCdChgImgInfo != null) ? globalImexHisCdChgImgInfo.inptTaskId : "0";
+
+	fn_setImgInfo(_activeInptBlGrpNo, _selectedImexHisCd, _restoreInptTaskId);
 }
 
 
@@ -710,12 +701,10 @@ function fn_dataTableComplete() {
         	{title: '추출내용', className: 'td-text-left td-text-100 text-wrap' },
         	{title: 'Alert내용', className: 'td-text-left td-text-100 text-wrap' }
         ],
-        // Alert내용 빨간색 : cells 는 숨김 열 칸까지 포함 (td:eq(4) 는 열 숨김 시 순번이 바뀜)
-        createdRow: function(aRow, aData, dataIndex, cells){
-    		$(cells[4]).css('color', "red");
+        createdRow: function(aRow, aData, row, data, dataIndex){
+    		$(aRow).find('td:eq(4)').css('color', "red");
         }
     });
-	fn_applyTotalTextView();
 
 	globalSanctionRstListTable = $(globalSanctionRstTableId).DataTable({
 		data: globalSanctionRstListData,
@@ -1770,25 +1759,6 @@ $(document).on('click','.inpt-tab-link', function(e) {
 	// 해더 리사이즈
 	$('.dataTables_scrollHeadInner').width('100%');
 	
-});
-
-// TotalText심사 펼침/닫힘 적용
-// - 열 표시만 바꾸고 행 데이터(숨김 5~7 : 심사번호/이력코드/작업ID)는 그대로라 행 클릭 하이라이트에 영향 없음
-function fn_applyTotalTextView() {
-	if (!globalTotalTextRstListTable || $(globalTotalTextRstTableId).length == 0) {
-		return;
-	}
-	globalTotalTextRstListTable.columns([2, 3]).visible(globalTotalTextExpanded, false);
-	globalTotalTextRstListTable.columns.adjust().draw(false);
-	$('#totalTextToggleBtn').html(globalTotalTextExpanded
-		? '<i class="fa fa-chevron-up fa-sm"></i> Alert만 보기'
-		: '<i class="fa fa-chevron-down fa-sm"></i> 전체 펼침');
-}
-
-// TotalText심사 펼침/닫힘 버튼 Click
-$(document).on('click', '#totalTextToggleBtn', function() {
-	globalTotalTextExpanded = !globalTotalTextExpanded;
-	fn_applyTotalTextView();
 });
 
 //TotalText dataTable row Click

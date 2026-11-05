@@ -1,4 +1,4 @@
-/* 심사상세 형광펜(영역 지정) · 핀 고정 */
+/* 심사상세 형광펜 · 핀 고정 */
 var DetailAnno = (function (window, $) {
 	'use strict';
 
@@ -24,7 +24,6 @@ var DetailAnno = (function (window, $) {
 	var pinDraft = null;
 	var seq = 1;
 	var saveTimer = null;
-	var suppressPaint = false;	// paintAfter 중 fn_clear_box 래퍼의 paint() 생략 (중복 그리기 방지)
 	var DRAG_THRESHOLD = 5;
 
 	function ctxPath() {
@@ -188,182 +187,17 @@ var DetailAnno = (function (window, $) {
 		};
 	}
 
-	// 영역 지정 : width 0 인 marker 는 대각선 두 점(points[0], points[1])으로 만든 사각형 영역
-	//            (기존 형광펜 데이터는 width > 0 이라 선으로 그대로 표시)
-	function isRect(mk) {
-		return !!mk && Number(mk.width) === 0;
-	}
-
-	function rectOf(pts) {
-		var a = toCanvas(pts[0][0], pts[0][1]);
-		var b = toCanvas(pts[1][0], pts[1][1]);
-		return {
-			x: Math.min(a.x, b.x),
-			y: Math.min(a.y, b.y),
-			w: Math.abs(b.x - a.x),
-			h: Math.abs(b.y - a.y)
-		};
-	}
-
-	function fillRect(g, pts, fill) {
-		var r = rectOf(pts);
-		g.save();
-		// 영역은 글자를 덮으므로 팔레트 색(알파 0.4~0.45)보다 더 투명하게 (약 0.25)
-		g.globalAlpha = 0.6;
-		g.fillStyle = fill;
-		g.fillRect(r.x, r.y, r.w, r.h);
-		g.restore();
-	}
-
-	// 선택된 형광펜 삭제 아이콘 : 이동 모드에서 형광펜 선택 시 오른쪽 상단에 표시
-	var DEL_ICON_R = 9;
-
-	function selectedMarker() {
-		if (mode !== 'navigate' || !selected || selected.type !== 'marker') {
-			return null;
-		}
-		var mk = findMarker(selected.id);
-		return (mk && pageMarkers().indexOf(mk) > -1) ? mk : null;
-	}
-
-	// 형광펜 범위(캔버스 좌표) : 영역은 사각형, 기존 선 형광펜은 점들의 범위
-	function boundsOf(mk) {
-		var pts = mk.points || [];
-		var i, cp, minX, minY, maxX, maxY;
-		if (pts.length < 2) {
-			return null;
-		}
-		if (isRect(mk)) {
-			return rectOf(pts);
-		}
-		for (i = 0; i < pts.length; i++) {
-			cp = toCanvas(pts[i][0], pts[i][1]);
-			minX = (i === 0) ? cp.x : Math.min(minX, cp.x);
-			minY = (i === 0) ? cp.y : Math.min(minY, cp.y);
-			maxX = (i === 0) ? cp.x : Math.max(maxX, cp.x);
-			maxY = (i === 0) ? cp.y : Math.max(maxY, cp.y);
-		}
-		return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
-	}
-
-	function delIconPos(mk) {
-		var r = boundsOf(mk);
-		return r ? { x: r.x + r.w, y: r.y } : null;
-	}
-
-	function hitDelIcon(cx, cy) {
-		var mk = selectedMarker();
-		var p = mk ? delIconPos(mk) : null;
-		if (!p) {
-			return null;
-		}
-		var dx = cx - p.x, dy = cy - p.y;
-		return (dx * dx + dy * dy <= (DEL_ICON_R + 2) * (DEL_ICON_R + 2)) ? mk : null;
-	}
-
-	function paintSelectedMarker(g) {
-		var mk = selectedMarker();
-		var r = mk ? boundsOf(mk) : null;
-		if (!r) {
-			return;
-		}
-		g.save();
-		// 선택 표시 (점선 테두리)
-		g.strokeStyle = '#334155';
-		g.lineWidth = 1;
-		g.setLineDash([4, 3]);
-		g.strokeRect(r.x, r.y, r.w, r.h);
-		g.setLineDash([]);
-		// 삭제 아이콘 (빨간 원 + 흰 X)
-		g.beginPath();
-		g.arc(r.x + r.w, r.y, DEL_ICON_R, 0, Math.PI * 2);
-		g.fillStyle = '#dc2626';
-		g.fill();
-		g.strokeStyle = '#fff';
-		g.lineWidth = 1.5;
-		g.stroke();
-		g.beginPath();
-		g.moveTo(r.x + r.w - 3.5, r.y - 3.5);
-		g.lineTo(r.x + r.w + 3.5, r.y + 3.5);
-		g.moveTo(r.x + r.w + 3.5, r.y - 3.5);
-		g.lineTo(r.x + r.w - 3.5, r.y + 3.5);
-		g.lineWidth = 2;
-		g.stroke();
-		g.restore();
-	}
-
-	function deleteMarker(mk) {
-		if (!mk || !window.confirm('선택한 형광펜을 삭제할까요?')) {
-			return;
-		}
-		markers = markers.filter(function (m) { return m.id !== mk.id; });
-		selected = null;
-		persist();
-		paintAfter();
-	}
-
-	// 핀 메모 표시 : 최대 폭 / 최대 줄 수 / 줄 높이 (캔버스 px)
-	var MEMO_MAX_W = 180;
-	var MEMO_MAX_LINES = 3;
-	var MEMO_LINE_H = 15;
-
-	// 메모를 줄 단위로 나눔 : 입력한 줄바꿈 유지, 한 줄이 maxW 를 넘으면 글자 단위로 다음 줄로
-	// maxLines 를 넘는 내용이 있으면 마지막 줄 끝을 '…' 로 줄임
-	function wrapMemo(g, text, maxW, maxLines) {
-		var paras = text.replace(/\r\n?/g, '\n').split('\n');
-		var lines = [];
-		var over = false;
-		var i, k, ch, cur, last;
-		for (i = 0; i < paras.length && !over; i++) {
-			cur = '';
-			for (k = 0; k < paras[i].length; k++) {
-				ch = paras[i].charAt(k);
-				if (cur && g.measureText(cur + ch).width > maxW) {
-					lines.push(cur);
-					cur = '';
-					if (lines.length >= maxLines) {
-						over = true;
-						break;
-					}
-				}
-				cur += ch;
-			}
-			if (!over) {
-				lines.push(cur);
-				if (lines.length >= maxLines && i < paras.length - 1) {
-					over = true;
-				}
-			}
-		}
-		if (lines.length > maxLines) {
-			lines = lines.slice(0, maxLines);
-			over = true;
-		}
-		if (over) {
-			last = lines[lines.length - 1];
-			while (last && g.measureText(last + '…').width > maxW) {
-				last = last.slice(0, -1);
-			}
-			lines[lines.length - 1] = last + '…';
-		}
-		return lines;
-	}
-
 	function paint() {
 		var g = window.ctx_global;
 		var c = document.getElementById('canvas');
 		if (!g || !c) {
 			return;
 		}
-		var i, p, pts, j, cp, pin;
+		var i, p, pts, j, cp, pin, txt;
 		var mks = pageMarkers();
 		for (i = 0; i < mks.length; i++) {
 			pts = mks[i].points || [];
 			if (pts.length < 2) {
-				continue;
-			}
-			if (isRect(mks[i])) {
-				fillRect(g, pts, mks[i].color || color);
 				continue;
 			}
 			g.save();
@@ -381,9 +215,22 @@ var DetailAnno = (function (window, $) {
 			g.stroke();
 			g.restore();
 		}
-		// 드래그 중인 영역 미리보기
 		if (stroke && stroke.points && stroke.points.length > 1) {
-			fillRect(g, stroke.points, color);
+			pts = stroke.points;
+			g.save();
+			g.lineCap = 'round';
+			g.lineJoin = 'round';
+			g.strokeStyle = color;
+			g.lineWidth = widthPx * (c.width / (srcSize().w || c.width));
+			g.beginPath();
+			cp = toCanvas(pts[0][0], pts[0][1]);
+			g.moveTo(cp.x, cp.y);
+			for (j = 1; j < pts.length; j++) {
+				cp = toCanvas(pts[j][0], pts[j][1]);
+				g.lineTo(cp.x, cp.y);
+			}
+			g.stroke();
+			g.restore();
 		}
 		var pns = pagePins();
 		for (i = 0; i < pns.length; i++) {
@@ -393,19 +240,16 @@ var DetailAnno = (function (window, $) {
 			var fill = pinFill(pin);
 			var head = drawThumbtack(g, p, !!(selected && selected.type === 'pin' && selected.id === pin.id), fill);
 			if (pin.opinion) {
-				// 메모 : 입력한 줄바꿈 + 폭(MEMO_MAX_W) 기준 자동 줄바꿈, 최대 MEMO_MAX_LINES 줄 넘으면 말줄임
+				txt = String(pin.opinion);
+				if (txt.length > 28) {
+					txt = txt.slice(0, 28) + '…';
+				}
 				g.font = '11px Malgun Gothic, sans-serif';
 				g.textAlign = 'left';
 				g.textBaseline = 'middle';
-				var lines = wrapMemo(g, String(pin.opinion), MEMO_MAX_W, MEMO_MAX_LINES);
-				var tw = 0;
-				for (j = 0; j < lines.length; j++) {
-					tw = Math.max(tw, g.measureText(lines[j]).width);
-				}
-				tw += 10;
-				var boxH = lines.length * MEMO_LINE_H + 4;
-				// 첫 줄이 핀 머리 높이에 오도록 위쪽 기준으로 배치
-				var boxY = Math.round(head.midY - MEMO_LINE_H / 2 - 2);
+				var tw = g.measureText(txt).width + 10;
+				var boxH = 18;
+				var boxY = Math.round(head.midY - boxH / 2);
 				g.fillStyle = '#fff';
 				g.strokeStyle = fill;
 				g.lineWidth = 1.5;
@@ -414,13 +258,10 @@ var DetailAnno = (function (window, $) {
 				g.fill();
 				g.stroke();
 				g.fillStyle = '#333';
-				for (j = 0; j < lines.length; j++) {
-					g.fillText(lines[j], head.boxX + 5, boxY + 2 + MEMO_LINE_H * j + MEMO_LINE_H / 2);
-				}
+				g.fillText(txt, head.boxX + 5, head.midY);
 			}
 			g.restore();
 		}
-		paintSelectedMarker(g);
 	}
 
 	function distPointSeg(px, py, ax, ay, bx, by) {
@@ -440,20 +281,8 @@ var DetailAnno = (function (window, $) {
 		var c = document.getElementById('canvas');
 		var img = window.image_global;
 		var scale = (c && img && img.width) ? (c.width / img.width) : 1;
-		var r;
 		for (i = mks.length - 1; i >= 0; i--) {
 			pts = mks[i].points || [];
-			// 영역 : 안쪽 어디를 눌러도 선택 (테두리 바깥 4px 여유)
-			if (isRect(mks[i])) {
-				if (pts.length < 2) {
-					continue;
-				}
-				r = rectOf(pts);
-				if (cx >= r.x - 4 && cx <= r.x + r.w + 4 && cy >= r.y - 4 && cy <= r.y + r.h + 4) {
-					return mks[i];
-				}
-				continue;
-			}
 			thr = Math.max(8, (mks[i].width || widthPx) * scale * 0.6);
 			for (j = 1; j < pts.length; j++) {
 				ca = toCanvas(pts[j - 1][0], pts[j - 1][1]);
@@ -514,7 +343,7 @@ var DetailAnno = (function (window, $) {
 			return;
 		}
 		if (loadedMst === id) {
-			redraw();
+			paint();
 			return;
 		}
 		$.ajax({
@@ -528,7 +357,7 @@ var DetailAnno = (function (window, $) {
 			markers = res.markers || [];
 			pins = res.pins || [];
 			loadedMst = id;
-			redraw();
+			paint();
 		});
 	}
 
@@ -602,15 +431,10 @@ var DetailAnno = (function (window, $) {
 		$('#annoToolbar').toggleClass('marker-on', mode === 'marker');
 		$('#annoToolbar').toggleClass('pin-on', mode === 'pin');
 		var hint = '';
-		if (mode === 'marker') hint = '드래그하여 형광펜 영역을 지정합니다.';
+		if (mode === 'marker') hint = '드래그하여 형광펜을 그립니다.';
 		else if (mode === 'pin') hint = '색상을 고른 뒤 클릭한 위치에 핀을 고정합니다.';
-		else hint = '핀·형광펜 드래그=이동 · 형광펜 선택 후 X=삭제 · 핀 클릭=의견 · 빈 곳 드래그=화면 이동';
+		else hint = '핀·형광펜 드래그=이동 · 핀 클릭=의견 · 빈 곳 드래그=화면 이동';
 		$('#annoHint').text(hint);
-		// 모드 전환 시 형광펜 선택(삭제 아이콘) 해제
-		if (selected && selected.type === 'marker') {
-			selected = null;
-			paintAfter();
-		}
 		var c = document.getElementById('canvas');
 		if (c) {
 			c.style.cursor = (mode === 'navigate') ? 'grab' : 'crosshair';
@@ -639,12 +463,6 @@ var DetailAnno = (function (window, $) {
 		if (mode === 'navigate') {
 			pos = mousePos(e);
 			c = document.getElementById('canvas');
-			// 선택된 형광펜의 삭제 아이콘 클릭
-			mk = hitDelIcon(pos.x, pos.y);
-			if (mk) {
-				deleteMarker(mk);
-				return true;
-			}
 			pin = hitPin(pos.x, pos.y);
 			if (pin) {
 				src = toSource(pos.x, pos.y);
@@ -677,18 +495,13 @@ var DetailAnno = (function (window, $) {
 				paintAfter();
 				return true;
 			}
-			// 빈 곳 클릭 : 선택 해제 (삭제 아이콘 지움)
-			if (selected) {
-				selected = null;
-				paintAfter();
-			}
+			selected = null;
 			return false;
 		}
 		dragging = true;
 		src = toSource(mousePos(e).x, mousePos(e).y);
 		if (mode === 'marker') {
-			// 영역 : 시작점 / 끝점(드래그 중 갱신)
-			stroke = { points: [[src.x, src.y], [src.x, src.y]] };
+			stroke = { points: [[src.x, src.y]] };
 			return true;
 		}
 		if (mode === 'pin') {
@@ -712,18 +525,13 @@ var DetailAnno = (function (window, $) {
 			paintAfter();
 			return true;
 		}
-		// 삭제 아이콘 위에서는 손가락 커서
-		if (!dragging && mode === 'navigate' && selected && selected.type === 'marker') {
-			pos = mousePos(e);
-			document.getElementById('canvas').style.cursor = hitDelIcon(pos.x, pos.y) ? 'pointer' : 'grab';
-		}
 		if (!dragging || mode !== 'marker' || !stroke) {
 			return false;
 		}
 		src = toSource(mousePos(e).x, mousePos(e).y);
-		last = stroke.points[1];
-		if (Math.abs(last[0] - src.x) > 1 || Math.abs(last[1] - src.y) > 1) {
-			stroke.points[1] = [src.x, src.y];
+		last = stroke.points[stroke.points.length - 1];
+		if (!last || Math.abs(last[0] - src.x) > 1 || Math.abs(last[1] - src.y) > 1) {
+			stroke.points.push([src.x, src.y]);
 			paintAfter();
 		}
 		return true;
@@ -751,24 +559,14 @@ var DetailAnno = (function (window, $) {
 		}
 		dragging = false;
 		if (mode === 'marker' && stroke && stroke.points && stroke.points.length >= 2) {
-			var r = rectOf(stroke.points);
-			var p0 = stroke.points[0], p1 = stroke.points[1];
-			stroke = null;
-			// 너무 작은 영역(클릭 등)은 저장하지 않음
-			if (r.w < DRAG_THRESHOLD || r.h < DRAG_THRESHOLD) {
-				paintAfter();
-				return true;
-			}
 			markers.push({
 				id: nextId('mk'),
 				inptTaskId: taskId(),
-				points: [
-					[Math.min(p0[0], p1[0]), Math.min(p0[1], p1[1])],
-					[Math.max(p0[0], p1[0]), Math.max(p0[1], p1[1])]
-				],
+				points: stroke.points,
 				color: color,
-				width: 0
+				width: widthPx
 			});
+			stroke = null;
 			persist();
 			paintAfter();
 			return true;
@@ -782,40 +580,14 @@ var DetailAnno = (function (window, $) {
 		return mode !== 'navigate';
 	}
 
-	// 이미지·박스를 다시 그린 뒤 형광펜·핀을 맨 위에 한 번만 그림
-	// (fn_clear_box 래퍼와 fn_draw_multi_box 내부 fn_clear_box 호출에서 paint() 가 겹치면
-	//  반투명 형광펜이 두 번 칠해져 진해지므로 그 동안은 래퍼의 paint() 를 생략)
-	// genesis.js 하이라이트 깜빡임 타이머 동작 여부 (fn_selected_blink → refresh_id_list 에 등록)
-	function isBlinking() {
-		return typeof refresh_id_list !== 'undefined' && refresh_id_list && refresh_id_list.length > 0;
-	}
-
 	function paintAfter() {
-		suppressPaint = true;
-		try {
-			if (typeof fn_clear_box === 'function') {
-				fn_clear_box();
-			}
-			// 하이라이트 깜빡임 중에는 fn_draw_multi_box 호출 금지 :
-			// fn_draw_multi_box 첫 줄의 fn_remove_blink_list() 가 깜빡임 타이머를 멈춰 하이라이트가 사라짐
-			// (박스·하이라이트는 0.5초마다 도는 깜빡임 타이머가 fn_clear_box 와 함께 다시 그림)
-			if (typeof fn_draw_multi_box === 'function' && !isBlinking()) {
-				fn_draw_multi_box();
-			}
-		} finally {
-			suppressPaint = false;
+		if (typeof fn_clear_box === 'function') {
+			fn_clear_box();
+		}
+		if (typeof fn_draw_multi_box === 'function') {
+			fn_draw_multi_box();
 		}
 		paint();
-	}
-
-	// 이미 그려진 캔버스 위에 paint() 를 덧칠하지 않도록 이미지부터 다시 그림 (이미지 로드 전이면 paint 만)
-	function redraw() {
-		var img = window.image_global;
-		if (window.ctx_global && img && img.width) {
-			paintAfter();
-		} else {
-			paint();
-		}
 	}
 
 	function wrapGenesis() {
@@ -847,9 +619,7 @@ var DetailAnno = (function (window, $) {
 			var oc = fn_clear_box;
 			fn_clear_box = function () {
 				oc.apply(this, arguments);
-				if (!suppressPaint) {
-					paint();
-				}
+				paint();
 			};
 		}
 		if (typeof fn_init_draw_image === 'function') {
@@ -935,7 +705,14 @@ var DetailAnno = (function (window, $) {
 				return;
 			}
 			e.preventDefault();
-			deleteMarker(findMarker(selected.id));
+			if (!window.confirm('선택한 형광펜을 삭제할까요?')) {
+				return;
+			}
+			var id = selected.id;
+			markers = markers.filter(function (m) { return m.id !== id; });
+			selected = null;
+			persist();
+			paintAfter();
 		});
 		setMode('navigate');
 	}
@@ -949,7 +726,7 @@ var DetailAnno = (function (window, $) {
 		}
 		if (document.fonts && document.fonts.load) {
 			document.fonts.load('22px FontAwesome').then(function () {
-				redraw();
+				paint();
 			});
 		}
 	}

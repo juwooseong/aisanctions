@@ -39,8 +39,6 @@ import egovframework.ui.util.LoginUtils;
 public class CommonDetailApiController {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommonDetailApiController.class);
-	// 외부 인터페이스 송수신 로그 (log4j2 INTERFACE 로거 → interface.log)
-	private static final Logger IF_LOG = LoggerFactory.getLogger("INTERFACE");
 	
 	@Resource(name = "adminLogProgramService")
 	private AdminLogProgramService adminLogProgramService;
@@ -221,7 +219,6 @@ public class CommonDetailApiController {
 		String sendUrl = sysProp.getProperty("img.url");
 		String inputLine = null;
 		StringBuffer outResult = new StringBuffer();
-		long ifStart = System.currentTimeMillis();
 
 		try {
 			URL url = new URL(sendUrl);
@@ -256,22 +253,16 @@ public class CommonDetailApiController {
 				HashMap<String, String> resultMap = new HashMap();
 				resultMap.put("inpt_task_id", vo.getInptTaskId());
 				resultMap.put("inpt_mst_srno", Integer.toString(vo.getInptMstSrno()));
-				// 문서분류코드(IMEX_HIS_CD)가 01이면 SWIFT 전문
-				resultMap.put("swift_yn", "01".equals(vo.getImexHisCd()) ? "Y" : "N");
 				
 				JSONObject json = new JSONObject();
 				json.putAll(resultMap);
-
-				ifStart = System.currentTimeMillis();
-				IF_LOG.info("[REQ][img] url={} body={}", sendUrl, json);
-
+				
 				os.write(json.toString().getBytes("UTF-8"));
-
+				
 				os.flush();
 				os.close();
-
-				int resCode = conn.getResponseCode();
-				if (resCode == HttpURLConnection.HTTP_OK) {
+				
+				if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
 					// 리턴된 결과값 읽기
 					in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 					
@@ -298,23 +289,17 @@ public class CommonDetailApiController {
 						
 						JSONObject jsonObj = CastUtil.objToJSONObj(jsonParser.parse(outResult.toString()));
 						String imgStr = CastUtil.objToStr(jsonObj.get("imgStr"));
-						// 데이터 구분 (image : 이미지 base64, text : 텍스트)
-						String type = CastUtil.objToStr(jsonObj.get("type"));
-
+						
 						map.put("imgStr", imgStr);
-						map.put("type", type);
 					}
 					
 				} else {
 					
 					HttpUtil.setResult(map, HttpUtil.HttpType.T500);
 					HttpUtil.setExResult(map, "-1", "CA서버에 연결할 수 없습니다.");
-
+					
 				}
-
-				// 이미지(base64)/SWIFT 전문은 크기·개인정보 때문에 본문 대신 type·길이만 기록
-				IF_LOG.info("[RES][img] code={} {}ms body={}", resCode, System.currentTimeMillis() - ifStart, "type=" + map.get("type") + " length=" + outResult.length());
-
+				
 				conn.disconnect();
 				
 			}
@@ -323,8 +308,7 @@ public class CommonDetailApiController {
 			// logger.error(e.getMessage(),e);
 			// 문제 발생시 에러처리와 사용자 화면에서의 안내 메세지를 어떻게 할지 정해야 한다.
 			//e.printStackTrace();
-			IF_LOG.error("[ERR][img] url={} {}ms", sendUrl, System.currentTimeMillis() - ifStart, e);
-
+			
 			HttpUtil.setResult(map, HttpUtil.HttpType.T500);
 			HttpUtil.setExResult(map, "-1", "이미지 처리가 지연되고 있습니다. \r잠시 후 다시 거래해 주시기 바랍니다.");
 			

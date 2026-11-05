@@ -11,7 +11,7 @@
 <link rel="stylesheet" type="text/css" href="${ctx_res}/css/common.css"/>
 <link rel="stylesheet" type="text/css" href="${ctx_res}/css/custom_style.css"/>
 
-<script src="${ctx_res}/js/common_detail.js?v=20261105a"></script>
+<script src="${ctx_res}/js/common_detail.js"></script>
 
 <c:set var="pageId" value="9999"/>
 <c:set var="dataTableId" value="dataTable_manual"/>

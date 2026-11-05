@@ -59,7 +59,7 @@
 <script type="text/javascript" src="${ctx_res}/vendors/pickers/daterangepicker.js"></script>
 <script type="text/javascript" src="${ctx_res}/vendors/pickers/anytime.min.js"></script>
 
-<script src="${ctx_res}/js/common_detail.js?v=20261105a"></script>
+<script src="${ctx_res}/js/common_detail.js"></script>
 
 <script>
 var orgOpiText = "";

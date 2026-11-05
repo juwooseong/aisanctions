@@ -80,7 +80,7 @@
 								<button type="button" class="anno-swatch orange" data-anno-color="rgba(251,146,60,0.4)" data-pin-color="#ea580c" title="주황"></button>
 								<button type="button" class="anno-swatch black" data-anno-color="rgba(15,23,42,0.45)" data-pin-color="#111827" title="검정"></button>
 							</span>
-							<span class="anno-hint" id="annoHint">핀 클릭=의견 · 형광펜 선택 후 X=삭제</span>
+							<span class="anno-hint" id="annoHint">핀 클릭=의견 · 형광펜 선택 후 Delete=삭제</span>
 						</div>
 						<div id="canvas_area" class="canvas-overflow-revert">
 							<canvas id="canvas" width="535" height="735" class="doc-canvas"></canvas>
@@ -162,8 +162,6 @@
 						<div class="tbWrap">
 							<div class="tbTop">
 								<strong>TotalText심사</strong>
-								<!-- 펼침/닫힘 : 닫힘(기본)=Alert내용 위주(텍스트·추출내용 열 숨김), 펼침=전체 열 -->
-								<p class="reset-btn" id="totalTextToggleBtn"><i class="fa fa-chevron-down fa-sm"></i> 전체 펼침</p>
 							</div>
 							<div class="tbCon tbCon-totalText-detail">
 								<table class="table table-responsive-sm width-100" id="totalTextRstTable"></table>
@@ -263,15 +261,16 @@
 
 
 <script src="${ctx_res}/vendors/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js"></script>
-<script src="${ctx_res}/js/common_detail.js?v=20261105a"></script>
+<script src="${ctx_res}/js/common_detail.js?v=20260816d"></script>
 <!-- 심사자 화면은 "수기 추가" 입력/편집이 가능해야 하므로 읽기전용이 아니다. -->
 <script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
 <script src="${ctx_res}/js/revert/genesis.js"></script>
-<script src="${ctx_res}/js/annotation-host.js?v=20261030a"></script>
+<script src="${ctx_res}/js/annotation-host.js?v=20260815c"></script>
 <!-- 문서분류 일괄변경 팝업 옵션: showBlPrefix=false 면 BL 탭/콤보에 'BL' 없이 번호만 표시 -->
 <script>window.DOC_CLASS_OPTIONS = { showBlPrefix: false };</script>
 <%@include file="/WEB-INF/jsp/common/document-classification-modal.jsp"%>
+<%@include file="/WEB-INF/jsp/common/info-change-modal.jsp"%>
 
 <div class="anno-pin-modal" id="anno_pin_modal">
 	<div class="anno-pin-box">
@@ -414,25 +413,8 @@ function fn_getNationCd(val, _sanctionNo, _indexNo) {
 	});	
 }
 
-// SWIFT(01) 문서와 이미지 문서 간 문서분류 변경 차단 (차단 시 true)
-function fn_isSwiftCrossChange(_fromCd, _toCd) {
-	if ((_fromCd == "01") != (_toCd == "01")) {
-		alert(_fromCd == "01"
-			? "SWIFT 전문은 다른 문서분류로 변경할 수 없습니다."
-			: "이미지 문서는 SWIFT(01)로 변경할 수 없습니다.");
-		return true;
-	}
-	return false;
-}
-
 // 문서분류  selectBox 변경
 $(document).on('change','#item_select', function(e) {
-	// SWIFT/이미지 간 변경이면 원래 문서분류로 되돌림
-	if (fn_isSwiftCrossChange($('#active_imexHisCd').val(), $(this).val())) {
-		$(this).val($('#active_imexHisCd').val()).trigger('change');
-		return;
-	}
-
 	var _arrImgPageInfo = $globaObjlData.imgPageInfo;
 	var _activeInptBlGrpNo = $('#active_inptBlGrpNo').val();
 	var _imgInptTaskId = $('#active_inptTaskId').val();
@@ -471,40 +453,9 @@ $(document).on('change','#item_select', function(e) {
 	}
 });
 
-// 문서분류 변경 후 재조회 시 유지할 탭/이미지 정보 생성
-// _fromIdx ~ _toIdx : 변경할 이미지의 현재 문서분류탭 내 인덱스(0부터)
-// _moved : 변경으로 이미지가 현재 탭에서 빠지는지 여부
-function fn_makeReCrfKeepInfo(_fromIdx, _toIdx, _moved) {
-	var _curImexHisCd = $('#item_list .item-active').attr('data-imexHisCd') || $('#active_imexHisCd').val();
-	var _keepInptTaskId = $('#active_inptTaskId').val();
-
-	if (_moved) {
-		if (globalImglist[_toIdx + 1]) {
-			// 변경한 이미지 다음 이미지
-			_keepInptTaskId = globalImglist[_toIdx + 1].inptTaskId;
-		} else if (_fromIdx > 0 && globalImglist[_fromIdx - 1]) {
-			// 마지막 이미지까지 변경했으면 바로 앞 이미지
-			_keepInptTaskId = globalImglist[_fromIdx - 1].inptTaskId;
-		} else {
-			// 남는 이미지가 없으면 첫번째 이미지
-			_keepInptTaskId = "0";
-		}
-	}
-
-	return {
-		inptBlGrpNo : $('#active_inptBlGrpNo').val(),
-		imexHisCd : _curImexHisCd,
-		inptTaskId : _keepInptTaskId
-	};
-}
-
 // 문서분류변경
 $(document).on('click','#reCrfBtn', function(e) {
-
-	if (fn_isSwiftCrossChange($('#active_imexHisCd').val(), $('#item_select').val())) {
-		return false;
-	}
-
+	
 	var _reCrfListType = $('[name="imgSelect"]:checked').val();
 
 	if(_reCrfListType == "multiple") {
@@ -569,10 +520,7 @@ $(document).on('click','#reCrfBtn', function(e) {
 		_params.reCrfList = _reCrfList.length == 0 ? null : _reCrfList;
 		
 		if(confirm(_reCrfEnd - _reCrfStart + 1 + "개의 문서를 " + _itemSelectText + "[" + _blSelectText + "]로 변경 하시겠습니까?")) {
-
-			var _curImexHisCd = $('#item_list .item-active').attr('data-imexHisCd') || $('#active_imexHisCd').val();
-			var _reCrfKeepInfo = fn_makeReCrfKeepInfo(_reCrfStart - 1, _reCrfEnd - 1, !(_itemActive == _curImexHisCd && _blSelectVal == _activeInptBlGrpNo));
-
+			
 			$.ajax({
 				url : "/api/common/revertDetail/reCrfMulti",
 				type : "post",
@@ -583,15 +531,32 @@ $(document).on('click','#reCrfBtn', function(e) {
 				success : function(data) {
 					h_loading();
 					globalChangeData = 'N';
-					
+
 					if (!(rotateVal % 180 == 0)) {
 						fn_rotate("l");
 					}
 					$('#canvas').prop("height", height_global);
 					$('#canvas').prop("width", width_global);
 
-					// 재조회 후 변경 전 문서분류탭 유지, 변경된 이미지 다음 이미지 선택
-					globalReCrfKeepInfo = _reCrfKeepInfo;
+					// [문서분류 변경 후 탭/이미지 유지 - 복수이미지]
+					// 재조회(fn_getBLData)를 호출하면 화면이 처음부터 다시 그려지면서
+					// 문서분류 탭은 첫번째 탭으로, 이미지 페이징은 1페이지/1번째 이미지로
+					// 리셋되어 버린다. 이를 막기 위해 "변경 후 다시 선택해줘야 할 탭/이미지"
+					// 정보를 common_detail.js의 전역변수 globalImexHisCdChgImgInfo에 담아둔다.
+					// fn_getBLData 내부의 fn_setBl() -> fn_setItem()에서 이 값을 읽어
+					// 해당 문서분류 탭을 다시 활성화하고, 같은 inptTaskId를 가진 이미지로
+					// 페이징 위치를 복원한다(한 번 쓰이면 내부에서 다시 null로 초기화됨).
+					// 복수이미지 변경이므로, 변경한 범위의 첫 이미지(_reCrfStart)를 기준으로
+					// 복원 대상을 잡는다. 이 이미지는 범위 변경으로 인해 분류가
+					// _itemActive(새 문서분류)로 바뀌었으므로 imexHisCd도 새 값으로 세팅한다.
+					globalImexHisCdChgImgInfo = {
+						imexHisCd : _itemActive,							// 변경된(새) 문서분류 코드
+						imexHisNm : _itemSelectText,						// 변경된(새) 문서분류명
+						inptTaskId : globalImglist[_reCrfStart - 1].inptTaskId,		// 복원할 이미지 taskId(변경 범위의 첫 이미지)
+						inptElmtId : globalImglist[_reCrfStart - 1].inptElmtId,		// 복원할 이미지의 엘리먼트Id
+						aiInptPapsQltScre : globalImglist[_reCrfStart - 1].aiInptPapsQltScre	// 복원할 이미지의 품질점수
+					};
+
 					fn_getBLData("A");
 				},
 				error : function(e) {
@@ -651,17 +616,7 @@ $(document).on('click','#reCrfBtn', function(e) {
 	 	} else {
 		
 	 		if(confirm(_data_imexhisnm + "[" + _activeInptBlGrpNoText + "]을(를) " + _itemSelectText + "[" + _blSelectText + "]로 변경 하시겠습니까?")) {
-
-				// 현재 이미지 위치
-				var _curImgIdx = globalImgNo;
-				for (var i in globalImglist) {
-					if (globalImglist[i].inptTaskId == _imgInptTaskId) {
-						_curImgIdx = parseInt(i);
-						break;
-					}
-				}
-				var _reCrfKeepInfo = fn_makeReCrfKeepInfo(_curImgIdx, _curImgIdx, true);
-
+				
 	 			s_loading();
 				
 	 			$.ajax({
@@ -681,8 +636,19 @@ $(document).on('click','#reCrfBtn', function(e) {
 						$('#canvas').prop("height", height_global);
 						$('#canvas').prop("width", width_global);
 
-	 					// 재조회 후 변경 전 문서분류탭 유지, 변경된 이미지 다음 이미지 선택
-	 					globalReCrfKeepInfo = _reCrfKeepInfo;
+	 					// [문서분류 변경 후 탭/이미지 유지 - 단일이미지]
+	 					// 복수이미지 분기와 동일한 이유로, 재조회 전에 "변경 후 다시 선택해줘야 할
+	 					// 탭/이미지" 정보를 globalImexHisCdChgImgInfo에 세팅해둔다.
+	 					// 단일 이미지 변경이므로 지금 보고 있던 이미지(_imgInptTaskId) 그대로,
+	 					// 분류만 새 값(_itemActive)으로 바뀐 상태를 복원 대상으로 잡는다.
+	 					globalImexHisCdChgImgInfo = {
+	 						imexHisCd : _itemActive,				// 변경된(새) 문서분류 코드
+	 						imexHisNm : _itemSelectText,			// 변경된(새) 문서분류명
+	 						inptTaskId : _imgInptTaskId,			// 복원할 이미지 taskId(현재 보던 이미지)
+	 						inptElmtId : _inptElmtId,				// 복원할 이미지의 엘리먼트Id
+	 						aiInptPapsQltScre : _aiInptPapsQltScre	// 복원할 이미지의 품질점수
+	 					};
+
 	 					fn_getBLData("A");
 	 				},
 	 				error : function(e) {
@@ -693,32 +659,15 @@ $(document).on('click','#reCrfBtn', function(e) {
 	 				complete: function() {
 	 					$('.img-range').val("");
 	 				}
-	 			});	
+	 			});
 	 		}
 	 	}
 	}
 });
 
-// 정보변경 팝업 (심사상세 창 가운데에 오픈)
-$(document).on('click', '#infoChangeBtn', function(e) {
-	e.preventDefault();
-
-	var _w = 1000;
-	var _h = 540;
-	var _left = window.screenX + (window.outerWidth - _w) / 2;
-	var _top = window.screenY + (window.outerHeight - _h) / 2;
-
-	window.open("/revert/detail/infoChange?inptMstSrno=" + encodeURIComponent(globalInptMstSrno), "infoChangePopup",
-		"left=" + _left + ", top=" + _top + ", width=" + _w + ", height=" + _h + ", resizable=0, scrollbars=1, toolbar=0, status=0, location=0, menubar=0");
-});
-
 // 재추출
 $(document).on('click','#reExtractionBtn', function(e) {
-
-	if (fn_isSwiftCrossChange($('#active_imexHisCd').val(), $('#item_select').val())) {
-		return false;
-	}
-
+	
 	var _arrImgPageInfo = $globaObjlData.imgPageInfo;
 	var _activeInptBlGrpNo = $('#active_inptBlGrpNo').val();
 	var _activeInptBlGrpNoText = $('.bl-link_active').text();
