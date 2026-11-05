@@ -692,7 +692,8 @@ function fn_dataTableComplete() {
         	{ targets: 4, className: 'td-text-center' },
     		{ targets: 5, visible: false },
     		{ targets: 6, visible: false },
-    		{ targets: 7, visible: false }
+    		{ targets: 7, visible: false },
+    		{ targets: 8, visible: false }
         ],
         columns: [
         	{title: '번호', className: 'td-text-center td-text-30'},
@@ -702,7 +703,10 @@ function fn_dataTableComplete() {
         	{title: 'Alert내용', className: 'td-text-left td-text-100 text-wrap' }
         ],
         createdRow: function(aRow, aData, row, data, dataIndex){
-    		$(aRow).find('td:eq(4)').css('color', "red");
+        	// 경고여부(aiInptAltYn) Y 인 행만 Alert내용 빨간색
+        	if ("Y" == aData[8]) {
+        		$(aRow).find('td:eq(4)').css('color', "red");
+        	}
         }
     });
 
@@ -848,6 +852,7 @@ function fn_setTotalTextRst() {
 	var _inptSanctionDatTxt = "";
 	var _bfrsAicrExtcTxt = "";
 	var _aiInptSanctionRuleTxt = "";
+	var _aiInptAltYn = "";
 	
 	globalTotalTextRstListData = [];
 	
@@ -861,6 +866,7 @@ function fn_setTotalTextRst() {
 			_inptSanctionDatTxt = _arrTotalTextRst[i].inptSanctionDatTxt ? _arrTotalTextRst[i].inptSanctionDatTxt : '';
 			_bfrsAicrExtcTxt = _arrTotalTextRst[i].bfrsAicrExtcTxt ? _arrTotalTextRst[i].bfrsAicrExtcTxt : '';
 			_aiInptSanctionRuleTxt = _arrTotalTextRst[i].aiInptSanctionRuleTxt ? _arrTotalTextRst[i].aiInptSanctionRuleTxt : '';
+			_aiInptAltYn = _arrTotalTextRst[i].aiInptAltYn ? _arrTotalTextRst[i].aiInptAltYn : 'N';
 			
 			_indexNo++;
 			
@@ -872,7 +878,8 @@ function fn_setTotalTextRst() {
 				_aiInptSanctionRuleTxt,
 				_aiInptTotaltextSrno,
 				_imexHisCd,
-				_inptTaskId
+				_inptTaskId,
+				_aiInptAltYn
 			];
 			
 			globalTotalTextRstListData.push(_arrData);

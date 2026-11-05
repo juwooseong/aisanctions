@@ -261,7 +261,7 @@
 
 
 <script src="${ctx_res}/vendors/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js"></script>
-<script src="${ctx_res}/js/common_detail.js?v=20260816d"></script>
+<script src="${ctx_res}/js/common_detail.js?v=20261105a"></script>
 <!-- 심사자 화면은 "수기 추가" 입력/편집이 가능해야 하므로 읽기전용이 아니다. -->
 <script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
