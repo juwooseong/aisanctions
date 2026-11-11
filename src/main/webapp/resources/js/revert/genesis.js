@@ -436,46 +436,64 @@ function fn_init_draw_image(_inptBlGrpNo, _imexHisCd, _inptTaskId, _spdKind, _in
 // 확대/회전/하이라이트 로직이 image_global 기준으로 동작하므로 이미지로 변환해서 사용한다.
 function fn_text_to_image_src(text) {
 
-	var _scale = 3;		// 확대 시 글자가 깨지지 않도록 고해상도로 그림
-	var _width = canvas_width_global * _scale;
-	var _height = canvas_height_global * _scale;
-	var _padding = 20 * _scale;
+	var _baseScale = 3;		// 기본 배율 : 확대 시 글자가 깨지지 않도록 고해상도로 그림
+	var _maxScale = 6;		// 최대 배율 : 이미지가 너무 커지면(6배 약 3210x4410) 깜빡임/확대 다시 그리기가 느려짐
+	var _minGlyph = 12;		// 이미지 안 실제 글자 크기 목표(px) : 이보다 작으면 배율을 올림
 	var _fontFamily = "'Malgun Gothic', '맑은 고딕', 'Dotum', monospace";
 
 	var _textCanvas = document.createElement('canvas');
-	_textCanvas.width = _width;
-	_textCanvas.height = _height;
-
 	var _ctx = _textCanvas.getContext('2d');
 	var _srcLines = String(text).replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
-	var _maxWidth = _width - (_padding * 2);
-	var _maxHeight = _height - (_padding * 2);
-	var _step = 0.5 * _scale;		// 글자 크기 단위 (화면 기준 0.5px)
+	var _maxWidth = (canvas_width_global - 40) * _baseScale;
+	var _maxHeight = (canvas_height_global - 40) * _baseScale;
+	var _step = 0.5 * _baseScale;	// 글자 크기 단위 (화면 기준 0.5px)
 	var _lo = 2;					// 최소 단계 : 화면 기준 1px (글자 크기 0 이하 방지용, 하한 없음)
 	var _hi = 28;					// 최대 단계 : 화면 기준 14px
-	var _fontSize;
-	var _lineHeight;
-	var _lines;
 
 	// 전체 텍스트가 한 화면에 들어오는 가장 큰 글자 크기를 이분 탐색으로 찾음 (하한 없이 계속 줄임)
 	// 긴 전문은 한 단계씩 줄이면 줄바꿈 계산을 수십 번 반복해 느려지므로 이분 탐색 사용
 	while (_lo < _hi) {
 		var _mid = Math.ceil((_lo + _hi) / 2);
+		var _size = _mid * _step;
 
-		_fontSize = _mid * _step;
-		_ctx.font = _fontSize + "px " + _fontFamily;
+		_ctx.font = _size + "px " + _fontFamily;
 
-		if (fn_wrap_text_lines(_ctx, _srcLines, _maxWidth).length * Math.ceil(_fontSize * 1.4) <= _maxHeight) {
+		if (fn_wrap_text_lines(_ctx, _srcLines, _maxWidth).length * Math.ceil(_size * 1.4) <= _maxHeight) {
 			_lo = _mid;
 		} else {
 			_hi = _mid - 1;
 		}
 	}
 
-	_fontSize = _lo * _step;
-	_ctx.font = _fontSize + "px " + _fontFamily;
-	_lineHeight = Math.ceil(_fontSize * 1.4);
-	_lines = fn_wrap_text_lines(_ctx, _srcLines, _maxWidth);
+	// 화면 기준 글자 크기
+	var _viewFontSize = _lo * 0.5;
+
+	// 글자가 작을수록 배율을 올려 그림 (확대 시 선명하게) : 화면 2px → 6배(실제 12px), 3px → 4배, 4px 이상 → 3배
+	var _scale = Math.min(_maxScale, Math.max(_baseScale, Math.ceil(_minGlyph / _viewFontSize)));
+
+	fn_draw_text_image(_textCanvas, _srcLines, _viewFontSize, _scale, _fontFamily);
+
+	return _textCanvas.toDataURL("image/png");
+}
+
+// 텍스트를 지정 배율로 canvas 에 그림 (canvas 크기 = 화면 canvas 크기 x 배율, 글자 크기/여백도 배율만큼)
+function fn_draw_text_image(textCanvas, srcLines, viewFontSize, scale, fontFamily) {
+
+	var _width = canvas_width_global * scale;
+	var _height = canvas_height_global * scale;
+	var _padding = 20 * scale;
+	var _fontSize = viewFontSize * scale;
+	var _lineHeight = _fontSize * 1.4;
+
+	// canvas 크기를 바꾸면 context 설정이 초기화되므로 크기 지정 후 설정
+	textCanvas.width = _width;
+	textCanvas.height = _height;
+
+	var _ctx = textCanvas.getContext('2d');
+
+	_ctx.font = _fontSize + "px " + fontFamily;
+
+	var _lines = fn_wrap_text_lines(_ctx, srcLines, _width - (_padding * 2));
 
 	_ctx.fillStyle = "#fff";
 	_ctx.fillRect(0, 0, _width, _height);
@@ -485,8 +503,6 @@ function fn_text_to_image_src(text) {
 	for (var i = 0; i < _lines.length; i++) {
 		_ctx.fillText(_lines[i], _padding, _padding + (i * _lineHeight));
 	}
-
-	return _textCanvas.toDataURL("image/png");
 }
 
 // 최대 너비를 넘는 줄은 글자 단위로 줄바꿈
