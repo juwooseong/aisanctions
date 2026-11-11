@@ -90,6 +90,12 @@ public class DocClassApiController {
 			HashMap<String, Object> map = commonDetailApiController.imgRest(vo);
 			Object imgObj = map == null ? null : map.get("imgStr");
 			String imgStr = imgObj == null ? "" : String.valueOf(imgObj);
+			// 텍스트(SWIFT 전문)는 그대로 응답 → 화면에서 이미지로 그려서 표시
+			if (map != null && "text".equals(map.get("type"))) {
+				bytes = imgStr.getBytes("UTF-8");
+				contentType = "text/plain; charset=UTF-8";
+				imgStr = "";
+			}
 			if (imgStr.startsWith("data:image/")) {
 				int comma = imgStr.indexOf(',');
 				if (comma > 0) {

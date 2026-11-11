@@ -105,7 +105,7 @@ public class DocClassServiceImpl extends EgovAbstractServiceImpl implements DocC
 				page.put("inptBlGrpNo", toUiBlId(blNo));
 				page.put("sortOrder", i);
 				page.put("thumbnailUrl", "/api/doc-class/thumb?inptMstSrno=" + inptMstSrno
-						+ "&inptTaskId=" + taskId);
+						+ "&inptTaskId=" + taskId + "&imexHisCd=" + imexHisCd);
 				pageList.add(page);
 			}
 		}

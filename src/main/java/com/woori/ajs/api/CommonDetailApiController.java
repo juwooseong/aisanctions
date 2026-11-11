@@ -253,6 +253,8 @@ public class CommonDetailApiController {
 				HashMap<String, String> resultMap = new HashMap();
 				resultMap.put("inpt_task_id", vo.getInptTaskId());
 				resultMap.put("inpt_mst_srno", Integer.toString(vo.getInptMstSrno()));
+				// 문서분류코드(IMEX_HIS_CD)가 01이면 SWIFT 전문
+				resultMap.put("swift_yn", "01".equals(vo.getImexHisCd()) ? "Y" : "N");
 				
 				JSONObject json = new JSONObject();
 				json.putAll(resultMap);
@@ -289,8 +291,11 @@ public class CommonDetailApiController {
 						
 						JSONObject jsonObj = CastUtil.objToJSONObj(jsonParser.parse(outResult.toString()));
 						String imgStr = CastUtil.objToStr(jsonObj.get("imgStr"));
-						
+						// 데이터 구분 (image : 이미지 base64, text : 텍스트)
+						String type = CastUtil.objToStr(jsonObj.get("type"));
+
 						map.put("imgStr", imgStr);
+						map.put("type", type);
 					}
 					
 				} else {
