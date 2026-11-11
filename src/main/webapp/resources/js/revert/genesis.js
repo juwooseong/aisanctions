@@ -46,7 +46,7 @@ function fn_get_base_size() {
 // - 원본 모드 : fa-compress / '화면에 맞추기', 화면맞춤 : fa-expand / '원본 크기로 보기'
 // - 버튼이 없는 화면(genesis.js 를 쓰는 다른 상세 화면)은 아무것도 하지 않음
 function fn_update_view_mode_btn() {
-	var $btn = $('#view_mode_btn');
+	var $btn = $('#viewModeBtn');
 	if ($btn.length == 0) {
 		return;
 	}
@@ -98,7 +98,7 @@ function fn_set_view_mode(mode) {
 	}
 
 	// 이미지 영역 스크롤 위치 초기화
-	$('#canvas_area').scrollLeft(0).scrollLeft(0);
+	$('#canvas_area').scrollTop(0).scrollLeft(0);
 }
 
 // 화면맞춤 <-> 원본 전환

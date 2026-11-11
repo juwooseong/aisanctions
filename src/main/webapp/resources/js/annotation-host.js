@@ -635,7 +635,8 @@ var DetailAnno = (function (window, $) {
 		if (READONLY) {
 			return;
 		}
-		$(document).on('click', '.anno-mode-btn', function () {
+		// data-anno-mode 가 있는 버튼만 모드 전환 (원문보기 버튼 등 크기 스타일만 공유하는 버튼은 제외)
+		$(document).on('click', '.anno-mode-btn[data-anno-mode]', function () {
 			setMode($(this).attr('data-anno-mode'));
 		});
 		$(document).on('click', '.anno-marker-palette .anno-swatch', function () {
