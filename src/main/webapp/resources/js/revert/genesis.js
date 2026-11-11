@@ -549,7 +549,9 @@ function fn_text_to_image_src(text) {
 	var _lineRate = 1.4;			// 줄 간격 (글자 크기 대비)
 	var _scale = 3;					// 배율 : 확대 시 글자가 깨지지 않도록 고해상도로 그림
 	var _maxCanvasSize = 32000;		// 브라우저 canvas 최대 크기(약 32767px) 이내
-	var _padding = 20;				// 화면 기준 여백
+	var _padding = 20;				// 화면 기준 여백 (위/아래/오른쪽)
+	var _paddingLeft = 50;			// 화면 기준 왼쪽 여백 : 이미지 영역 왼쪽 위에 떠 있는 주석 툴바(#annoToolbar, left 8px + 버튼 32px)와
+									// 겹치지 않도록 넓게 (이미지가 영역보다 넓으면 canvas 가 영역 왼쪽 끝부터 그려짐)
 	var _fontFamily = "'Malgun Gothic', '맑은 고딕', 'Dotum', monospace";
 
 	var _ctx = document.createElement('canvas').getContext('2d');
@@ -566,12 +568,12 @@ function fn_text_to_image_src(text) {
 
 	// canvas 한 장(기본 크기)에 가로/세로 모두 들어오는 가장 큰 글자 크기 (0.5px 단위, 14px ~ 11px)
 	var _fitFontSize = Math.min(_maxFontSize,
-			100 * (canvas_width_global - (_padding * 2)) / _maxLineWidth100,
+			100 * (canvas_width_global - _paddingLeft - _padding) / _maxLineWidth100,
 			(canvas_height_global - (_padding * 2)) / (_srcLines.length * _lineRate));
 	var _viewFontSize = Math.max(_minFontSize, Math.floor(_fitFontSize * 2) / 2);
 
 	// 화면 기준 이미지 크기 : 최소 기본 canvas 크기, 넘치면 내용 크기만큼
-	var _viewWidth = Math.max(canvas_width_global, Math.ceil(_maxLineWidth100 * _viewFontSize / 100 + (_padding * 2)));
+	var _viewWidth = Math.max(canvas_width_global, Math.ceil(_maxLineWidth100 * _viewFontSize / 100 + _paddingLeft + _padding));
 	var _viewHeight = Math.max(canvas_height_global, Math.ceil(_srcLines.length * _viewFontSize * _lineRate + (_padding * 2)));
 
 	// 아주 긴 전문은 이미지/canvas 최대 크기를 넘지 않도록 배율을 낮추고(최소 1배), 1배로도 넘치면 최대 크기까지만 그림
@@ -596,7 +598,7 @@ function fn_text_to_image_src(text) {
 	_textCtx.font = _fontSize + "px " + _fontFamily;
 
 	for (var j = 0; j < _srcLines.length; j++) {
-		_textCtx.fillText(_srcLines[j], _padding * _scale, (_padding * _scale) + (j * _fontSize * _lineRate));
+		_textCtx.fillText(_srcLines[j], _paddingLeft * _scale, (_padding * _scale) + (j * _fontSize * _lineRate));
 	}
 
 	// 화면 표시 크기 = 이미지 크기 / 배율 (fn_get_base_size 에서 canvas 크기로 사용)

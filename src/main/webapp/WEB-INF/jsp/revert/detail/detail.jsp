@@ -269,7 +269,7 @@
 <!-- 심사자 화면은 "수기 추가" 입력/편집이 가능해야 하므로 읽기전용이 아니다. -->
 <script>window.MANUAL_COL_READONLY = false;</script>
 <script src="${ctx_res}/js/manual-add-column.js"></script>
-<script src="${ctx_res}/js/revert/genesis.js?v=20261111b"></script>
+<script src="${ctx_res}/js/revert/genesis.js?v=20261111c"></script>
 <script src="${ctx_res}/js/annotation-host.js?v=20261111a"></script>
 <!-- 문서분류 일괄변경 팝업 옵션: showBlPrefix=false 면 BL 탭/콤보에 'BL' 없이 번호만 표시 -->
 <script>window.DOC_CLASS_OPTIONS = { showBlPrefix: false };</script>
