@@ -449,23 +449,33 @@ function fn_text_to_image_src(text) {
 	var _ctx = _textCanvas.getContext('2d');
 	var _srcLines = String(text).replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
 	var _maxWidth = _width - (_padding * 2);
-	var _fontSize = 14 * _scale;
-	var _minFontSize = 6 * _scale;
+	var _maxHeight = _height - (_padding * 2);
+	var _step = 0.5 * _scale;		// 글자 크기 단위 (화면 기준 0.5px)
+	var _lo = 2;					// 최소 단계 : 화면 기준 1px (글자 크기 0 이하 방지용, 하한 없음)
+	var _hi = 28;					// 최대 단계 : 화면 기준 14px
+	var _fontSize;
 	var _lineHeight;
 	var _lines;
 
-	// 전체 텍스트가 한 화면에 들어올 때까지 글자 크기를 줄임
-	while (true) {
+	// 전체 텍스트가 한 화면에 들어오는 가장 큰 글자 크기를 이분 탐색으로 찾음 (하한 없이 계속 줄임)
+	// 긴 전문은 한 단계씩 줄이면 줄바꿈 계산을 수십 번 반복해 느려지므로 이분 탐색 사용
+	while (_lo < _hi) {
+		var _mid = Math.ceil((_lo + _hi) / 2);
+
+		_fontSize = _mid * _step;
 		_ctx.font = _fontSize + "px " + _fontFamily;
-		_lineHeight = Math.ceil(_fontSize * 1.4);
-		_lines = fn_wrap_text_lines(_ctx, _srcLines, _maxWidth);
 
-		if (_lines.length * _lineHeight <= _height - (_padding * 2) || _fontSize <= _minFontSize) {
-			break;
+		if (fn_wrap_text_lines(_ctx, _srcLines, _maxWidth).length * Math.ceil(_fontSize * 1.4) <= _maxHeight) {
+			_lo = _mid;
+		} else {
+			_hi = _mid - 1;
 		}
-
-		_fontSize -= 0.5 * _scale;
 	}
+
+	_fontSize = _lo * _step;
+	_ctx.font = _fontSize + "px " + _fontFamily;
+	_lineHeight = Math.ceil(_fontSize * 1.4);
+	_lines = fn_wrap_text_lines(_ctx, _srcLines, _maxWidth);
 
 	_ctx.fillStyle = "#fff";
 	_ctx.fillRect(0, 0, _width, _height);
