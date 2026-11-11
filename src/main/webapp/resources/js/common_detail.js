@@ -2476,7 +2476,12 @@ $(document).on('change', '#totalTextStcdList_select', function(e) {
 
 // 이미지 초기화 버튼 클릭
 $(document).on('click', '#zoomRefreshBtn', function(e) {
-	
+	// 원문보기(genesis.js) 보기 모드를 화면맞춤으로 복귀 → 아래 이미지 다시 그리기(onload) 때 적용
+	// (genesis.js 를 쓰지 않는 화면은 view_mode_global 이 없으므로 확인 후 설정)
+	if (typeof view_mode_global !== 'undefined') {
+		view_mode_global = 'fit';
+	}
+
 	var _active_inptBlGrpNo = $('#active_inptBlGrpNo').val();
 	var _active_imexHisCd = $('#active_imexHisCd').val();
 	var _active_inptTaskId = $('#active_inptTaskId').val();

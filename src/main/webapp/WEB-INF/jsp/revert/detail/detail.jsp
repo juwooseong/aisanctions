@@ -72,6 +72,10 @@
 							<button type="button" class="btn btn-sm btn-info P-1 anno-mode-btn" data-anno-mode="pin" title="핀 고정">
 								<i class="fa fa-thumb-tack fa-lg"></i>
 							</button>
+							<!-- 원문보기 : 화면맞춤 <-> 원본 크기 전환 (genesis.js fn_toggle_view_mode) -->
+							<button type="button" class="btn btn-sm btn-info P-1 anno-mode-btn" id="viewModeBtn" onclick="fn_toggle_view_mode();" title="원본 크기로 보기">
+								<i class="fa fa-expand fa-lg"></i>
+							</button>
 							<span class="anno-marker-palette" aria-label="색상">
 								<button type="button" class="anno-swatch yellow active" data-anno-color="rgba(255,235,59,0.45)" data-pin-color="#ca8a04" title="노랑"></button>
 								<button type="button" class="anno-swatch pink" data-anno-color="rgba(244,114,182,0.4)" data-pin-color="#db2777" title="분홍"></button>

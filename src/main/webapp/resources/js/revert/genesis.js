@@ -14,7 +14,97 @@ var mouse_drag = false;
 
 // 이미지 로드 코드
 var imgType = "";
+// 이미지 원본형태(image:스캔이미지, text:텍스트를 그린 이미지)
+var imgSrcType = "";
 
+/*
+ * 원문보기 (화면맞춤 <-> 원본 크기 전환)
+ * - fit      : canvas 기본 크기(canvas_width_global x canvas_height_global)에 이미지를 맞춰 표시 (기존 동작)
+ * - original : 이미지 원본 픽셀 크기로 canvas 를 잡아 표시, 영역을 넘는 부분은 #canvas_area 스크롤로 확인
+ * - 버튼(심사상세 툴바) 클릭 → fn_toggle_view_mode() → fn_set_view_mode()
+ * - 이미지 로드(onload) 시에도 fn_get_base_size() 로 크기를 잡아 문서/탭을 바꿔도 보기 모드 유지
+ * - 이미지 초기화 버튼(#zoomRefreshBtn, common_detail.js) 클릭 시 화면맞춤으로 복귀
+ * - 항목 하이라이트 좌표는 원본 이미지 기준이라 width_rate/height_rate 재계산으로 두 모드 모두 위치가 맞음
+ */
+// 이미지 보기 모드 (fit: 화면맞춤(기본), original: 원본 크기)
+var view_mode_global = "fit";
+// 원본 모드에서 허용하는 최소 축소배율
+var ORIGINAL_MIN_ZOOM = 0.2;
+
+// 보기 모드에 맞는 기준 canvas 크기 (배율 1 기준)
+// - 원본 모드 : 이미지 원본 크기 / 화면맞춤 또는 이미지 로드 전 : 기본 canvas 크기
+function fn_get_base_size() {
+	// 텍스트형 문서는 원본 크기가 없으므로 항상 화면 맞춤
+	if (view_mode_global == "original" && imgSrcType != "text" && image_global && image_global.width) {
+		return { w: image_global.width, h: image_global.height };
+	} else {
+		return { w: canvas_width_global, h: canvas_height_global };
+	}
+}
+
+// 보기 모드 전환 버튼 아이콘/툴팁 갱신
+// - 원본 모드 : fa-compress / '화면에 맞추기', 화면맞춤 : fa-expand / '원본 크기로 보기'
+// - 버튼이 없는 화면(genesis.js 를 쓰는 다른 상세 화면)은 아무것도 하지 않음
+function fn_update_view_mode_btn() {
+	var $btn = $('#view_mode_btn');
+	if ($btn.length == 0) {
+		return;
+	}
+
+	if (view_mode_global == "original") {
+		$btn.attr('title', '화면에 맞추기').find('i').removeClass('fa-expand').addClass('fa-compress');
+	} else {
+		$btn.attr('title', '원본 크기로 보기').find('i').removeClass('fa-compress').addClass('fa-expand');
+	}
+}
+
+// 보기 모드 설정 후 현재 이미지를 해당 모드 크기로 다시 그림
+// mode : "original"(원본 크기), 그 외 값은 "fit"(화면맞춤)
+function fn_set_view_mode(mode) {
+	view_mode_global = (mode == "original") ? "original" : "fit";
+	fn_update_view_mode_btn();
+
+	// 이미지 로드 전/실패 시에는 모드만 저장 → 다음 이미지 로드(onload) 때 적용
+	if (imgType != "success" || !ctx_global || !image_global || !image_global.width) {
+		return;
+	}
+
+	// 하이라이트 깜빡임 타이머 중지 (canvas 크기 변경 후 아래에서 다시 시작)
+	fn_remove_blink_list();
+
+	// 모드 전환 시 배율/회전 초기화
+	rotateVal = 360;
+	zoom_rate_global = 1;
+
+	// canvas 크기 변경 (크기를 바꾸면 회전 등 context 변환도 초기화됨)
+	var _base = fn_get_base_size();
+	canvas.width = _base.w;
+	canvas.height = _base.h;
+
+	// 원본 이미지 좌표 → canvas 좌표 변환 비율 (항목 박스/하이라이트 위치 계산용)
+	width_rate = canvas.width / image_global.width;
+	height_rate = canvas.height / image_global.height;
+
+	// 이미지 다시 그리기
+	ctx_global.clearRect(0, 0, canvas.width, canvas.height);
+	ctx_global.drawImage(image_global, 0, 0, image_global.width, image_global.height, 0, 0, canvas.width, canvas.height);
+
+	// 항목 박스 다시 그리기 (fn_clear_box 를 거치므로 형광펜/핀(annotation-host.js)도 다시 그려짐)
+	fn_draw_multi_box();
+
+	// 선택된 항목이 있으면 하이라이트 깜빡임 다시 시작
+	if (globalInform.length > 0) {
+		fn_selected_blink(globalInform);
+	}
+
+	// 이미지 영역 스크롤 위치 초기화
+	$('#canvas_area').scrollLeft(0).scrollLeft(0);
+}
+
+// 화면맞춤 <-> 원본 전환
+function fn_toggle_view_mode() {
+	fn_set_view_mode(view_mode_global == "original" ? "fit" : "original");
+}
 
 function getMousePos(canvas, evt) {
 
@@ -362,10 +452,12 @@ function fn_init_draw_image(_inptBlGrpNo, _imexHisCd, _inptTaskId, _spdKind, _in
 					imgType = "error";
 					
 				} else if (data.type == "text") {
+					imgSrcType = "text";
 					// 텍스트(전문 등)가 넘어온 경우 텍스트를 이미지로 그려서 사용
 					image_global.src = fn_text_to_image_src(response);
 					imgType = "success";
 				} else {
+					imgSrcType = "image";
 					image_global.src =  "data:image/jpeg;base64," + response;
 					imgType = "success";
 				}
@@ -409,7 +501,14 @@ function fn_init_draw_image(_inptBlGrpNo, _imexHisCd, _inptTaskId, _spdKind, _in
 	} else {
 		
 		image_global.onload = function(){
-			
+			// 보기 모드(화면맞춤/원본)에 맞춰 canvas 크기 설정
+			// (fn_get_base_size 가 image_global 크기를 쓰므로 이미지 로드 완료 후 계산)
+			var _base = fn_get_base_size();
+			canvas.width = _base.w;
+			canvas.height = _base.h;
+			fn_update_view_mode_btn();
+
+
 			width_rate = canvas.width/this.width;
 			height_rate = canvas.height/this.height;			
 			
