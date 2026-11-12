@@ -2098,7 +2098,24 @@
     var $ph = this.$imagePreview.find('.dc-image-preview-ph');
     var $text = this.$imagePreview.find('.dc-text-preview');
 
+    // 미리보기 스크롤 영역 (확대/축소 후 스크롤 위치 복원용)
+    var body = this.$imagePreview.find('[data-dc-preview-body]')[0];
+
     if ($label.length) $label.text(Math.round(zoom * 100) + '%');
+
+    // 확대/축소 전 보고 있던 화면 중심 위치를 전체 내용 대비 비율(0~1)로 기억
+    // -> 크기 변경 후 같은 비율 위치가 화면 중앙에 오도록 스크롤 복원
+    // 스크롤이 없으면(내용이 영역보다 작음) 가운데(0.5) 기준
+    var cx = 0.5;
+    var cy = 0.5;
+
+    if (body && body.scrollWidth > body.clientWidth) {
+      cx = (body.scrollLeft + body.clientWidth / 2) / body.scrollWidth;
+    }
+
+    if (body && body.scrollHeight > body.clientHeight) {
+      cy = (body.scrollTop + body.clientHeight / 2) / body.scrollHeight;
+    }
 
     if ($img.length && baseW > 0) {
       $img.css({
@@ -2108,15 +2125,23 @@
         maxHeight: 'none'
       });
     } else if ($text.length) {
+      // 텍스트(전문 등) 미리보기 : transform: scale 은 화면에만 커 보이고 레이아웃 크기는 그대로라
+      // 스크롤이 생기지 않아 확대된 부분이 잘림 -> 글자 크기/여백/최소 폭을 배율만큼 실제로 키워 스크롤 가능하게 함
+      // (기준값 : 글자 13px, 여백 26px 18px, 최소 폭 min(720px, 92vw))
       $text.css({
-        transform: 'scale(' + zoom + ')',
-        transformOrigin: 'top left'
+        fontSize: (13 * zoom) + 'px',
+        padding: (26 * zoom) + 'px ' + (18 * zoom) + 'px',
+        minWidth: 'min(' + Math.round(720 * zoom) + 'px, ' + Math.round(92 * zoom) + 'vw)'
       });
     } else if ($ph.length) {
-      $ph.css({
-        transform: 'scale(' + zoom + ')',
-        transformOrigin: 'center center'
-      });
+      // 이미지 없음 표시 : zoom 은 transform 과 달리 레이아웃 크기도 함께 바뀜
+      $ph.css({ zoom: zoom });
+    }
+
+    // 기억해 둔 중심 위치 비율로 스크롤 복원 (변경된 전체 크기 기준)
+    if (body) {
+      body.scrollLeft = Math.max(0, cx * body.scrollWidth - body.clientWidth / 2);
+      body.scrollTop = Math.max(0, cy * body.scrollHeight - body.clientHeight / 2);
     }
 
     this.$imagePreview.find('[data-dc-preview-zoom="out"]')
