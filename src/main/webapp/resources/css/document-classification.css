@@ -1110,7 +1110,9 @@ body.dc-image-preview-lock {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: flex-end;
+  /* 실제 정렬은 자식의 margin: auto 가 담당 (아래 .dc-image-preview-body > * 참고)
+     margin 이 풀려도 내용이 위/왼쪽 끝에서 시작하도록 flex-start (넘친 부분이 잘리지 않음) */
+  align-items: flex-start;
   justify-content: flex-start;
   padding: 16px;
   overflow: auto;
@@ -1146,14 +1148,19 @@ body.dc-image-preview-lock {
   transition: width 0.05s linear;
 }
 
+/* 텍스트(SWIFT 전문) 미리보기 흰 박스
+   - 가로 : 가장 긴 줄이 영역 폭 이내면 박스 가운데, 넘으면 박스 왼쪽 끝부터 가로 스크롤
+   - 세로 : 줄 수가 영역 높이 이내면 박스 가운데, 넘으면 박스 위쪽 끝부터 세로 스크롤
+   - margin: auto 를 직접 지정 (규칙 순서/다른 margin 규칙에 영향받지 않도록, 0 으로 덮으면 왼쪽 정렬·윗부분 잘림)
+   - white-space: pre : 원문 줄 그대로 표시 (긴 줄도 줄바꿈하지 않음 → 박스 폭 = 가장 긴 줄 폭) */
 .dc-text-preview {
   display: block;
-  /* margin 은 .dc-image-preview-body > * 의 auto 를 사용 (0 으로 덮으면 긴 전문의 윗부분이 영역 밖으로 밀려 스크롤로도 안 보임) */
+  flex: 0 0 auto;
+  margin: auto;
   padding: 16px 18px;
   min-width: min(720px, 92vw);
   max-width: none;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: pre;
   font-family: Consolas, "Courier New", monospace;
   font-size: 13px;
   line-height: 1.5;

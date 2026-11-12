@@ -1,4 +1,5 @@
-<link rel="stylesheet" type="text/css" href="${ctx_res}/css/document-classification.css"/>
+<%-- ?v= : 파일 수정 시 값을 올려 브라우저 캐시의 이전 파일이 쓰이지 않도록 함 --%>
+<link rel="stylesheet" type="text/css" href="${ctx_res}/css/document-classification.css?v=20261112a"/>
 <link rel="stylesheet" type="text/css" href="${ctx_res}/css/document-classification-modal.css"/>
 
 <div class="demo-modal" id="documentClassificationModal">
@@ -25,6 +26,6 @@
 	</div>
 </div>
 
-<script type="text/javascript" src="${ctx_res}/js/docclass/jquery.document-classification.js"></script>
+<script type="text/javascript" src="${ctx_res}/js/docclass/jquery.document-classification.js?v=20261112a"></script>
 <script type="text/javascript" src="${ctx_res}/js/docclass/document-classification-modal.js"></script>
 <script type="text/javascript" src="${ctx_res}/js/docclass/document-classification-host.js"></script>
