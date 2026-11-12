@@ -34,10 +34,22 @@
   var CHANGE_LOG_MAX = 100;
   var TINY_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-  /** 텍스트를 A4 비율 흰 바탕 이미지(data URI)로 그림 — 전체가 들어오도록 글자 크기 자동 조정 */
+  /** 텍스트 썸네일에 그리는 최대 줄 수 (넘는 부분은 생략 표시) */
+  var THUMB_TEXT_MAX_LINES = 60;
+
+  /**
+   * 텍스트를 A4 비율 흰 바탕 썸네일 이미지(data URI)로 그림 — 들어오도록 글자 크기 자동 조정
+   * - 썸네일 전용 : 확대보기는 원문 텍스트(state.textCache)를 <pre> 로 표시하므로 여기서 전체를 그릴 필요 없음
+   * - 긴 전문(10,000바이트 ≈ 300줄)을 한 장에 다 그리면 글자가 3px 수준으로 작아져
+   *   앞부분 THUMB_TEXT_MAX_LINES 줄만 그려 썸네일에서도 글자 형태가 보이도록 함
+   */
   function textToImageSrc(text) {
     var W = 1070, H = 1470, PAD = 40;
     var lines = String(text).replace(/\r\n?/g, '\n').replace(/\t/g, '    ').split('\n');
+    if (lines.length > THUMB_TEXT_MAX_LINES) {
+      lines = lines.slice(0, THUMB_TEXT_MAX_LINES);
+      lines.push('…');
+    }
     var cv = document.createElement('canvas');
     var ctx = cv.getContext('2d');
     var font = function (size) { return size + "px 'Malgun Gothic', monospace"; };
@@ -193,6 +205,8 @@
       dragSourceDocType: null,
       dropInsertIndex: null,
       thumbCache: {},
+      // 썸네일 응답이 텍스트(SWIFT 전문)였던 페이지의 원문 (pageId → text, 확대보기에서 텍스트로 표시)
+      textCache: {},
       pageIndex: {},
       pageById: {},
       groupOrder: {},
@@ -1002,13 +1016,24 @@
       this.$board[0].addEventListener('scroll', this._onBlockScrollCapture, true);
     }
     // 썸네일 응답이 텍스트(SWIFT 전문)면 <img> 로드가 실패하므로 텍스트를 받아 이미지로 그려 대체
+    // - 원문은 textCache 에 저장 → 확대보기(openImagePreview)에서 이미지 대신 텍스트로 표시
+    //   (썸네일 이미지를 확대하면 글자가 작고 줄이 뭉개져 읽을 수 없음)
+    // - 썸네일보다 확대보기가 먼저 열려 확대보기 <img> 가 실패한 경우에도 이 경로로 들어오며,
+    //   이때는 확대보기를 텍스트로 다시 열어 줌
     this._onThumbError = function (e) {
       var img = e.target;
       var pageId = img && img.tagName === 'IMG' ? img.getAttribute('data-page-id') : null;
       if (!pageId || /^data:/.test(img.src)) return;
       $.ajax({ url: img.src, dataType: 'text' }).done(function (text, status, xhr) {
         if (!/^text\/plain/i.test(xhr.getResponseHeader('Content-Type') || '')) return;
-        img.src = self.state.thumbCache[pageId] = textToImageSrc(text);
+        self.state.textCache[pageId] = text;
+        self.state.thumbCache[pageId] = textToImageSrc(text);
+        if ($(img).hasClass('dc-image-preview-img')) {
+          // 확대보기가 아직 이 페이지를 보여주고 있으면 텍스트로 다시 표시
+          if (self.$imagePreview.attr('hidden') == null && img.parentNode) self.openImagePreview(pageId);
+        } else {
+          img.src = self.state.thumbCache[pageId];
+        }
       });
     };
     this.$root[0].addEventListener('error', this._onThumbError, true);
@@ -2175,10 +2200,13 @@
 
     var docLabel = this._docTypeDisplayLabel(page);
     var id = this._pageIdentity(page);
-    var mediaKind = this._pageMediaKind(page);
+    // 썸네일 로드 때 받아 둔 원문(SWIFT 전문)이 있으면 썸네일 이미지 대신 텍스트로 표시
+    // (글자 13px·줄간격 1.5 고정, 길면 스크롤 → 전문 길이와 무관하게 읽을 수 있고 확대해도 깨지지 않음)
+    var cachedText = this.state.textCache ? this.state.textCache[page.pageId] : null;
+    var mediaKind = cachedText != null ? 'text' : this._pageMediaKind(page);
     var title = docLabel + ' · ' + id.inptTaskId;
     var url = mediaKind === 'image' ? this._resolveThumbSrc(page) : '';
-    var textBody = mediaKind === 'text' ? this._resolveTextContent(page) : '';
+    var textBody = cachedText != null ? cachedText : (mediaKind === 'text' ? this._resolveTextContent(page) : '');
     var bodyHtml;
 
     this.state.previewZoom = 1;
@@ -4398,6 +4426,7 @@
       this.state.sessionCreatedGroups = {};
       this.state.dirty = false;
       this.state.thumbCache = {};
+      this.state.textCache = {};
       this.state.bucketScroll = {};
       this.state.docTypeScroll = {};
       this.state.selected = {};

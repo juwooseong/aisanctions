@@ -1110,8 +1110,8 @@ body.dc-image-preview-lock {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-start;
   padding: 16px;
   overflow: auto;
   overscroll-behavior: contain;
@@ -1123,6 +1123,15 @@ body.dc-image-preview-lock {
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0;
   background-color: #0b1220;
+}
+
+/* 미리보기 내용 가운데 정렬은 align/justify center 대신 margin: auto 로 처리
+   - center 정렬은 내용이 영역보다 커지면(확대, 긴 전문) 위/왼쪽으로 넘친 부분이 스크롤로도 안 보임
+   - margin: auto 는 여유가 있으면 가운데, 넘치면 0 이 되어 위/왼쪽 끝부터 스크롤 가능
+   - flex: 0 0 auto : 영역 크기에 맞춰 줄어들지 않고 내용(확대) 크기 유지 */
+.dc-image-preview-body > * {
+  flex: 0 0 auto;
+  margin: auto;
 }
 
 .dc-image-preview-img {
@@ -1139,7 +1148,7 @@ body.dc-image-preview-lock {
 
 .dc-text-preview {
   display: block;
-  margin: 0;
+  /* margin 은 .dc-image-preview-body > * 의 auto 를 사용 (0 으로 덮으면 긴 전문의 윗부분이 영역 밖으로 밀려 스크롤로도 안 보임) */
   padding: 16px 18px;
   min-width: min(720px, 92vw);
   max-width: none;
@@ -1153,8 +1162,6 @@ body.dc-image-preview-lock {
   border: 1px solid #cbd5e1;
   border-radius: 4px;
   box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.2);
-  transform-origin: top left;
-  transition: transform 0.05s linear;
 }
 
 .dc-image-preview-ph {
