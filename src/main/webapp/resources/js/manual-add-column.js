@@ -20,6 +20,12 @@
  *   "수기 추가" 컬럼들(data:null, 자체 render 함수로 입력칸을 그림)만 "수기입력"
  *   (data-index 4) 바로 뒤에 화면상으로만 끼워 넣을 수 있다.
  *
+ * 행별 입력 비활성화 (MANUAL_COL_DISABLE_RULE):
+ *   조회 데이터($globaObjlData.sanctionRst)의 지정 필드 값이 지정 값 중 하나인 행은
+ *   "수기 추가" 입력칸을 disabled 로 그리고 복사 아이콘을 숨긴다. 그 행은 국가코드 자동세팅·
+ *   복사 대상에서 빠지고, 엔터/화살표/Tab 이동 시 건너뛴다. 저장된 값은 그대로 보이고 저장된다.
+ *   field 를 비워 두면 비활성화하지 않는다(기존 동작과 동일).
+ *
  * 서버 저장/조회 연동은 docs/feature-manual-add-column.md 문서와 아래 파일들 참고
  * (이쪽은 순수 UI 파일 분리와 무관하게 그대로 유지됨):
  *   - sql/34_manual_add_extra_cols.sql (CSPD004TF 컬럼 3개)
@@ -50,6 +56,43 @@
 
 	function manualColRowKey(inptTaskId, inptSanctionNo) {
 		return inptTaskId + '_' + inptSanctionNo;
+	}
+
+	// ---- "수기 추가" 입력 비활성화 기준 ----
+	//   field  : 조회 데이터($globaObjlData.sanctionRst 각 행 객체)의 필드명 (예: 'stRstKind')
+	//   values : 이 값들 중 하나와 같으면 그 행의 "수기 추가" 입력칸을 비활성화 (예: ['02', '03'])
+	//   field 가 비어 있으면 비활성화 없음 (기존과 동일하게 모든 행 입력 가능)
+	var MANUAL_COL_DISABLE_RULE = {
+		field: '',
+		values: []
+	};
+
+	// 조회 데이터 행을 rowKey("taskId_sanctionNo")로 찾기 위한 맵.
+	// 셀마다 배열 전체를 뒤지지 않도록, sanctionRst 배열이 바뀔 때(재조회)만 다시 만든다.
+	var loadedRowMapSrc = null;
+	var loadedRowMap = {};
+
+	function findLoadedSanctionRow(rowKey) {
+		var arr = (window.$globaObjlData && window.$globaObjlData.sanctionRst) ? window.$globaObjlData.sanctionRst : [];
+		if (arr !== loadedRowMapSrc) {
+			loadedRowMap = {};
+			for (var i = 0; i < arr.length; i++) {
+				loadedRowMap[manualColRowKey(arr[i].inptTaskId, arr[i].inptSanctionNo)] = arr[i];
+			}
+			loadedRowMapSrc = arr;
+		}
+		return loadedRowMap[rowKey] || null;
+	}
+
+	// 해당 행의 "수기 추가" 입력을 막을지 조회 데이터 기준으로 판단한다.
+	// (taskId/sanctionNo 가 비어 0 으로 바뀐 행 등 조회 데이터와 매칭되지 않는 행은 입력 가능으로 둔다)
+	function isManualColDisabledRow(rowKey) {
+		if (!MANUAL_COL_DISABLE_RULE.field) { return false; }
+		var src = findLoadedSanctionRow(rowKey);
+		if (!src) { return false; }
+		var v = (src[MANUAL_COL_DISABLE_RULE.field] === undefined || src[MANUAL_COL_DISABLE_RULE.field] === null)
+			? '' : String(src[MANUAL_COL_DISABLE_RULE.field]);
+		return MANUAL_COL_DISABLE_RULE.values.indexOf(v) > -1;
 	}
 
 	// 국가코드 자동세팅(수기 추가 컬럼 전용): detail.jsp의 fn_itmInptHndgInpDatTextChage와 같은 규칙
@@ -84,6 +127,8 @@
 					if (String(list[i][8]) !== String(mappedSanctionNo)) { continue; }
 
 					var targetRowKey = manualColRowKey(list[i][10], list[i][8]);
+					// 비활성화된 행에는 국가코드를 자동으로 넣지 않는다.
+					if (isManualColDisabledRow(targetRowKey)) { continue; }
 					if (!window.extraManualColValues[colId]) {
 						window.extraManualColValues[colId] = {};
 					}
@@ -169,9 +214,16 @@
 				return escapeHtml(saved);
 			}
 
+			// 조회 데이터 기준(MANUAL_COL_DISABLE_RULE)으로 막을 행이면 입력칸을 disabled 로 그리고
+			// 복사 아이콘도 숨긴다(아이콘으로 값을 넣을 수 없도록). 저장된 값은 그대로 보여준다.
+			var disabled = isManualColDisabledRow(rowKey);
+
 			var html = "<input type='text' class='form-control manual-col-input' maxlength='" + MANUAL_COL_MAX_LEN + "' data-colid='" + colId + "' data-rowkey='" + rowKey + "' value='" + escapeHtml(saved) + "'"
+				+ (disabled ? " disabled" : "")
 				+ " onchange=\"fn_manualColValueChange(this,'" + colId + "','" + rowKey + "')\">";
-			html += "<i class='fa fa-copy fa-lg mt-1 manual-col-copy-btn' data-colid='" + colId + "' title='항목내용 복사'></i>";
+			if (!disabled) {
+				html += "<i class='fa fa-copy fa-lg mt-1 manual-col-copy-btn' data-colid='" + colId + "' title='항목내용 복사'></i>";
+			}
 			return html;
 		};
 	}
@@ -183,6 +235,8 @@
 		e.preventDefault();
 		var $input = $(this).closest('td').find('input.manual-col-input');
 		if ($input.length === 0) { return; }
+		// 비활성화된 입력칸에는 복사하지 않는다 (렌더러에서 아이콘을 숨기지만 한 번 더 방어)
+		if ($input.prop('disabled') || isManualColDisabledRow($input.data('rowkey'))) { return; }
 
 		var trIndex = $(this).closest('tr').index();
 		var rowData = window.globalSanctionRstListTable.row(trIndex).data();
@@ -224,11 +278,21 @@
 		highlightSanctionRow($(this).closest('tr'), $(this).closest('td'));
 	});
 
+	// [비활성 "수기 추가" 칸 클릭] disabled 입력칸은 포커스를 받지 못해, 클릭하면 기존 입력칸의
+	// 포커스가 풀려 body 로 가고 브라우저는 클릭 위치를 Tab 시작점으로 기억한다. 이 상태에서 Tab 을
+	// 누르면 아래 keydown 핸들러(포커스가 입력칸일 때만 동작)가 처리하지 못해 브라우저 기본 Tab 순서
+	// (DOM 순서상 다음 입력칸 = 옆 "수기 추가" 칸 등)로 이동해 버린다.
+	// mousedown 기본 동작을 막아 기존 입력칸의 포커스를 그대로 유지하고 Tab 시작점도 바뀌지 않게 한다.
+	$(document).on('mousedown', 'td:has(input.manual-col-input:disabled)', function (e) {
+		e.preventDefault();
+	});
+
 	$(document).on('keydown', '.manual-col-input', function (e) {
 		if (window.globalCallType !== 'A') { return; }
 
 		var colId = $(this).data('colid');
-		var $col = $('.manual-col-input[data-colid="' + colId + '"]');
+		// 비활성화된 입력칸은 focus 가 안 되어 이동이 멈추므로 이동 대상에서 제외(건너뜀)한다.
+		var $col = $('.manual-col-input[data-colid="' + colId + '"]:not(:disabled)');
 		var totalIndex = $col.length - 1;
 		var index = $col.index(this);
 		if (index < 0) { return; }
